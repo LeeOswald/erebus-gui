@@ -1,0 +1,43 @@
+#pragma code_page(65001)
+
+#include "client-version.h"
+#include "winres.h"
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+1 RT_MANIFEST "erebus.manifest"
+
+1 ICON "resources/tux.ico"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION EREBUS_VERSION_RC
+ PRODUCTVERSION EREBUS_VERSION_RC
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "CompanyName", EREBUS_ORGANIZATION_NAME
+            VALUE "FileDescription", EREBUS_APPLICATION_NAME
+            VALUE "FileVersion", EREBUS_VERSION_STR
+            VALUE "InternalName", "erebus-gui.exe"
+            VALUE "LegalCopyright", EREBUS_COPYRIGHT
+            VALUE "OriginalFilename", "erebus-gui.exe"
+            VALUE "ProductName", "Erebus"
+            VALUE "ProductVersion", EREBUS_VERSION_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END

@@ -1,0 +1,4 @@
+CMakeLists.txt.user
+*.code-workspace
+build/
+.vscode/
