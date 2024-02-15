@@ -1,6 +1,18 @@
 
 set(SOURCE_FILES
+    application/application.cpp
+    application/application.hpp
+    application/applicationbase.cpp
+    application/applicationbase.hpp
+    application/messageclient.cpp
+    application/messageclient.hpp
+    application/messageserver.cpp
+    application/messageserver.hpp
+    application/sharedsection.hpp
+    appsettings.hpp
     main.cpp
+    pluginmgr.cpp
+    pluginmgr.hpp
     settings.hpp
 )
 
@@ -23,7 +35,7 @@ add_executable(${EREBUS_CLIENT} ${IMAGE_SUBSYSTEM} ${SOURCE_FILES} ${RESOURCE_SO
 target_compile_features(${EREBUS_CLIENT} PUBLIC ${EREBUS_CXX_FEATURES})
 
 # Qt6Widgets_LIBRARIES variable also includes QtGui and QtCore
-target_link_libraries (${EREBUS_CLIENT} PRIVATE ${Qt6Widgets_LIBRARIES} ${PLATFORM_LIBRARIES} ${EREBUS_RTLLIB} ${EREBUS_CLTLIB})
+target_link_libraries (${EREBUS_CLIENT} PRIVATE ${Qt6Widgets_LIBRARIES} ${Qt6Network_LIBRARIES} ${PLATFORM_LIBRARIES} ${EREBUS_RTLLIB} ${EREBUS_CLTLIB})
 
 
 

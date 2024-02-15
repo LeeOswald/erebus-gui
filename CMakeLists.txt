@@ -59,15 +59,40 @@ endif()
 find_package(Qt6Core REQUIRED)
 find_package(Qt6Gui REQUIRED)
 find_package(Qt6Widgets REQUIRED)
+find_package(Qt6Network REQUIRED)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 # Qt6Widgets_INCLUDES also includes the include directories for QtCore and QtGui
-include_directories(${Qt6Widgets_INCLUDES})
+include_directories(${Qt6Widgets_INCLUDES} ${Qt6Network_INCLUDES})
 # We need to add -DQT_WIDGETS_LIB when using QtWidgets in Qt 6
-add_definitions(${Qt6Widgets_DEFINITIONS})
+add_definitions(${Qt6Widgets_DEFINITIONS} ${Qt6Network_DEFINITIONS})
+
+# require Boost
+if(MSVC)
+    find_package(Boost REQUIRED COMPONENTS system)
+else()
+    find_package(Boost REQUIRED COMPONENTS 
+        stacktrace_basic
+        stacktrace_backtrace
+        stacktrace_addr2line
+        stacktrace_noop 
+        system 
+    )
+endif()
+
+
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+
+if(WIN32)
+    # disable autolinking in boost
+    add_definitions(-DBOOST_ALL_NO_LIB)
+    # force all boost libraries to dynamic link
+    add_definitions(-DBOOST_ALL_DYN_LINK)
+endif()
 
 
 # force shared CRT

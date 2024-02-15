@@ -1,8 +1,10 @@
 #include "client-version.h"
 
-#include "settings.hpp"
+#include "appsettings.hpp"
+#include "application/application.hpp"
 
-#include <QCoreApplication>
+#include <erebus/log.hxx>
+
 #include <QMessageBox>
 
 #if defined(_MSC_VER) && ER_DEBUG
@@ -19,13 +21,29 @@ int main(int argc, char *argv[])
     _CrtSetDbgFlag(tmpFlag);
 #endif
 
-    QCoreApplication a(argc, argv);
-    a.setApplicationName(EREBUS_APPLICATION_NAME);
-    a.setApplicationVersion(QString("%1.%2.%3").arg(EREBUS_VERSION_MAJOR).arg(EREBUS_VERSION_MINOR).arg(EREBUS_VERSION_PATCH));
-    a.setOrganizationName(EREBUS_ORGANIZATION_NAME);
+    Erc::Private::Application::setApplicationName(EREBUS_APPLICATION_NAME);
+    Erc::Private::Application::setApplicationVersion(QString("%1.%2.%3").arg(EREBUS_VERSION_MAJOR).arg(EREBUS_VERSION_MINOR).arg(EREBUS_VERSION_PATCH));
+    Erc::Private::Application::setOrganizationName(EREBUS_ORGANIZATION_NAME);
+
+    Erc::Private::Settings settings;
+    auto logLevel = static_cast<Er::Log::Level>(Erc::Option<int>::get(&settings, Erc::Private::AppSettings::Log::level, int(Erc::Private::AppSettings::Log::defaultLevel)));
+    auto singleInstance = Erc::Option<bool>::get(&settings, Erc::Private::AppSettings::Application::singleInstance, Erc::Private::AppSettings::Application::singleInstanceDefault);
+
+    Er::Log::LogBase log(logLevel, 65536);
+
     
     try
     {
+        Erc::Private::Application a(&log, &settings, argc, argv);
+
+        if (singleInstance && a.secondary())
+        {
+#if ER_WINDOWS
+            ::AllowSetForegroundWindow(DWORD(a.primaryPid()));
+#endif
+            a.sendMessage("ACTIVATE_WINDOW", 100);
+            return EXIT_SUCCESS;
+        }
 
         return a.exec();
     }
