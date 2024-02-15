@@ -119,7 +119,8 @@ set(EREBUS_CLTLIB erebus-clt)
 
 # component names
 set(EREBUS_CLIENT erebus-gui)
-set(EREBUS_CLIENTLIB erebus-gui)
+set(EREBUS_GUILIB erebus)
 
 add_subdirectory(submodules/erebus-server)
+add_subdirectory(src/erebus-gui)
 add_subdirectory(src/client)

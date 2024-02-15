@@ -4,6 +4,7 @@
 #include "application/application.hpp"
 
 #include <erebus/log.hxx>
+#include <erebus-gui/exceptionutil.hpp>
 
 #include <QMessageBox>
 
@@ -47,9 +48,15 @@ int main(int argc, char *argv[])
 
         return a.exec();
     }
+    catch (Er::Exception& e)
+    {
+        auto msg = Erc::formatException(e);
+        QMessageBox::critical(nullptr, QString::fromUtf8(EREBUS_APPLICATION_NAME), QString::fromUtf8(msg), QMessageBox::Ok);
+    }
     catch (std::exception& e)
     {
-        QMessageBox::critical(nullptr, QString::fromLocal8Bit(EREBUS_APPLICATION_NAME), QLatin1String("Unexpected error"), QMessageBox::Ok);
+        auto msg = Erc::formatException(e);
+        QMessageBox::critical(nullptr, QString::fromUtf8(EREBUS_APPLICATION_NAME), QString::fromUtf8(msg), QMessageBox::Ok);
     }
 
     return EXIT_FAILURE;
