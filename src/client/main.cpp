@@ -6,12 +6,45 @@
 #include <erebus/log.hxx>
 #include <erebus-gui/exceptionutil.hpp>
 
+#include <QtGlobal>
 #include <QMessageBox>
 
 #if defined(_MSC_VER) && ER_DEBUG
     #include <crtdbg.h>
 #endif
 
+namespace
+{
+
+Er::Log::ILog* g_log = nullptr;
+
+void qtMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
+    if (!g_log)
+        return;
+
+    auto localMsg = Erc::toUtf8(msg);
+    switch (type)
+    {
+    case QtDebugMsg:
+        LogDebug(g_log, "%s", localMsg.c_str());
+        break;
+    case QtInfoMsg:
+        LogInfo(g_log, "%s", localMsg.c_str());
+        break;
+    case QtWarningMsg:
+        LogWarning(g_log, "%s", localMsg.c_str());
+        break;
+    case QtCriticalMsg:
+        LogError(g_log, "%s", localMsg.c_str());
+        break;
+    case QtFatalMsg:
+        LogFatal(g_log, "%s", localMsg.c_str());
+        break;
+    }
+}
+
+} // namespace {}
 
 
 int main(int argc, char *argv[])
@@ -31,7 +64,8 @@ int main(int argc, char *argv[])
     auto singleInstance = Erc::Option<bool>::get(&settings, Erc::Private::AppSettings::Application::singleInstance, Erc::Private::AppSettings::Application::singleInstanceDefault);
 
     Er::Log::LogBase log(logLevel, 65536);
-
+    g_log = &log;
+    ::qInstallMessageHandler(qtMessageHandler);
     
     try
     {
@@ -46,7 +80,12 @@ int main(int argc, char *argv[])
             return EXIT_SUCCESS;
         }
 
-        return a.exec();
+        auto result = a.exec();
+
+        g_log = nullptr;
+        ::qInstallMessageHandler(nullptr);
+
+        return result;
     }
     catch (Er::Exception& e)
     {
@@ -58,6 +97,9 @@ int main(int argc, char *argv[])
         auto msg = Erc::formatException(e);
         QMessageBox::critical(nullptr, QString::fromUtf8(EREBUS_APPLICATION_NAME), QString::fromUtf8(msg), QMessageBox::Ok);
     }
+
+    g_log = nullptr;
+    ::qInstallMessageHandler(nullptr);
 
     return EXIT_FAILURE;
 }

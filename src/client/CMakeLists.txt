@@ -9,6 +9,10 @@ set(SOURCE_FILES
     application/messageserver.cpp
     application/messageserver.hpp
     application/sharedsection.hpp
+    mainwindow/logview.cpp
+    mainwindow/logview.hpp
+    mainwindow/mainwindow.cpp
+    mainwindow/mainwindow.hpp
     appsettings.hpp
     main.cpp
     pluginmgr.cpp
