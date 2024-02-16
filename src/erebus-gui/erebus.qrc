@@ -1,0 +1,9 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource prefix="/images">
+    <file alias="logo32.png">resources/tux32.png</file>
+    <file alias="logo64.png">resources/tux64.png</file>
+    <file alias="logo128.png">resources/tux128.png</file>
+    <file alias="logo256.png">resources/tux256.png</file>
+</qresource>
+</RCC>

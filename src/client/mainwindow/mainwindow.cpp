@@ -1,8 +1,14 @@
+#include "client-version.h"
+
+#include <erebus/util/exceptionutil.hxx>
+#include <erebus-gui/exceptionutil.hpp>
+
 #include "../appsettings.hpp"
 #include "../connectdlg/connectdlg.hpp"
 #include "mainwindow.hpp"
 
 #include <QLocale>
+#include <QMessageBox>
 
 
 namespace Erc
@@ -72,7 +78,6 @@ MainWindow::MainWindow(
 
     m_tabWidget->setObjectName("tabWidget");
 
-
     m_mainSplitter->addWidget(m_tabWidget);
     m_mainSplitter->addWidget(m_logView->view());
 
@@ -116,7 +121,7 @@ MainWindow::MainWindow(
     }
 
     m_trayIcon.trayIcon->show();
-    connect(m_trayIcon.trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
+    QObject::connect(m_trayIcon.trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
 
     logCtl->unmute();
 
@@ -125,6 +130,8 @@ MainWindow::MainWindow(
 
     m_statusLabel->setText(tr("Processes: 0"));
     m_statusbar->addPermanentWidget(m_statusLabel);
+
+    QObject::connect(this, SIGNAL(connected(std::shared_ptr<Er::Client::IClient>)), this, SLOT(onConnected(std::shared_ptr<Er::Client::IClient>)));
 
     LogDebug(log, "Client started");
 
@@ -271,18 +278,52 @@ void MainWindow::adjustLogViewHeight()
 
 void MainWindow::initialPrompt()
 {
-    auto recentUser = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastUserName, QString());
+    std::shared_ptr<Er::Client::IClient> client;
+    do
+    {
+        auto recentUser = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastUserName, QString());
+        auto ssl = Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::Connections::lastUseSsl, false);
+        auto rootCA = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, QString());
 
-    Erc::Private::Ui::ConnectDlg dlg(m_recentEndpoints.all(), Erc::toUtf8(recentUser), this);
-    auto result = dlg.exec();
-    if (result != QDialog::Accepted)
-        return quit();
+        Erc::Private::Ui::ConnectDlg dlg(m_recentEndpoints.all(), Erc::toUtf8(recentUser), ssl, Erc::toUtf8(rootCA), this);
+        auto result = dlg.exec();
+        if (result != QDialog::Accepted)
+            return quit();
 
-    auto endpoint = dlg.selected();
-    auto user = dlg.user();
-    auto password = dlg.password();
+        Er::Client::Params params(m_log, dlg.selected(), dlg.ssl(), dlg.rootCA(), dlg.user(), dlg.password());
+        client = connect(params);
+
+    } while (!client);
+
+    emit connected(client);
 }
 
+std::shared_ptr<Er::Client::IClient> MainWindow::connect(const Er::Client::Params& params)
+{
+    try
+    {
+        return Er::Client::create(params);
+    }
+    catch (Er::Exception& e)
+    {
+        Er::Util::logException(m_log, Er::Log::Level::Error, e);
+        auto msg = Erc::formatException(e);
+        Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Connection Attempt Failed"), QString::fromUtf8(msg), this);
+    }
+    catch (std::exception& e)
+    {
+        Er::Util::logException(m_log, Er::Log::Level::Error, e);
+        auto msg = Erc::formatException(e);
+        Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Connection Attempt Failed"), QString::fromUtf8(msg), this);
+    }
+
+    return std::shared_ptr<Er::Client::IClient>();
+}
+
+void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client)
+{
+
+}
 
 } // namespace Ui {}
 

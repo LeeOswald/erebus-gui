@@ -57,6 +57,8 @@ namespace Connections
 
 constexpr std::string_view lastUserName("connections/last_user_name");
 constexpr std::string_view recentConnections("connections/recent_connections");
+constexpr std::string_view lastUseSsl("connections/ssl");
+constexpr std::string_view lastRootCA("connections/rootCA");
 constexpr size_t kMaxRecentConnections = 16;
 
 } // namespace Connections {}

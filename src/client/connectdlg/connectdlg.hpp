@@ -25,7 +25,14 @@ class ConnectDlg:
 
 public:
     ~ConnectDlg();
-    ConnectDlg(const std::vector<std::string>& endpoints, const std::string& user, QWidget* parent = nullptr);
+
+    explicit ConnectDlg(
+        const std::vector<std::string>& endpoints,
+        const std::string& user,
+        bool ssl,
+        const std::string& rootCA,
+        QWidget* parent = nullptr
+    );
 
     const std::string& selected() const noexcept
     {
@@ -42,15 +49,31 @@ public:
         return m_password;
     }
 
+    bool ssl() const noexcept
+    {
+        return m_ssl;
+    }
+
+    const std::string& rootCA() const noexcept
+    {
+        return m_rootCA;
+    }
+
 public slots:
     void onOk();
     void onCancel();
+    void onSsl();
+    void onBrowseRootCA();
 
 private:
+    void enableSsl(bool enable);
+
     Ui_ConnectDlg* m_ui;
     std::string m_selected;
     std::string m_user;
     std::string m_password;
+    bool m_ssl = false;
+    std::string m_rootCA;
 };
 
 } // namespace Ui {}

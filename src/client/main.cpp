@@ -108,12 +108,12 @@ int main(int argc, char *argv[])
     catch (Er::Exception& e)
     {
         auto msg = Erc::formatException(e);
-        QMessageBox::critical(nullptr, QString::fromUtf8(EREBUS_APPLICATION_NAME), QString::fromUtf8(msg), QMessageBox::Ok);
+        Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Unexpected Error"), QString::fromUtf8(msg));
     }
     catch (std::exception& e)
     {
         auto msg = Erc::formatException(e);
-        QMessageBox::critical(nullptr, QString::fromUtf8(EREBUS_APPLICATION_NAME), QString::fromUtf8(msg), QMessageBox::Ok);
+        Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Unexpected Error"), QString::fromUtf8(msg));
     }
 
     g_log = nullptr;

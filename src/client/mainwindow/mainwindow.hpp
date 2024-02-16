@@ -48,6 +48,9 @@ private:
     void changeEvent(QEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
 
+signals:
+    void connected(std::shared_ptr<Er::Client::IClient> client);
+
 public slots:
     void quit();
     void restore();
@@ -55,11 +58,13 @@ public slots:
     void toggleHideOnClose();
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
     void initialPrompt();
+    void onConnected(std::shared_ptr<Er::Client::IClient> client);
 
 private:
     void saveGeometry();
     void restoreGeometry();
     void adjustLogViewHeight();
+    std::shared_ptr<Er::Client::IClient> connect(const Er::Client::Params& params);
 
     enum class SplitterPane
     {

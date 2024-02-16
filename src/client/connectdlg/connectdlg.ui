@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>150</height>
+    <height>201</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Connect to Erebus Server</string>
+   <string>Connect To Erebus Server</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../erebus.qrc">
@@ -75,6 +75,40 @@
         <enum>QLineEdit::Password</enum>
        </property>
       </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QCheckBox" name="checkSsl">
+       <property name="text">
+        <string>SSL</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="labelRootCA">
+       <property name="text">
+        <string>Root CA</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLineEdit" name="editRootCA"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnBrowseRootCA">
+         <property name="minimumSize">
+          <size>
+           <width>10</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -163,9 +197,43 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btnBrowseRootCA</sender>
+   <signal>clicked()</signal>
+   <receiver>ConnectDlg</receiver>
+   <slot>onBrowseRootCA()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>351</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>100</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkSsl</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>ConnectDlg</receiver>
+   <slot>onSsl()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>30</x>
+     <y>103</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>100</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onOk()</slot>
   <slot>onCancel()</slot>
+  <slot>onSsl()</slot>
+  <slot>onBrowseRootCA()</slot>
  </slots>
 </ui>

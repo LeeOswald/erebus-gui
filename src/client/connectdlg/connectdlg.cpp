@@ -2,6 +2,7 @@
 
 #include "connectdlg.hpp"
 
+#include <QFileDialog>
 #include <QMessageBox>
 
 namespace Erc
@@ -18,7 +19,13 @@ ConnectDlg::~ConnectDlg()
     delete m_ui;
 }
 
-ConnectDlg::ConnectDlg(const std::vector<std::string>& endpoints, const std::string& user, QWidget* parent)
+ConnectDlg::ConnectDlg(
+    const std::vector<std::string>& endpoints,
+    const std::string& user,
+    bool ssl,
+    const std::string& rootCA,
+    QWidget* parent
+    )
     : QDialog(parent)
     , m_ui(new Ui_ConnectDlg())
 {
@@ -36,6 +43,11 @@ ConnectDlg::ConnectDlg(const std::vector<std::string>& endpoints, const std::str
     }
 
     m_ui->editUser->setText(Erc::fromUtf8(user));
+
+    m_ui->editRootCA->setText(Erc::fromUtf8(rootCA));
+    m_ui->checkSsl->setCheckState(ssl ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+
+    enableSsl(ssl);
 }
 
 void ConnectDlg::onOk()
@@ -67,12 +79,44 @@ void ConnectDlg::onOk()
 
     m_password = Erc::toUtf8(password);
 
+    m_ssl = (m_ui->checkSsl->checkState() == Qt::CheckState::Checked);
+    auto rootCA = m_ui->editRootCA->text();
+    if (m_ssl && rootCA.isEmpty())
+    {
+        QMessageBox::warning(this, QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("Please specify the root CA certificate"), QMessageBox::Ok);
+        return;
+    }
+
     accept();
 }
 
 void ConnectDlg::onCancel()
 {
     reject();
+}
+
+void ConnectDlg::onSsl()
+{
+    enableSsl(m_ui->checkSsl->checkState() == Qt::CheckState::Checked);
+}
+
+void ConnectDlg::onBrowseRootCA()
+{
+    auto fileName = QFileDialog::getOpenFileName(
+        this,
+        tr("Select Root CA Certificate"),
+        QString(),
+        tr("Certificates (*.pem)")
+    );
+
+    m_ui->editRootCA->setText(fileName);
+}
+
+void ConnectDlg::enableSsl(bool enable)
+{
+    m_ui->labelRootCA->setEnabled(enable);
+    m_ui->editRootCA->setEnabled(enable);
+    m_ui->btnBrowseRootCA->setEnabled(enable);
 }
 
 } // namespace Ui {}

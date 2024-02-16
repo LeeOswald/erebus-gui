@@ -1,11 +1,26 @@
 
+set(RESOURCE_FILES
+    erebus.qrc
+)
+
+set(UIS
+    errorbox.ui
+)
+
+qt6_add_resources(RESOURCE_SOURCES ${RESOURCE_FILES})
+qt6_wrap_ui(UI_SOURCES ${UIS})
+
 add_library(${EREBUS_GUILIB} SHARED
     ../../include/erebus-gui/erebus-gui.hpp
     ../../include/erebus-gui/exceptionutil.hpp
     ../../include/erebus-gui/plugin.hpp
     ../../include/erebus-gui/qvariantconverter.hpp
     ../../include/erebus-gui/settings.hpp
+    errorbox.hpp
+    errorbox.cpp
     exceptionutil.cpp
+    ${RESOURCE_SOURCES} 
+    ${UI_SOURCES}
 )
 
 
