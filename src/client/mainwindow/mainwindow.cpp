@@ -1,4 +1,5 @@
 #include "../appsettings.hpp"
+#include "../connectdlg/connectdlg.hpp"
 #include "mainwindow.hpp"
 
 #include <QLocale>
@@ -25,6 +26,7 @@ MainWindow::MainWindow(
     QWidget* parent
     )
     : Base(parent)
+    , m_recentEndpoints(Erc::toUtf8(Erc::Option<QString>::get(settings, Erc::Private::AppSettings::Connections::recentConnections, QString())))
     , m_log(log)
     , m_settings(settings)
     , m_mainMenu(this)
@@ -125,6 +127,8 @@ MainWindow::MainWindow(
     m_statusbar->addPermanentWidget(m_statusLabel);
 
     LogDebug(log, "Client started");
+
+    QTimer::singleShot(50, this, SLOT(initialPrompt()));
 }
 
 void MainWindow::quit()
@@ -265,6 +269,19 @@ void MainWindow::adjustLogViewHeight()
     m_mainSplitter->setSizes(splitterSizes);
 }
 
+void MainWindow::initialPrompt()
+{
+    auto recentUser = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastUserName, QString());
+
+    Erc::Private::Ui::ConnectDlg dlg(m_recentEndpoints.all(), Erc::toUtf8(recentUser), this);
+    auto result = dlg.exec();
+    if (result != QDialog::Accepted)
+        return quit();
+
+    auto endpoint = dlg.selected();
+    auto user = dlg.user();
+    auto password = dlg.password();
+}
 
 
 } // namespace Ui {}

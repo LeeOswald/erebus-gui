@@ -52,6 +52,15 @@ constexpr std::string_view mainPos("mainwindow/main_pos");
 
 } // namespace MainWindow {}
 
+namespace Connections
+{
+
+constexpr std::string_view lastUserName("connections/last_user_name");
+constexpr std::string_view recentConnections("connections/recent_connections");
+constexpr size_t kMaxRecentConnections = 16;
+
+} // namespace Connections {}
+
     
 } // namespace AppSettings {}
     

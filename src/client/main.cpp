@@ -5,6 +5,7 @@
 #include "mainwindow/mainwindow.hpp"
 
 #include <erebus/log.hxx>
+#include <erebus-clt/erebus-clt.hxx>
 #include <erebus-gui/exceptionutil.hpp>
 
 #include <QtGlobal>
@@ -80,6 +81,10 @@ int main(int argc, char *argv[])
             a.sendMessage("ACTIVATE_WINDOW", 100);
             return EXIT_SUCCESS;
         }
+
+        Er::LibScope er;
+        Er::Client::LibParams cltParams(&log, log.level());
+        Er::Client::LibScope cs(cltParams);
 
         Erc::Private::Ui::MainWindow w(&log, &log, &settings);
 

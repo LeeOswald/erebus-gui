@@ -9,6 +9,8 @@ set(SOURCE_FILES
     application/messageserver.cpp
     application/messageserver.hpp
     application/sharedsection.hpp
+    connectdlg/connectdlg.cpp
+    connectdlg/connectdlg.hpp
     mainwindow/logview.cpp
     mainwindow/logview.hpp
     mainwindow/mainmenu.hpp
@@ -16,6 +18,7 @@ set(SOURCE_FILES
     mainwindow/mainwindow.hpp
     mainwindow/trayicon.hpp
     appsettings.hpp
+    endpoints.hpp
     main.cpp
     pluginmgr.cpp
     pluginmgr.hpp
@@ -26,9 +29,12 @@ set(RESOURCE_FILES
     erebus.qrc
 )
 
+set(UIS
+    connectdlg/connectdlg.ui
+)
 
 qt6_add_resources(RESOURCE_SOURCES ${RESOURCE_FILES})
-#qt6_wrap_ui(UI_SOURCES ${UIS})
+qt6_wrap_ui(UI_SOURCES ${UIS})
 
 if(ER_WINDOWS)
     set(WINDOWS_RESOURCE_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/erebus.rc")
@@ -41,7 +47,7 @@ add_executable(${EREBUS_CLIENT} ${IMAGE_SUBSYSTEM} ${SOURCE_FILES} ${RESOURCE_SO
 target_compile_features(${EREBUS_CLIENT} PUBLIC ${EREBUS_CXX_FEATURES})
 
 # Qt6Widgets_LIBRARIES variable also includes QtGui and QtCore
-target_link_libraries (${EREBUS_CLIENT} PRIVATE ${Qt6Widgets_LIBRARIES} ${Qt6Network_LIBRARIES} ${PLATFORM_LIBRARIES} ${EREBUS_RTLLIB} ${EREBUS_CLIENTLIB} ${EREBUS_GUILIB})
+target_link_libraries (${EREBUS_CLIENT} PRIVATE ${Qt6Widgets_LIBRARIES} ${Qt6Network_LIBRARIES} ${PLATFORM_LIBRARIES} ${EREBUS_RTLLIB} ${EREBUS_CLTLIB} ${EREBUS_GUILIB})
 
 
 

@@ -1,8 +1,10 @@
 #pragma once
 
 #include <erebus/log.hxx>
+#include <erebus-clt/erebus-clt.hxx>
 #include <erebus-gui/settings.hpp>
 
+#include "endpoints.hpp"
 #include "logview.hpp"
 #include "mainmenu.hpp"
 #include "trayicon.hpp"
@@ -13,6 +15,7 @@
 #include <QStatusBar>
 #include <QSystemTrayIcon>
 #include <QTabWidget>
+#include <QTimer>
 #include <QVBoxLayout>
 
 namespace Erc
@@ -51,6 +54,7 @@ public slots:
     void toggleAlwaysOnTop();
     void toggleHideOnClose();
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
+    void initialPrompt();
 
 private:
     void saveGeometry();
@@ -64,6 +68,7 @@ private:
     };
 
     bool m_exiting = false;
+    Erc::Private::RecentEndpoints m_recentEndpoints;
     Er::Log::ILog* m_log;
     Erc::ISettingsStorage* m_settings;
     MainMenu m_mainMenu;
