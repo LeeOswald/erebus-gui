@@ -31,15 +31,17 @@ public:
 
     explicit LogView(
         Er::Log::ILog* log,
+        Er::Log::ILogControl* logCtl,
         Erc::ISettingsStorage* settings,
         QMainWindow* mainWindow,
-        QWidget* parent
+        QWidget* parent,
+        QAction* actionLog
     );
 
-    QWidget* widget() const noexcept;
-    QAction* action() const noexcept;
-
-    void retranslateUi();
+    QPlainTextEdit* view() noexcept
+    {
+        return m_view;
+    }
 
 signals:
     void logLevelChanged(Er::Log::Level prev, Er::Log::Level now);
@@ -58,7 +60,6 @@ private:
     QPlainTextEdit* m_view;
     QMenu* m_menu;
     QActionGroup* m_actionGroup;
-    QAction* m_actionLog;
     QAction* m_actionDebug;
     QAction* m_actionInfo;
     QAction* m_actionWarning;

@@ -11,8 +11,10 @@ set(SOURCE_FILES
     application/sharedsection.hpp
     mainwindow/logview.cpp
     mainwindow/logview.hpp
+    mainwindow/mainmenu.hpp
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.hpp
+    mainwindow/trayicon.hpp
     appsettings.hpp
     main.cpp
     pluginmgr.cpp

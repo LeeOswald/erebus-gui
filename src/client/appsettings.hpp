@@ -30,6 +30,28 @@ constexpr bool singleInstanceDefault = true;
 
 } // Application {}
 
+namespace MainWindow
+{
+
+constexpr std::string_view alwaysOnTop("mainwindow/always_on_top");
+constexpr bool alwaysOnTopDefault = false;
+
+constexpr std::string_view startHidden("mainwindow/startHidden");
+constexpr bool startHiddenDefault = false;
+
+constexpr std::string_view hideOnClose("mainwindow/hideOnClose");
+constexpr bool hideOnCloseDefault = false;
+
+constexpr std::string_view geometry("mainwindow/geometry");
+constexpr std::string_view state("mainwindow/state");
+
+const int kMinLogViewHeight = 200;
+constexpr std::string_view logPos("mainwindow/log_pos");
+constexpr std::string_view mainPos("mainwindow/main_pos");
+
+
+} // namespace MainWindow {}
+
     
 } // namespace AppSettings {}
     

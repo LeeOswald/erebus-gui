@@ -2,6 +2,7 @@
 
 #include "appsettings.hpp"
 #include "application/application.hpp"
+#include "mainwindow/mainwindow.hpp"
 
 #include <erebus/log.hxx>
 #include <erebus-gui/exceptionutil.hpp>
@@ -78,6 +79,18 @@ int main(int argc, char *argv[])
 #endif
             a.sendMessage("ACTIVATE_WINDOW", 100);
             return EXIT_SUCCESS;
+        }
+
+        Erc::Private::Ui::MainWindow w(&log, &log, &settings);
+
+        if (a.primary())
+        {
+            QObject::connect(
+                &a,
+                &Erc::Private::Application::receivedMessage,
+                &w,
+                [&w](QByteArray message) { w.restore(); }
+            );
         }
 
         auto result = a.exec();
