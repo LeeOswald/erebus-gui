@@ -34,9 +34,18 @@ struct TrayIcon final
 
         trayIcon->setContextMenu(trayIconMenu);
         trayIcon->setIcon(QIcon(":/images/logo32.png"));
-        trayIcon->setToolTip(EREBUS_APPLICATION_NAME);
 
+        resetToolTip();
+    }
 
+    void resetToolTip()
+    {
+        trayIcon->setToolTip(Erc::fromUtf8(EREBUS_APPLICATION_NAME));
+    }
+
+    void setToolTip(const QString& text)
+    {
+        trayIcon->setToolTip(text);
     }
 
     QAction* quitAction;
