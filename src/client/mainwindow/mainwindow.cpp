@@ -134,6 +134,7 @@ MainWindow::MainWindow(
 
     QObject::connect(this, SIGNAL(connected(std::shared_ptr<Er::Client::IClient>)), this, SLOT(onConnected(std::shared_ptr<Er::Client::IClient>)));
 
+    refreshTitle();
     LogDebug(log, "Client started");
 
     QTimer::singleShot(50, this, SLOT(initialPrompt()));
@@ -306,6 +307,8 @@ void MainWindow::initialPrompt()
             );
         }
 
+        Er::Log::Info(m_log) << "Connecting to [" << dlg.selected() << "] as [" << dlg.user() << "]";
+
         Er::Client::Params params(m_log, dlg.selected(), dlg.ssl(), certificate, dlg.user(), dlg.password());
         client = connect(params);
 
@@ -319,6 +322,11 @@ void MainWindow::initialPrompt()
             Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastUserName, Erc::fromUtf8(dlg.user()));
             Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::Connections::lastUseSsl, dlg.ssl());
             Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, Erc::fromUtf8(dlg.rootCA()));
+
+            m_client = client;
+            m_connectionParams = params;
+
+            Er::Log::Info(m_log) << "Connected successfully";
         }
 
     } while (!client);
@@ -346,7 +354,26 @@ std::shared_ptr<Er::Client::IClient> MainWindow::connect(const Er::Client::Param
 
 void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client)
 {
+    refreshTitle();
+}
 
+void MainWindow::refreshTitle()
+{
+    if (!m_client)
+    {
+        setWindowTitle(QLatin1String(EREBUS_APPLICATION_NAME));
+    }
+    else
+    {
+        Q_ASSERT(m_connectionParams);
+        QString title = QLatin1String(EREBUS_APPLICATION_NAME) +
+                        QLatin1String(" ") +
+                        Erc::fromUtf8(m_connectionParams->user) +
+                        QLatin1String("@") +
+                        Erc::fromUtf8(m_connectionParams->endpoint);
+
+        setWindowTitle(title);
+    }
 }
 
 } // namespace Ui {}

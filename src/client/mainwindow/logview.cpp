@@ -167,15 +167,14 @@ void LogView::logDelegate(std::shared_ptr<Er::Log::Record> r)
 
     std::string message = std::string(prefix);
     message.append(r->message);
-    message.append("\n");
 
     auto utf16Message = Erc::fromUtf8(message);
+    QMetaObject::invokeMethod(this, "log", Qt::AutoConnection, Q_ARG(QString, utf16Message));
 
 #if ER_WINDOWS && ER_DEBUG
+    utf16Message.append(L"\n");
     ::OutputDebugStringW(reinterpret_cast<const wchar_t*>(utf16Message.utf16()));
 #endif
-
-    QMetaObject::invokeMethod(this, "log", Qt::AutoConnection, Q_ARG(QString, utf16Message));
 }
 
 } // namespace Ui {}
