@@ -1,7 +1,8 @@
 #include "client-version.h"
 
 #include <erebus/util/exceptionutil.hxx>
-#include <erebus-gui/exceptionutil.hpp>
+#include <erebus/util/file.hxx>
+#include <erebus-gui/waitcursor.hpp>
 
 #include "../appsettings.hpp"
 #include "../connectdlg/connectdlg.hpp"
@@ -32,7 +33,7 @@ MainWindow::MainWindow(
     QWidget* parent
     )
     : Base(parent)
-    , m_recentEndpoints(Erc::toUtf8(Erc::Option<QString>::get(settings, Erc::Private::AppSettings::Connections::recentConnections, QString())))
+    , m_recentEndpoints(Erc::toUtf8(Erc::Option<QString>::get(settings, Erc::Private::AppSettings::Connections::recentConnections, QString())), Erc::Private::AppSettings::Connections::kMaxRecentConnections)
     , m_log(log)
     , m_settings(settings)
     , m_mainMenu(this)
@@ -290,8 +291,35 @@ void MainWindow::initialPrompt()
         if (result != QDialog::Accepted)
             return quit();
 
-        Er::Client::Params params(m_log, dlg.selected(), dlg.ssl(), dlg.rootCA(), dlg.user(), dlg.password());
+        std::string certificate;
+        if (dlg.ssl() && !dlg.rootCA().empty())
+        {
+            certificate = Erc::Ui::protectedCall<std::string>(
+                m_log,
+                QCoreApplication::translate("Erebus", "Failed to load the certificate"),
+                this,
+                [this](const std::string& path)
+                {
+                    return Er::Util::loadFile(path);
+                },
+                dlg.rootCA()
+            );
+        }
+
+        Er::Client::Params params(m_log, dlg.selected(), dlg.ssl(), certificate, dlg.user(), dlg.password());
         client = connect(params);
+
+        if (client)
+        {
+            // save the successful connection params
+            m_recentEndpoints.promote(dlg.selected());
+            auto packed = Erc::fromUtf8(m_recentEndpoints.pack());
+            Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::recentConnections, packed);
+
+            Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastUserName, Erc::fromUtf8(dlg.user()));
+            Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::Connections::lastUseSsl, dlg.ssl());
+            Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, Erc::fromUtf8(dlg.rootCA()));
+        }
 
     } while (!client);
 
@@ -300,24 +328,20 @@ void MainWindow::initialPrompt()
 
 std::shared_ptr<Er::Client::IClient> MainWindow::connect(const Er::Client::Params& params)
 {
-    try
-    {
-        return Er::Client::create(params);
-    }
-    catch (Er::Exception& e)
-    {
-        Er::Util::logException(m_log, Er::Log::Level::Error, e);
-        auto msg = Erc::formatException(e);
-        Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Connection Attempt Failed"), QString::fromUtf8(msg), this);
-    }
-    catch (std::exception& e)
-    {
-        Er::Util::logException(m_log, Er::Log::Level::Error, e);
-        auto msg = Erc::formatException(e);
-        Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Connection Attempt Failed"), QString::fromUtf8(msg), this);
-    }
+    Erc::Ui::WaitCursorScope w;
 
-    return std::shared_ptr<Er::Client::IClient>();
+    auto client = Erc::Ui::protectedCall<std::shared_ptr<Er::Client::IClient>>(
+        m_log,
+        QCoreApplication::translate("Erebus", "Connection attempt failed"),
+        this,
+        [this](const Er::Client::Params& params)
+        {
+            return Er::Client::create(params);
+        },
+        params
+    );
+
+    return client;
 }
 
 void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client)

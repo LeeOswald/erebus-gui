@@ -12,13 +12,12 @@ qt6_wrap_ui(UI_SOURCES ${UIS})
 
 add_library(${EREBUS_GUILIB} SHARED
     ../../include/erebus-gui/erebus-gui.hpp
-    ../../include/erebus-gui/exceptionutil.hpp
     ../../include/erebus-gui/plugin.hpp
     ../../include/erebus-gui/qvariantconverter.hpp
     ../../include/erebus-gui/settings.hpp
+    ../../include/erebus-gui/waitcursor.hpp
     errorbox.hpp
     errorbox.cpp
-    exceptionutil.cpp
     ${RESOURCE_SOURCES} 
     ${UI_SOURCES}
 )

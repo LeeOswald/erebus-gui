@@ -16,8 +16,9 @@ namespace Private
 class RecentEndpoints final
 {
 public:
-    explicit RecentEndpoints(const std::string& packed)
+    explicit RecentEndpoints(const std::string& packed, size_t limit)
         : m_endpoints(Er::Util::split(packed, ';'))
+        , m_limit(limit)
     {
     }
 
@@ -65,10 +66,19 @@ public:
         }
 
         m_endpoints.insert(m_endpoints.begin(), endpoint);
+
+        while (m_limit < m_endpoints.size())
+        {
+            auto it = m_endpoints.begin();
+            std::advance(it, m_endpoints.size() - 1);
+            assert(it != m_endpoints.end());
+            m_endpoints.erase(it);
+        }
     }
 
 private:
     std::vector<std::string> m_endpoints;
+    const size_t m_limit;
 };
 
 

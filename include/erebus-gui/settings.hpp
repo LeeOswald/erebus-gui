@@ -21,7 +21,7 @@ protected:
 class OptionBase
 {
 public:
-    static QVariant get(ISettingsStorage* storage, std::string_view key, const QVariant& defaultValue = QVariant())
+    [[nodiscard]] static QVariant get(ISettingsStorage* storage, std::string_view key, const QVariant& defaultValue = QVariant())
     {
         return storage->get(key, defaultValue);
     }
@@ -38,7 +38,7 @@ class Option
     : public OptionBase
 {
 public:
-    static T get(ISettingsStorage* storage, std::string_view key, const T& defaultValue)
+    [[nodiscard]] static T get(ISettingsStorage* storage, std::string_view key, const T& defaultValue)
     {
         return Erc::QVariantConverter<T>::convert(OptionBase::get(storage, key, defaultValue));
     }

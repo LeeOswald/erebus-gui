@@ -2,6 +2,8 @@
 
 #include "connectdlg.hpp"
 
+#include <filesystem>
+
 #include <QFileDialog>
 #include <QMessageBox>
 
@@ -48,6 +50,13 @@ ConnectDlg::ConnectDlg(
     m_ui->checkSsl->setCheckState(ssl ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
 
     enableSsl(ssl);
+
+    if (!rootCA.empty())
+    {
+        std::filesystem::path certPath(rootCA);
+        if (certPath.has_parent_path())
+            m_certDir = certPath.parent_path().string();
+    }
 }
 
 void ConnectDlg::onOk()
@@ -87,6 +96,8 @@ void ConnectDlg::onOk()
         return;
     }
 
+    m_rootCA = Erc::toUtf8(rootCA);
+
     accept();
 }
 
@@ -105,7 +116,7 @@ void ConnectDlg::onBrowseRootCA()
     auto fileName = QFileDialog::getOpenFileName(
         this,
         tr("Select Root CA Certificate"),
-        QString(),
+        Erc::fromUtf8(m_certDir),
         tr("Certificates (*.pem)")
     );
 

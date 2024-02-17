@@ -69,6 +69,7 @@ private:
     void enableSsl(bool enable);
 
     Ui_ConnectDlg* m_ui;
+    std::string m_certDir;
     std::string m_selected;
     std::string m_user;
     std::string m_password;

@@ -5,8 +5,8 @@
 #include "mainwindow/mainwindow.hpp"
 
 #include <erebus/log.hxx>
+#include <erebus/util/exceptionutil.hxx>
 #include <erebus-clt/erebus-clt.hxx>
-#include <erebus-gui/exceptionutil.hpp>
 
 #include <QtGlobal>
 #include <QMessageBox>
@@ -107,17 +107,17 @@ int main(int argc, char *argv[])
     }
     catch (Er::Exception& e)
     {
-        auto msg = Erc::formatException(e);
+        auto msg = Er::Util::formatException(e);
         Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Unexpected Error"), QString::fromUtf8(msg));
     }
     catch (std::exception& e)
     {
-        auto msg = Erc::formatException(e);
+        auto msg = Er::Util::formatException(e);
         Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Unexpected Error"), QString::fromUtf8(msg));
     }
 
-    g_log = nullptr;
     ::qInstallMessageHandler(nullptr);
+    g_log = nullptr;
 
     return EXIT_FAILURE;
 }

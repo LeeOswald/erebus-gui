@@ -1,7 +1,11 @@
 #pragma once
 
 #include <erebus/erebus.hxx>
+#include <erebus/log.hxx>
+#include <erebus/util/exceptionutil.hxx>
 
+
+#include <QMessageBox>
 #include <QString>
 #include <QWidget>
 
@@ -34,6 +38,41 @@ namespace Ui
 {
 
 EREBUSGUI_EXPORT void errorBox(const QString& title, const QString& message, QWidget* parent = nullptr);
+
+
+template <typename ResultT, typename ParentT, typename WorkT, typename... Args>
+ResultT protectedCall(Er::Log::ILog* log, const QString& title, ParentT* parent, WorkT work, Args&&... args)
+{
+    try
+    {
+        return work(std::forward<Args>(args)...);
+    }
+    catch (Er::Exception& e)
+    {
+        auto msg = Er::Util::formatException(e);
+        if (log)
+            log->write(Er::Log::Level::Error, "%s", msg.c_str());
+
+        Erc::Ui::errorBox(title, QString::fromUtf8(msg), parent);
+    }
+    catch (std::exception& e)
+    {
+        auto msg = Er::Util::formatException(e);
+        if (log)
+            log->write(Er::Log::Level::Error, "%s", msg.c_str());
+
+        Erc::Ui::errorBox(title, QString::fromUtf8(msg), parent);
+    }
+    catch (...)
+    {
+        if (log)
+            log->write(Er::Log::Level::Error, "Unexpected exception");
+
+        QMessageBox::critical(parent, title, QObject::tr("Unexpected exception"));
+    }
+
+    return ResultT();
+}
 
 } // namespace Ui {}
     
