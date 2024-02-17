@@ -74,6 +74,38 @@ ResultT protectedCall(Er::Log::ILog* log, const QString& title, ParentT* parent,
     return ResultT();
 }
 
+template <typename ResultT, typename WorkT, typename... Args>
+ResultT protectedCall(Er::Log::ILog* log, WorkT work, Args&&... args)
+{
+    try
+    {
+        return work(std::forward<Args>(args)...);
+    }
+    catch (Er::Exception& e)
+    {
+        if (log)
+        {
+            auto msg = Er::Util::formatException(e);
+            log->write(Er::Log::Level::Error, "%s", msg.c_str());
+        }
+    }
+    catch (std::exception& e)
+    {
+        if (log)
+        {
+            auto msg = Er::Util::formatException(e);
+            log->write(Er::Log::Level::Error, "%s", msg.c_str());
+        }
+    }
+    catch (...)
+    {
+        if (log)
+            log->write(Er::Log::Level::Error, "Unexpected exception");
+    }
+
+    return ResultT();
+}
+
 } // namespace Ui {}
     
 } // namespace Erc {}
