@@ -47,7 +47,7 @@ private:
 
             if (dll.isLoaded())
             {
-                log->write(Er::Log::Level::Info, "Unloading plugin [%s]", Erc::toUtf8(path).c_str());
+                log->write(Er::Log::Level::Info, LogNowhere(), "Unloading plugin [%s]", Erc::toUtf8(path).c_str());
                 dll.unload();
             }
         }

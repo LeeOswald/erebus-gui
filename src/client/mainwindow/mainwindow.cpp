@@ -135,7 +135,7 @@ MainWindow::MainWindow(
     QObject::connect(this, SIGNAL(connected(std::shared_ptr<Er::Client::IClient>)), this, SLOT(onConnected(std::shared_ptr<Er::Client::IClient>)));
 
     refreshTitle();
-    LogDebug(log, "Client started");
+    LogDebug(log, LogNowhere(), "Client started");
 
     QTimer::singleShot(50, this, SLOT(initialPrompt()));
 }
@@ -297,7 +297,7 @@ void MainWindow::initialPrompt()
         {
             certificate = Erc::Ui::protectedCall<std::string>(
                 m_log,
-                QCoreApplication::translate("Erebus", "Failed to load the certificate"),
+                tr("Failed to load the certificate"),
                 this,
                 [this](const std::string& path)
                 {
@@ -326,7 +326,7 @@ void MainWindow::initialPrompt()
             m_client = client;
             m_connectionParams = params;
 
-            Er::Log::Info(m_log) << "Connected successfully";
+            Er::Log::Info(m_log) << "Connected to [" << dlg.selected() << "]";
         }
 
     } while (!client);
@@ -336,14 +336,13 @@ void MainWindow::initialPrompt()
 
 std::shared_ptr<Er::Client::IClient> MainWindow::connect(const Er::Client::Params& params)
 {
-    Erc::Ui::WaitCursorScope w;
-
     auto client = Erc::Ui::protectedCall<std::shared_ptr<Er::Client::IClient>>(
         m_log,
-        QCoreApplication::translate("Erebus", "Connection attempt failed"),
+        tr("Connection attempt failed"),
         this,
         [this](const Er::Client::Params& params)
         {
+            Erc::Ui::WaitCursorScope w;
             return Er::Client::create(params);
         },
         params

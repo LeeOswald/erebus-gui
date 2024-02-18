@@ -51,7 +51,7 @@ ResultT protectedCall(Er::Log::ILog* log, const QString& title, ParentT* parent,
     {
         auto msg = Er::Util::formatException(e);
         if (log)
-            log->write(Er::Log::Level::Error, "%s", msg.c_str());
+            log->write(Er::Log::Level::Error, LogNowhere(), "%s", msg.c_str());
 
         Erc::Ui::errorBox(title, QString::fromUtf8(msg), parent);
     }
@@ -59,14 +59,14 @@ ResultT protectedCall(Er::Log::ILog* log, const QString& title, ParentT* parent,
     {
         auto msg = Er::Util::formatException(e);
         if (log)
-            log->write(Er::Log::Level::Error, "%s", msg.c_str());
+            log->write(Er::Log::Level::Error, LogNowhere(), "%s", msg.c_str());
 
         Erc::Ui::errorBox(title, QString::fromUtf8(msg), parent);
     }
     catch (...)
     {
         if (log)
-            log->write(Er::Log::Level::Error, "Unexpected exception");
+            log->write(Er::Log::Level::Error, LogNowhere(), "Unexpected exception");
 
         QMessageBox::critical(parent, title, QObject::tr("Unexpected exception"));
     }
@@ -86,7 +86,7 @@ ResultT protectedCall(Er::Log::ILog* log, WorkT work, Args&&... args)
         if (log)
         {
             auto msg = Er::Util::formatException(e);
-            log->write(Er::Log::Level::Error, "%s", msg.c_str());
+            log->write(Er::Log::Level::Error, LogNowhere(), "%s", msg.c_str());
         }
     }
     catch (std::exception& e)
@@ -94,13 +94,13 @@ ResultT protectedCall(Er::Log::ILog* log, WorkT work, Args&&... args)
         if (log)
         {
             auto msg = Er::Util::formatException(e);
-            log->write(Er::Log::Level::Error, "%s", msg.c_str());
+            log->write(Er::Log::Level::Error, LogNowhere(), "%s", msg.c_str());
         }
     }
     catch (...)
     {
         if (log)
-            log->write(Er::Log::Level::Error, "Unexpected exception");
+            log->write(Er::Log::Level::Error, LogNowhere(), "Unexpected exception");
     }
 
     return ResultT();

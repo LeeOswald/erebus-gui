@@ -166,6 +166,20 @@ void LogView::logDelegate(std::shared_ptr<Er::Log::Record> r)
     );
 
     std::string message = std::string(prefix);
+    if (r->location.component)
+    {
+        message.append("[");
+        message.append(r->location.component);
+        if (r->location.instance)
+        {
+            char tmp[64];
+            ::snprintf(tmp, _countof(tmp), " %p", r->location.instance);
+            message.append(tmp);
+        }
+
+        message.append("] ");
+    }
+
     message.append(r->message);
 
     auto utf16Message = Erc::fromUtf8(message);
