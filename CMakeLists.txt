@@ -123,4 +123,5 @@ set(EREBUS_GUILIB erebus)
 
 add_subdirectory(submodules/erebus-server)
 add_subdirectory(src/erebus-gui)
+add_subdirectory(src/erebus-processmgr)
 add_subdirectory(src/client)
