@@ -1,7 +1,6 @@
 #pragma once
 
 #include <erebus-gui/erebus-gui.hpp>
-#include <erebus-gui/settings.hpp>
 
 #include "ui_connectdlg.h"
 
@@ -18,8 +17,8 @@ namespace Ui
 {
 
 
-class ConnectDlg:
-    public QDialog
+class ConnectDlg final
+    : public QDialog
 {
     Q_OBJECT
 

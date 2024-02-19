@@ -37,6 +37,7 @@ inline QString fromUtf8(const std::string& s)
 namespace Ui
 {
 
+EREBUSGUI_EXPORT void errorBoxLite(const QString& message, QWidget* parent = nullptr);
 EREBUSGUI_EXPORT void errorBox(const QString& title, const QString& message, QWidget* parent = nullptr);
 
 

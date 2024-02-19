@@ -28,6 +28,9 @@ namespace Application
 constexpr std::string_view singleInstance("application/allow_only_one_instance");
 constexpr bool singleInstanceDefault = true;
 
+constexpr std::string_view lastPluginDir("application/last_plugin_dir");
+constexpr std::string_view pluginList("application/plugin_list");
+
 } // Application {}
 
 namespace MainWindow

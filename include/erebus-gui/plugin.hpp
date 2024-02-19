@@ -33,6 +33,7 @@ struct PluginParams
 
 struct IPlugin
 {
+protected:
     virtual ~IPlugin() {}
 };
 

@@ -1,11 +1,8 @@
-#include "client-version.h"
-
 #include "connectdlg.hpp"
 
 #include <filesystem>
 
 #include <QFileDialog>
-#include <QMessageBox>
 
 namespace Erc
 {
@@ -64,8 +61,7 @@ void ConnectDlg::onOk()
     auto endpoint = m_ui->comboEndpoints->currentText();
     if (endpoint.isEmpty())
     {
-        QMessageBox::warning(this, QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("Please specify the enpoint address"), QMessageBox::Ok);
-        return;
+        return Erc::Ui::errorBoxLite(tr("Please specify the enpoint address"), this);
     }
 
     m_selected = Erc::toUtf8(endpoint);
@@ -73,8 +69,7 @@ void ConnectDlg::onOk()
     auto user = m_ui->editUser->text();
     if (user.isEmpty())
     {
-        QMessageBox::warning(this, QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("Please specify the user name"), QMessageBox::Ok);
-        return;
+        return Erc::Ui::errorBoxLite(tr("Please specify the user name"), this);
     }
 
     m_user = Erc::toUtf8(user);
@@ -82,8 +77,7 @@ void ConnectDlg::onOk()
     auto password = m_ui->editPassword->text();
     if (password.isEmpty())
     {
-        QMessageBox::warning(this, QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("Please specify the password"), QMessageBox::Ok);
-        return;
+        return Erc::Ui::errorBoxLite(tr("Please specify the password"), this);
     }
 
     m_password = Erc::toUtf8(password);
@@ -92,8 +86,7 @@ void ConnectDlg::onOk()
     auto rootCA = m_ui->editRootCA->text();
     if (m_ssl && rootCA.isEmpty())
     {
-        QMessageBox::warning(this, QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("Please specify the root CA certificate"), QMessageBox::Ok);
-        return;
+        return Erc::Ui::errorBoxLite(tr("Please specify the root CA certificate"), this);
     }
 
     m_rootCA = Erc::toUtf8(rootCA);

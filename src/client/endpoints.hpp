@@ -1,7 +1,6 @@
 #pragma once
 
 #include <erebus/util/stringutil.hxx>
-#include <erebus-gui/erebus-gui.hpp>
 
 #include <sstream>
 #include <vector>

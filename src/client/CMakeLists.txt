@@ -17,9 +17,12 @@ set(SOURCE_FILES
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.hpp
     mainwindow/trayicon.hpp
+    plugindlg/plugindlg.cpp
+    plugindlg/plugindlg.hpp
     appsettings.hpp
     endpoints.hpp
     main.cpp
+    pluginlist.hpp
     pluginmgr.cpp
     pluginmgr.hpp
     settings.hpp
@@ -31,6 +34,7 @@ set(RESOURCE_FILES
 
 set(UIS
     connectdlg/connectdlg.ui
+    plugindlg/plugindlg.ui
 )
 
 qt6_add_resources(RESOURCE_SOURCES ${RESOURCE_FILES})

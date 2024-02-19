@@ -37,7 +37,14 @@ Erc::IPlugin* createUiPlugin(const Erc::PluginParams& params)
 
 void disposeUiPlugin(Erc::IPlugin* plugin)
 {
-    delete plugin;
+    assert(plugin);
+    if (!plugin)
+        return;
+
+    auto realPlugin = dynamic_cast<ProcessMgrPlugin*>(plugin);
+    assert(realPlugin);
+
+    delete realPlugin;
 }
 
 

@@ -6,6 +6,7 @@
 
 #include "../appsettings.hpp"
 #include "../connectdlg/connectdlg.hpp"
+#include "../plugindlg/plugindlg.hpp"
 #include "mainwindow.hpp"
 
 #include <QLocale>
@@ -280,6 +281,11 @@ void MainWindow::adjustLogViewHeight()
 
 void MainWindow::initialPrompt()
 {
+#if 1
+    PluginDlg d(QStringList(), QString(), this);
+    d.exec();
+#endif
+
     std::shared_ptr<Er::Client::IClient> client;
     do
     {
