@@ -7,6 +7,7 @@
 #include "endpoints.hpp"
 #include "logview.hpp"
 #include "mainmenu.hpp"
+#include "pluginmgr.hpp"
 #include "trayicon.hpp"
 
 #include <QLabel>
@@ -57,7 +58,10 @@ public slots:
     void toggleAlwaysOnTop();
     void toggleHideOnClose();
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
-    void initialPrompt();
+    bool promptForConnection();
+
+private slots:
+    void start();
     void onConnected(std::shared_ptr<Er::Client::IClient> client);
 
 private:
@@ -65,6 +69,9 @@ private:
     void restoreGeometry();
     void adjustLogViewHeight();
     void refreshTitle();
+    bool checkPlugins();
+    size_t loadPlugins(const QStringList& paths);
+
     std::shared_ptr<Er::Client::IClient> connect(const Er::Client::Params& params);
 
     enum class SplitterPane
@@ -88,6 +95,7 @@ private:
     QLabel* m_statusLabel;
     std::shared_ptr<Er::Client::IClient> m_client;
     std::optional<Er::Client::Params> m_connectionParams;
+    Erc::Private::PluginManager m_pluginMgr;
 };
 
 } // namespace Ui {}

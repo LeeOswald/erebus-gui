@@ -8,6 +8,7 @@
 #include "../connectdlg/connectdlg.hpp"
 #include "../plugindlg/plugindlg.hpp"
 #include "mainwindow.hpp"
+#include "pluginlist.hpp"
 
 #include <QLocale>
 #include <QMessageBox>
@@ -46,6 +47,7 @@ MainWindow::MainWindow(
     , m_tabWidget(new QTabWidget(m_mainSplitter))
     , m_statusbar(new QStatusBar(this))
     , m_statusLabel(new QLabel(m_statusbar))
+    , m_pluginMgr(Erc::PluginParams(settings, log))
 {
     setObjectName("MainWindow");
     resize(1024, 768);
@@ -138,7 +140,7 @@ MainWindow::MainWindow(
     refreshTitle();
     LogDebug(log, LogNowhere(), "Client started");
 
-    QTimer::singleShot(50, this, SLOT(initialPrompt()));
+    QTimer::singleShot(0, this, SLOT(start()));
 }
 
 void MainWindow::quit()
@@ -279,12 +281,18 @@ void MainWindow::adjustLogViewHeight()
     m_mainSplitter->setSizes(splitterSizes);
 }
 
-void MainWindow::initialPrompt()
+void MainWindow::start()
 {
-#if 1
-    PluginDlg d(QStringList(), QString(), this);
-    d.exec();
-#endif
+    if (!checkPlugins())
+        quit();
+
+    if (!promptForConnection())
+        quit();
+
+}
+
+bool MainWindow::promptForConnection()
+{
 
     std::shared_ptr<Er::Client::IClient> client;
     do
@@ -294,9 +302,8 @@ void MainWindow::initialPrompt()
         auto rootCA = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, QString());
 
         Erc::Private::Ui::ConnectDlg dlg(m_recentEndpoints.all(), Erc::toUtf8(recentUser), ssl, Erc::toUtf8(rootCA), this);
-        auto result = dlg.exec();
-        if (result != QDialog::Accepted)
-            return quit();
+        if (dlg.exec() != QDialog::Accepted)
+            return false;
 
         std::string certificate;
         if (dlg.ssl() && !dlg.rootCA().empty())
@@ -338,6 +345,8 @@ void MainWindow::initialPrompt()
     } while (!client);
 
     emit connected(client);
+
+    return true;
 }
 
 std::shared_ptr<Er::Client::IClient> MainWindow::connect(const Er::Client::Params& params)
@@ -379,6 +388,63 @@ void MainWindow::refreshTitle()
         setWindowTitle(title);
         m_trayIcon.setToolTip(connection);
     }
+}
+
+size_t MainWindow::loadPlugins(const QStringList& paths)
+{
+    size_t count = 0;
+
+    for (auto& path: paths)
+    {
+        if (!m_pluginMgr.exists(path))
+        {
+            auto plugin =
+                Erc::Ui::protectedCall<IPlugin*>(
+                    m_log,
+                    tr("Failed to load plugin"),
+                    this,
+                    [this](const QString& path)
+                    {
+                        Erc::Ui::WaitCursorScope w;
+                        return m_pluginMgr.load(path);
+                    },
+                    path
+                );
+        }
+
+    }
+    return count;
+}
+
+bool MainWindow::checkPlugins()
+{
+    while (!m_pluginMgr.count())
+    {
+        auto pluginPathsPacked = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Application::pluginList, QString());
+        Erc::Private::PluginList pl(pluginPathsPacked);
+
+        loadPlugins(pl.all());
+
+        if (!m_pluginMgr.count())
+        {
+            auto exeDir = qApp->applicationDirPath();
+
+            // ask for plugins
+            PluginDlg d(pl.all(), Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Application::lastPluginDir, exeDir), this);
+            if (d.exec() != QDialog::Accepted)
+                break;
+
+            if (!d.plugins().isEmpty())
+            {
+                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Application::lastPluginDir, d.pluginDir());
+
+                pl = Erc::Private::PluginList(d.plugins());
+                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Application::pluginList, pl.pack());
+            }
+        }
+    }
+
+    return (m_pluginMgr.count() > 0);
 }
 
 } // namespace Ui {}

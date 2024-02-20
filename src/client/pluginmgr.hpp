@@ -4,6 +4,8 @@
 #include <erebus/noncopyable.hxx>
 #include <erebus-gui/plugin.hpp>
 
+
+#include <unordered_map>
 #include <vector>
 
 #include <QLibrary>
@@ -29,7 +31,17 @@ public:
     {
     }
 
-    IPlugin* load(const QString& name);
+    bool exists(const QString& path)
+    {
+        return (m_plugins.find(path) != m_plugins.end());
+    }
+
+    size_t count() const noexcept
+    {
+        return m_plugins.size();
+    }
+
+    IPlugin* load(const QString& path);
 
 private:
     struct PluginInfo
@@ -61,7 +73,7 @@ private:
     };
 
     PluginParams m_params;
-    std::vector<std::shared_ptr<PluginInfo>> m_plugins;
+    std::unordered_map<QString, std::shared_ptr<PluginInfo>> m_plugins;
 };
 
 

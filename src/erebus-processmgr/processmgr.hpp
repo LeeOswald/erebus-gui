@@ -17,8 +17,8 @@
 extern "C"
 {
 
-Erc::IPlugin* createUiPlugin(const Erc::PluginParams&);
-void disposeUiPlugin(Erc::IPlugin*);
+EREBUSPROCMGR_EXPORT Erc::IPlugin* createUiPlugin(const Erc::PluginParams&);
+EREBUSPROCMGR_EXPORT void disposeUiPlugin(Erc::IPlugin*);
 
 
 

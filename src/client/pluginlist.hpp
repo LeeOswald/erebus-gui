@@ -21,6 +21,11 @@ public:
     {
     }
 
+    explicit PluginList(const QStringList& list)
+        : m_plugins(list)
+    {
+    }
+
     QString pack() const
     {
         if (m_plugins.empty())

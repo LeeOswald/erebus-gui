@@ -30,12 +30,12 @@ private:
 extern "C"
 {
 
-Erc::IPlugin* createUiPlugin(const Erc::PluginParams& params)
+EREBUSPROCMGR_EXPORT Erc::IPlugin* createUiPlugin(const Erc::PluginParams& params)
 {
     return new ProcessMgrPlugin(params);
 }
 
-void disposeUiPlugin(Erc::IPlugin* plugin)
+EREBUSPROCMGR_EXPORT void disposeUiPlugin(Erc::IPlugin* plugin)
 {
     assert(plugin);
     if (!plugin)

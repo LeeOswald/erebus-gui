@@ -11,20 +11,16 @@ namespace Erc
     
 struct PluginParams
 {
-    QString pluginDir;
     Erc::ISettingsStorage* settings = nullptr;
     Er::Log::ILog* log = nullptr;
 
     constexpr PluginParams() noexcept = default;
 
-    template <typename PluginDirT>
     explicit PluginParams(
-        PluginDirT&& pluginDir,
         Erc::ISettingsStorage* settings,
         Er::Log::ILog* log
     )
-        : pluginDir(std::forward<PluginDirT>(pluginDir))
-        , settings(settings)
+        : settings(settings)
         , log(log)
     {
     }
