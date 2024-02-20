@@ -47,7 +47,7 @@ MainWindow::MainWindow(
     , m_tabWidget(new QTabWidget(m_mainSplitter))
     , m_statusbar(new QStatusBar(this))
     , m_statusLabel(new QLabel(m_statusbar))
-    , m_pluginMgr(Erc::PluginParams(settings, log))
+    , m_pluginMgr(Erc::PluginParams(settings, log, m_tabWidget))
 {
     setObjectName("MainWindow");
     resize(1024, 768);
@@ -135,7 +135,8 @@ MainWindow::MainWindow(
     m_statusLabel->setText(tr("Processes: 0"));
     m_statusbar->addPermanentWidget(m_statusLabel);
 
-    QObject::connect(this, SIGNAL(connected(std::shared_ptr<Er::Client::IClient>)), this, SLOT(onConnected(std::shared_ptr<Er::Client::IClient>)));
+    QObject::connect(this, SIGNAL(connected(std::shared_ptr<Er::Client::IClient>,std::string)), this, SLOT(onConnected(std::shared_ptr<Er::Client::IClient>,std::string)));
+    QObject::connect(this, SIGNAL(disconnected(Er::Client::IClient*)), this, SLOT(onDisconnected(Er::Client::IClient*)));
 
     refreshTitle();
     LogDebug(log, LogNowhere(), "Client started");
@@ -336,6 +337,9 @@ bool MainWindow::promptForConnection()
             Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::Connections::lastUseSsl, dlg.ssl());
             Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, Erc::fromUtf8(dlg.rootCA()));
 
+            if (m_client)
+                emit disconnected(m_client.get());
+
             m_client = client;
             m_connectionParams = params;
 
@@ -344,7 +348,7 @@ bool MainWindow::promptForConnection()
 
     } while (!client);
 
-    emit connected(client);
+    emit connected(client, m_connectionParams->endpoint);
 
     return true;
 }
@@ -366,9 +370,28 @@ std::shared_ptr<Er::Client::IClient> MainWindow::connect(const Er::Client::Param
     return client;
 }
 
-void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client)
+void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client, std::string endpoint)
 {
     refreshTitle();
+
+    m_pluginMgr.visitPlugins(
+        [this, client, endpoint](Erc::IPlugin* plugin)
+        {
+            plugin->addConnection(client.get(), endpoint);
+        }
+    );
+}
+
+void MainWindow::onDisconnected(Er::Client::IClient* client)
+{
+    refreshTitle();
+
+    m_pluginMgr.visitPlugins(
+        [this, client](Erc::IPlugin* plugin)
+        {
+            plugin->removeConnection(client);
+        }
+    );
 }
 
 void MainWindow::refreshTitle()

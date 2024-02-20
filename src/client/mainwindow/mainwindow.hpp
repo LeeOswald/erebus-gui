@@ -50,7 +50,8 @@ private:
     void closeEvent(QCloseEvent* event) override;
 
 signals:
-    void connected(std::shared_ptr<Er::Client::IClient> client);
+    void connected(std::shared_ptr<Er::Client::IClient> client, std::string endpoint);
+    void disconnected(Er::Client::IClient* client);
 
 public slots:
     void quit();
@@ -62,7 +63,8 @@ public slots:
 
 private slots:
     void start();
-    void onConnected(std::shared_ptr<Er::Client::IClient> client);
+    void onConnected(std::shared_ptr<Er::Client::IClient> client, std::string endpoint);
+    void onDisconnected(Er::Client::IClient* client);
 
 private:
     void saveGeometry();

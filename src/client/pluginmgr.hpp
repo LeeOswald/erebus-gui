@@ -43,6 +43,15 @@ public:
 
     IPlugin* load(const QString& path);
 
+    template <typename Visitor>
+    void visitPlugins(Visitor v)
+    {
+        for (auto& plugin: m_plugins)
+        {
+            v(plugin.second->ref);
+        }
+    }
+
 private:
     struct PluginInfo
     {

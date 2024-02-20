@@ -4,19 +4,21 @@ set(RESOURCE_FILES
     processmgr.qrc
 )
 
-set(UIS
-    processtab.ui
-)
+#set(UIS
+#    processtab.ui
+#)
 
 qt6_add_resources(RESOURCE_SOURCES ${RESOURCE_FILES})
-qt6_wrap_ui(UI_SOURCES ${UIS})
+#qt6_wrap_ui(UI_SOURCES ${UIS})
 
 add_library(${PROCESSMGR_PLUGIN} SHARED
     processlist.hpp
     processmgr.cpp
     processmgr.hpp
+    processtab.cpp
+    processtab.hpp
     ${RESOURCE_SOURCES} 
-    ${UI_SOURCES}
+#    ${UI_SOURCES}
 )
 
 
