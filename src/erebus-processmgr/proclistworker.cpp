@@ -20,11 +20,11 @@ bool registerMetatypes()
 } // namespace {}
 
 
-ProcessTabWorker::~ProcessTabWorker()
+ProcessListWorker::~ProcessListWorker()
 {
 }
 
-ProcessTabWorker::ProcessTabWorker(Er::Client::IClient* client, Er::Log::ILog* log, QObject* parent)
+ProcessListWorker::ProcessListWorker(Er::Client::IClient* client, Er::Log::ILog* log, QObject* parent)
     : QObject(parent)
     , m_log(log)
     , m_processList(createProcessList(client, log))
@@ -32,7 +32,7 @@ ProcessTabWorker::ProcessTabWorker(Er::Client::IClient* client, Er::Log::ILog* l
     static bool s_metatypesRegistered = registerMetatypes();
 }
 
-void ProcessTabWorker::refresh(int threshold)
+void ProcessListWorker::refresh(int threshold)
 {
     Erc::Ui::protectedCall<void>(
         m_log,

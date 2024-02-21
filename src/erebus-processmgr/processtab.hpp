@@ -1,8 +1,16 @@
 #pragma once
 
-#include "processmgr.hpp"
+#include <erebus-clt/erebus-clt.hxx>
 
+#include "processcolumns.hpp"
+#include "processmgr.hpp"
+#include "proclistworker.hpp"
+#include "proctreemodel.hpp"
+
+#include <QPointer>
+#include <QTimer>
 #include <QTreeView>
+#include <QThread>
 #include <QWidget>
 
 namespace Erp
@@ -20,12 +28,26 @@ public:
     ~ProcessTab();
     explicit ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* client, const std::string& endpoint);
 
+private slots:
+    void dataReady(ProcessChangesetPtr changeset);
+    void refresh();
+
 private:
+    void captureColumnWidths();
+    void restoreColumnWidths();
+    void resetWorker();
+    void startWorker();
+
     Erc::PluginParams m_params;
     Er::Client::IClient* m_client;
     std::string m_endpoint;
+    QTimer* m_timer;
     QWidget* m_widget;
     QTreeView* m_treeView;
+    ProcessColumns m_columns;
+    QPointer<QThread> m_thread;
+    QPointer<ProcessListWorker> m_worker;
+    ProcessTreeModel* m_model = nullptr;
 };
 
 } // namespace Private {}

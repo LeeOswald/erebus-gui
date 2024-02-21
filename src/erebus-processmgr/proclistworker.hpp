@@ -15,14 +15,14 @@ namespace Private
 {
 
 
-class ProcessTabWorker final
+class ProcessListWorker final
     : public QObject
 {
     Q_OBJECT
 
 public:
-    ~ProcessTabWorker();
-    explicit ProcessTabWorker(Er::Client::IClient* client, Er::Log::ILog* log, QObject* parent);
+    ~ProcessListWorker();
+    explicit ProcessListWorker(Er::Client::IClient* client, Er::Log::ILog* log, QObject* parent);
 
 public slots:
     void refresh(int threshold);
