@@ -253,6 +253,22 @@ QVariant ProcessTreeModel::textForCell(ItemTreeNode* item, int column) const
 
     auto id = m_columns[column].id;
 
+    if (!item->data()->valid)
+    {
+        // this process could not be normally read (maybe access denied)
+        // still show its PID and error message
+        switch (id)
+        {
+        case Er::ProcessProps::PropIndices::Comm:
+            return QVariant(item->data()->error);
+
+        case Er::ProcessProps::PropIndices::Pid:
+            return QVariant(QString::number(item->data()->pid));
+        }
+
+        return QVariant();
+    }
+
     switch (id)
     {
     case Er::ProcessProps::PropIndices::Comm:
@@ -300,6 +316,13 @@ QVariant ProcessTreeModel::tooltipForCell(ItemTreeNode* item, int column) const
 
     auto id = m_columns[column].id;
 
+    if (!item->data()->valid)
+    {
+        // this process could not be normally read (maybe access denied)
+        // still show its PID and error message
+        return QVariant(item->data()->error);
+    }
+
     switch (id)
     {
     case Er::ProcessProps::PropIndices::Comm:
@@ -339,6 +362,9 @@ QVariant ProcessTreeModel::backgroundForRow(const ItemTreeNode* item) const
         return QVariant(QColor(255, 0, 0));
     else if (state == Item::State::New)
         return QVariant(QColor(0, 255, 0));
+
+    if (!item->data()->valid)
+        return QVariant(QColor(127, 127, 127));
 
     return QVariant();
 }

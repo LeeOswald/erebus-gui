@@ -39,10 +39,10 @@ namespace MainWindow
 constexpr std::string_view alwaysOnTop("mainwindow/always_on_top");
 constexpr bool alwaysOnTopDefault = false;
 
-constexpr std::string_view startHidden("mainwindow/startHidden");
+constexpr std::string_view startHidden("mainwindow/start_hidden");
 constexpr bool startHiddenDefault = false;
 
-constexpr std::string_view hideOnClose("mainwindow/hideOnClose");
+constexpr std::string_view hideOnClose("mainwindow/hide_on_close");
 constexpr bool hideOnCloseDefault = false;
 
 constexpr std::string_view geometry("mainwindow/geometry");

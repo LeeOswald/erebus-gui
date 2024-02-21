@@ -213,7 +213,7 @@ private:
                 m_collection.erase(it);
             }
 
-            LogDebug(m_log, LogNowhere(), "%s->%s process [%s]", toString(prevState), toString(newState), Erc::toUtf8(itemPtr->comm).c_str());
+            LogDebug(m_log, LogNowhere(), "%s->%s process %zu [%s]", toString(prevState), toString(newState), itemPtr->pid, Erc::toUtf8(itemPtr->comm).c_str());
 
             return next;
         };

@@ -46,13 +46,13 @@ struct ProcessColumnDef
 
 constexpr ProcessColumnDef ProcessColumnDefs[] =
 {
+    ProcessColumnDef(Er::ProcessProps::PropIndices::Comm, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("Name")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Pid, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("PID")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::PPid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Parent PID")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::PGrp, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Group ID")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Tpgid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Terminal Group ID")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Session, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Session ID")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Ruid, ProcessColumnDef::Type::Default, QT_TR_NOOP("User ID")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Comm, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("Name")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::CmdLine, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Command Line")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Exe, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Executable Name")),
     ProcessColumnDef() // null
