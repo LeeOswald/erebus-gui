@@ -33,7 +33,7 @@ struct ProcessInformation
     Key ppid = InvalidKey;
     uint64_t startTime = 0;
     QString startTimeUtc;
-    QString state = QLatin1String("?");
+    QString processState = QLatin1String("?");
     QString comm;
 
     ProcessInformation() noexcept = default;
@@ -106,7 +106,7 @@ struct IProcessList
 };
 
 
-std::unique_ptr<IProcessList> createProcessList(Er::Client::IClient* client);
+std::unique_ptr<IProcessList> createProcessList(Er::Client::IClient* client, Er::Log::ILog* log);
 
 } // namespace Private {}
 

@@ -62,7 +62,7 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         }
 
         case Er::ProcessProps::State::Id::value:
-            this->state = Erc::fromUtf8(std::any_cast<std::string>(it->second.value));
+            this->processState = Erc::fromUtf8(std::any_cast<std::string>(it->second.value));
             break;
 
         case Er::ProcessProps::Comm::Id::value:

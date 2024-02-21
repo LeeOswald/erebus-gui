@@ -20,6 +20,10 @@ add_library(${PROCESSMGR_PLUGIN} SHARED
     processmgr.hpp
     processtab.cpp
     processtab.hpp
+    proclistworker.cpp
+    proclistworker.hpp
+    proctreemodel.cpp
+    proctreemodel.hpp
     settings.hpp
     ${RESOURCE_SOURCES} 
 #    ${UI_SOURCES}
