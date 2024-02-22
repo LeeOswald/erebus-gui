@@ -47,7 +47,7 @@ MainWindow::MainWindow(
     , m_tabWidget(new QTabWidget(m_mainSplitter))
     , m_statusbar(new QStatusBar(this))
     , m_statusLabel(new QLabel(m_statusbar))
-    , m_pluginMgr(Erc::PluginParams(settings, log, m_tabWidget))
+    , m_pluginMgr(Erc::PluginParams(settings, log, m_tabWidget, m_mainMenu.menuBar))
 {
     setObjectName("MainWindow");
     resize(1024, 768);

@@ -21,6 +21,8 @@ ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset
 
 void ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
 {
+    m_log->write(Er::Log::Level::Debug, LogInstance("Model"), "update() ->");
+
     // sort items being added in ascending order of PIDs so that parents get inserted prior to children thus avoiding unnecessary reparentings in the process
     std::sort(changeset->items.begin(), changeset->items.end(), [](const ItemPtr& a, const ItemPtr& b) { return (a->pid < b->pid); });
     // for the same pupose sort items being removed in descending order of PIDs
@@ -34,6 +36,8 @@ void ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
         m_tree.reset(new ItemTree(changeset->items));
 
         endResetModel();
+
+        m_log->write(Er::Log::Level::Debug, LogInstance("Model"), "TREE RESET");
     }
     else
     {
@@ -85,6 +89,9 @@ void ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
                 // new item
                 LogDebug(m_log, LogComponent("ProcessTreeModel"), "INSERTING %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
 
+                if (m_tree->find(item->pid))
+                    LogDebug(m_log, LogNowhere(), "DUPLICATE found");
+
                 m_tree->insert(item, beginInsert, endInsert, beginMove, endMove);
                 assert(item->context());
                 node = static_cast<ItemTree::Node*>(item->context());
@@ -118,6 +125,8 @@ void ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
             }
         }
     }
+
+    m_log->write(Er::Log::Level::Debug, LogInstance("Model"), "update() <-");
 }
 
 QVariant ProcessTreeModel::data(const QModelIndex& index, int role) const

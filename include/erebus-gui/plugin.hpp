@@ -5,6 +5,7 @@
 #include <erebus-gui/settings.hpp>
 #include <erebus/log.hxx>
 
+#include <QMenuBar>
 #include <QString>
 #include <QTabWidget>
 
@@ -16,15 +17,20 @@ struct PluginParams
     Erc::ISettingsStorage* settings = nullptr;
     Er::Log::ILog* log = nullptr;
     QTabWidget* tabWidget = nullptr;
+    QMenuBar* mainMenu = nullptr;
+
+    constexpr PluginParams() noexcept = default;
 
     explicit PluginParams(
         Erc::ISettingsStorage* settings,
         Er::Log::ILog* log,
-        QTabWidget* tabWidget
+        QTabWidget* tabWidget,
+        QMenuBar* mainMenu
     )
         : settings(settings)
         , log(log)
         , tabWidget(tabWidget)
+        , mainMenu(mainMenu)
     {
     }
 };

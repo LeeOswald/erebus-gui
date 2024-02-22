@@ -13,7 +13,6 @@ namespace Private
 ProcessTab::~ProcessTab()
 {
     captureColumnWidths();
-    saveProcessColumns(m_params.settings, m_columns);
 
     resetWorker();
 
@@ -28,12 +27,12 @@ ProcessTab::~ProcessTab()
 ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* client, const std::string& endpoint)
     : QObject()
     , m_params(params)
+    , m_columns(loadProcessColumns(m_params.settings))
     , m_client(client)
     , m_endpoint(endpoint)
     , m_timer(new QTimer(this))
     , m_widget(new QWidget(params.tabWidget))
     , m_treeView(new QTreeView(m_widget))
-    , m_columns(loadProcessColumns(params.settings))
     , m_thread()
     , m_worker()
 {
@@ -59,8 +58,22 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     startWorker();
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(refresh()));
-    m_timer->start(1000);
+    m_timer->start(5000);
 
+    QTimer::singleShot(0, this, SLOT(refresh()));
+}
+
+void ProcessTab::reloadColumns()
+{
+    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "reloadColumns() ->");
+
+    resetWorker();
+    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "-- 1 -");
+    m_columns = loadProcessColumns(m_params.settings);
+    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "-- 2 -");
+    startWorker();
+
+    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "reloadColumns() <-");
 }
 
 void ProcessTab::resetWorker()
@@ -73,6 +86,9 @@ void ProcessTab::resetWorker()
         m_thread->wait();
         m_thread.clear();
     }
+
+    delete m_model;
+    m_model = nullptr;
 }
 
 void ProcessTab::startWorker()
@@ -95,27 +111,41 @@ void ProcessTab::startWorker()
 
 void ProcessTab::refresh()
 {
+    m_params.log->write(Er::Log::Level::Debug, LogInstance("Tab"), "refresh() ->");
     if (m_worker)
     {
         QMetaObject::invokeMethod(m_worker, "refresh", Qt::AutoConnection, Q_ARG(int, 5000));
     }
+    m_params.log->write(Er::Log::Level::Debug, LogInstance("Tab"), "refresh() <-");
 }
 
 void ProcessTab::dataReady(ProcessChangesetPtr changeset)
 {
-    if (!m_model)
-    {
-        m_model = new ProcessTreeModel(m_params.log, changeset, m_columns, this);
+    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "dataReady() ->");
 
-        m_treeView->setModel(m_model);
-        m_treeView->expandAll();
+    Erc::Ui::protectedCall<void>(
+        m_params.log,
+        [this, changeset]()
+        {
+            if (!m_model)
+            {
+                m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "Model CREATING");
+                m_model = new ProcessTreeModel(m_params.log, changeset, m_columns, this);
 
-        restoreColumnWidths();
-    }
-    else
-    {
-        m_model->update(changeset);
-    }
+                m_treeView->setModel(m_model);
+                m_treeView->expandAll();
+
+                restoreColumnWidths();
+            }
+            else
+            {
+                m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "Model exists");
+                m_model->update(changeset);
+            }
+        }
+    );
+
+    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "dataReady() <-");
 }
 
 void ProcessTab::restoreColumnWidths()

@@ -96,6 +96,8 @@ public:
 
     std::shared_ptr<Changeset> collect(std::chrono::milliseconds trackThreshold) override
     {
+        m_log->write(Er::Log::Level::Debug, LogInstance("ProcessList"), "collect() ->");
+
         auto firstRun = m_collection.empty();
         auto now = Item::now();
 
@@ -109,6 +111,8 @@ public:
         {
             items.push_back(p.second);
         }
+
+        m_log->write(Er::Log::Level::Debug, LogInstance("ProcessList"), "collect() <- items: %zu cleaned: %zu ", items.size(), cleanedItems.size());
 
         return std::make_shared<Changeset>(std::move(items), std::move(cleanedItems), m_collection.size());
     }

@@ -28,6 +28,13 @@ public:
     ~ProcessTab();
     explicit ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* client, const std::string& endpoint);
 
+    void saveColumns()
+    {
+        captureColumnWidths();
+    }
+
+    void reloadColumns();
+
 private slots:
     void dataReady(ProcessChangesetPtr changeset);
     void refresh();
@@ -39,12 +46,12 @@ private:
     void startWorker();
 
     Erc::PluginParams m_params;
+    ProcessColumns m_columns;
     Er::Client::IClient* m_client;
     std::string m_endpoint;
     QTimer* m_timer;
     QWidget* m_widget;
     QTreeView* m_treeView;
-    ProcessColumns m_columns;
     QPointer<QThread> m_thread;
     QPointer<ProcessListWorker> m_worker;
     ProcessTreeModel* m_model = nullptr;

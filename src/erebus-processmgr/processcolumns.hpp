@@ -55,26 +55,36 @@ constexpr ProcessColumnDef ProcessColumnDefs[] =
     ProcessColumnDef(Er::ProcessProps::PropIndices::Ruid, ProcessColumnDef::Type::Default, QT_TR_NOOP("User ID")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::CmdLine, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Command Line")),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Exe, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Executable Name")),
-    ProcessColumnDef() // null
+    ProcessColumnDef(Er::ProcessProps::PropIndices::StartTime, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Start Time")),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::State, ProcessColumnDef::Type::Default, QT_TR_NOOP("State")),
 };
 
 
 struct ProcessColumn
-    : public ProcessColumnDef
 {
+    unsigned id;                   // index in ProcessProps::PropIndices
+    ProcessColumnDef::Type type;
+    QString label;
     unsigned width;
 
     constexpr ProcessColumn() noexcept
-        : width(0)
+        : id(ProcessColumnDef::InvalidId)
+        , type(ProcessColumnDef::Type::Regular)
+        , label()
+        , width(0)
     {}
 
-    constexpr ProcessColumn(const ProcessColumnDef& def)
-        : ProcessColumnDef(def)
+    ProcessColumn(const ProcessColumnDef& def)
+        : id(def.id)
+        , type(def.type)
+        , label(Erc::fromUtf8(def.label))
         , width(def.id == Er::ProcessProps::PropIndices::Comm ? Erp::Settings::MinLabelColumnWidth : Erp::Settings::MinColumnWidth)
     {}
 
-    constexpr ProcessColumn(unsigned id, Type type, const char* label, unsigned width) noexcept
-        : ProcessColumnDef(id, type, label)
+    ProcessColumn(unsigned id, ProcessColumnDef::Type type, const char* label, unsigned width) noexcept
+        : id(id)
+        , type(type)
+        , label(Erc::fromUtf8(label))
         , width(width)
     {}
 };
