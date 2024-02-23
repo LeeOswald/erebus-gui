@@ -47,8 +47,6 @@ public:
             return;
         }
 
-        auto columns = Erp::Private::loadProcessColumns(m_params.settings);
-
         m_tabs.insert({ client, std::make_unique<Erp::Private::ProcessTab>(m_params, client, endpoint) });
     }
 

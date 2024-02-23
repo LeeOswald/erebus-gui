@@ -12,7 +12,7 @@ namespace Private
 
 ProcessTab::~ProcessTab()
 {
-    captureColumnWidths();
+    saveColumns();
 
     resetWorker();
 
@@ -61,6 +61,12 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     m_timer->start(5000);
 
     QTimer::singleShot(0, this, SLOT(refresh()));
+}
+
+void ProcessTab::saveColumns()
+{
+    captureColumnWidths();
+    Erp::Private::saveProcessColumns(m_params.settings, m_columns);
 }
 
 void ProcessTab::reloadColumns()

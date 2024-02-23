@@ -89,9 +89,6 @@ void ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
                 // new item
                 LogDebug(m_log, LogComponent("ProcessTreeModel"), "INSERTING %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
 
-                if (m_tree->find(item->pid))
-                    LogDebug(m_log, LogNowhere(), "DUPLICATE found");
-
                 m_tree->insert(item, beginInsert, endInsert, beginMove, endMove);
                 assert(item->context());
                 node = static_cast<ItemTree::Node*>(item->context());

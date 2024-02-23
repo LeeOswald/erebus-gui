@@ -28,11 +28,7 @@ public:
     ~ProcessTab();
     explicit ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* client, const std::string& endpoint);
 
-    void saveColumns()
-    {
-        captureColumnWidths();
-    }
-
+    void saveColumns();
     void reloadColumns();
 
 private slots:
