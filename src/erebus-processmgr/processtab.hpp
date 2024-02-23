@@ -38,11 +38,11 @@ private slots:
 private:
     void captureColumnWidths();
     void restoreColumnWidths();
-    void resetWorker();
     void startWorker();
 
     Erc::PluginParams m_params;
     ProcessColumns m_columns;
+    Er::ProcessProps::PropMask m_required;
     Er::Client::IClient* m_client;
     std::string m_endpoint;
     QTimer* m_timer;

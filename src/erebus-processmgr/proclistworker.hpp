@@ -4,6 +4,8 @@
 
 #include <QObject>
 
+Q_DECLARE_METATYPE(Er::ProcessProps::PropMask);
+
 using ProcessChangesetPtr = std::shared_ptr<Erp::Private::IProcessList::Changeset>;
 Q_DECLARE_METATYPE(ProcessChangesetPtr);
 
@@ -25,7 +27,7 @@ public:
     explicit ProcessListWorker(Er::Client::IClient* client, Er::Log::ILog* log, QObject* parent);
 
 public slots:
-    void refresh(int threshold);
+    void refresh(Er::ProcessProps::PropMask required, int threshold);
 
 signals:
     void dataReady(ProcessChangesetPtr);

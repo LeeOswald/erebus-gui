@@ -14,7 +14,14 @@ ProcessTab::~ProcessTab()
 {
     saveColumns();
 
-    resetWorker();
+    m_worker.clear();
+
+    if (m_thread)
+    {
+        m_thread->quit();
+        m_thread->wait();
+        m_thread.clear();
+    }
 
     auto index = m_params.tabWidget->indexOf(m_widget);
     Q_ASSERT(index >= 0);
@@ -28,6 +35,7 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     : QObject()
     , m_params(params)
     , m_columns(loadProcessColumns(m_params.settings))
+    , m_required(makePropMask(m_columns))
     , m_client(client)
     , m_endpoint(endpoint)
     , m_timer(new QTimer(this))
@@ -73,28 +81,13 @@ void ProcessTab::reloadColumns()
 {
     m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "reloadColumns() ->");
 
-    resetWorker();
-    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "-- 1 -");
-    m_columns = loadProcessColumns(m_params.settings);
-    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "-- 2 -");
-    startWorker();
-
-    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "reloadColumns() <-");
-}
-
-void ProcessTab::resetWorker()
-{
-    m_worker.clear();
-
-    if (m_thread)
-    {
-        m_thread->quit();
-        m_thread->wait();
-        m_thread.clear();
-    }
-
     delete m_model;
     m_model = nullptr;
+
+    m_columns = loadProcessColumns(m_params.settings);
+    m_required = makePropMask(m_columns);
+    
+    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "reloadColumns() <-");
 }
 
 void ProcessTab::startWorker()
@@ -120,7 +113,7 @@ void ProcessTab::refresh()
     m_params.log->write(Er::Log::Level::Debug, LogInstance("Tab"), "refresh() ->");
     if (m_worker)
     {
-        QMetaObject::invokeMethod(m_worker, "refresh", Qt::AutoConnection, Q_ARG(int, 5000));
+        QMetaObject::invokeMethod(m_worker, "refresh", Qt::AutoConnection, Q_ARG(Er::ProcessProps::PropMask, m_required), Q_ARG(int, 5000));
     }
     m_params.log->write(Er::Log::Level::Debug, LogInstance("Tab"), "refresh() <-");
 }

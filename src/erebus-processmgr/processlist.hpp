@@ -102,7 +102,7 @@ struct IProcessList
     };
 
     virtual ~IProcessList() {}
-    virtual std::shared_ptr<Changeset> collect(std::chrono::milliseconds trackThreshold) = 0;
+    virtual std::shared_ptr<Changeset> collect(Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold) = 0;
 };
 
 

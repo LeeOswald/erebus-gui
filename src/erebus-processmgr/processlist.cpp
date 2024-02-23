@@ -94,14 +94,14 @@ public:
     {
     }
 
-    std::shared_ptr<Changeset> collect(std::chrono::milliseconds trackThreshold) override
+    std::shared_ptr<Changeset> collect(Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold) override
     {
         m_log->write(Er::Log::Level::Debug, LogInstance("ProcessList"), "collect() ->");
 
         auto firstRun = m_collection.empty();
         auto now = Item::now();
 
-        auto newCount = enumerateProcesses(firstRun, now, trackThreshold);
+        auto newCount = enumerateProcesses(firstRun, now, required, trackThreshold);
 
         auto cleanedItems = trackNewDeletedProcesses(now, trackThreshold);
 
@@ -139,13 +139,15 @@ private:
         return std::shared_ptr<Item>();
     }
 
-    size_t enumerateProcesses(bool firstRun, Item::TimePoint now, std::chrono::milliseconds trackThreshold) noexcept
+    size_t enumerateProcesses(bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold) noexcept
     {
         size_t newCount = 0;
 
         try
         {
             Er::PropertyBag req;
+            req.insert({ Er::ProcessProps::RequiredFields::Id::value, Er::Property(Er::ProcessProps::RequiredFields::Id::value, required.pack<uint64_t>()) });
+
             auto list = m_client->requestStream(Er::ProcessRequests::ListProcesses, req);
             for (auto& process : list)
             {
