@@ -30,6 +30,8 @@ ConnectDlg::ConnectDlg(
 {
     m_ui->setupUi(this);
 
+    QWidget* whoNeedsFocus = nullptr;
+
     for (auto& ep : endpoints)
     {
         auto u16 = Erc::fromUtf8(ep);
@@ -37,11 +39,17 @@ ConnectDlg::ConnectDlg(
     }
 
     if (!endpoints.empty())
-    {
         m_ui->comboEndpoints->setCurrentIndex(0);
-    }
+    else
+        whoNeedsFocus = m_ui->comboEndpoints;
 
-    m_ui->editUser->setText(Erc::fromUtf8(user));
+    if (!user.empty())
+        m_ui->editUser->setText(Erc::fromUtf8(user));
+    else
+        whoNeedsFocus = m_ui->editUser;
+
+    if (!whoNeedsFocus)
+        whoNeedsFocus = m_ui->editPassword;
 
     m_ui->editRootCA->setText(Erc::fromUtf8(rootCA));
     m_ui->checkSsl->setCheckState(ssl ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
@@ -54,6 +62,9 @@ ConnectDlg::ConnectDlg(
         if (certPath.has_parent_path())
             m_certDir = certPath.parent_path().string();
     }
+
+    Q_ASSERT(whoNeedsFocus);
+    whoNeedsFocus->setFocus();
 }
 
 void ConnectDlg::onOk()
