@@ -19,14 +19,16 @@ ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset
     update(changeset);
 }
 
-void ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
+std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
 {
     m_log->write(Er::Log::Level::Debug, LogInstance("Model"), "update() ->");
 
     // sort items being added in ascending order of PIDs so that parents get inserted prior to children thus avoiding unnecessary reparentings in the process
     std::sort(changeset->items.begin(), changeset->items.end(), [](const ItemPtr& a, const ItemPtr& b) { return (a->pid < b->pid); });
-    // for the same pupose sort items being removed in descending order of PIDs
+    // for the same purpose sort items being removed in descending order of PIDs
     std::sort(changeset->removed.begin(), changeset->removed.end(), [](const ItemPtr& a, const ItemPtr& b) { return (a->pid > b->pid); });
+
+    std::vector<QModelIndex> parentsToExpand;
 
     if (!m_tree)
     {
@@ -41,9 +43,11 @@ void ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
     }
     else
     {
-        auto beginInsert = [this](ItemTree::Node* node, ItemTree::Node* parent, size_t idx)
+        auto beginInsert = [this, &parentsToExpand](ItemTree::Node* node, ItemTree::Node* parent, size_t idx)
         {
-            beginInsertRows(index(parent), idx, idx);
+            auto parentIndex = index(parent);
+            beginInsertRows(parentIndex, idx, idx);
+            parentsToExpand.push_back(parentIndex);
         };
 
         auto endInsert = [this]()
@@ -124,6 +128,8 @@ void ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
     }
 
     m_log->write(Er::Log::Level::Debug, LogInstance("Model"), "update() <-");
+
+    return parentsToExpand;
 }
 
 QVariant ProcessTreeModel::data(const QModelIndex& index, int role) const

@@ -146,7 +146,12 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset)
             else
             {
                 m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "Model exists");
-                m_model->update(changeset);
+                // QTreeView does not expand new items automatically; we need to do this explicitly
+                auto parentsToExpand = m_model->update(changeset);
+                for (auto& index : parentsToExpand)
+                {
+                    m_treeView->expandRecursively(index);
+                }
             }
         }
     );

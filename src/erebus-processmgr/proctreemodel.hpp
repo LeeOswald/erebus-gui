@@ -7,6 +7,9 @@
 
 #include <QAbstractItemModel>
 
+#include <vector>
+
+
 namespace Erp
 {
 
@@ -24,7 +27,7 @@ public:
     ~ProcessTreeModel();
     explicit ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset> changeset, const ProcessColumns& columns, QObject* parent = nullptr);
 
-    void update(std::shared_ptr<Changeset> changeset);
+    std::vector<QModelIndex> update(std::shared_ptr<Changeset> changeset);
 
     QVariant data(const QModelIndex& index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
