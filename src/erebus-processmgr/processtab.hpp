@@ -39,6 +39,7 @@ private:
     void captureColumnWidths();
     void restoreColumnWidths();
     void startWorker();
+    static void requireAdditionalProps(Er::ProcessProps::PropMask& required) noexcept;
 
     Erc::PluginParams m_params;
     ProcessColumns m_columns;

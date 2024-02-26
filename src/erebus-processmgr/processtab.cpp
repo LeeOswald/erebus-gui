@@ -44,6 +44,8 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     , m_thread()
     , m_worker()
 {
+    requireAdditionalProps(m_required);
+
     m_widget->setObjectName("processTabWidget");
     auto layout = new QGridLayout(m_widget);
     layout->setSpacing(0);
@@ -71,6 +73,12 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     QTimer::singleShot(0, this, SLOT(refresh()));
 }
 
+void ProcessTab::requireAdditionalProps(Er::ProcessProps::PropMask& required) noexcept
+{
+    // what we need even if there's no corresponding visible column
+    required.set(Er::ProcessProps::PropIndices::CmdLine);
+}
+
 void ProcessTab::saveColumns()
 {
     captureColumnWidths();
@@ -86,6 +94,7 @@ void ProcessTab::reloadColumns()
 
     m_columns = loadProcessColumns(m_params.settings);
     m_required = makePropMask(m_columns);
+    requireAdditionalProps(m_required);
     
     m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "reloadColumns() <-");
 }
