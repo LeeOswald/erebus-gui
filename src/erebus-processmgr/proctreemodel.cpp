@@ -78,7 +78,9 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
         // handle removed processes
         for (auto removed: changeset->removed)
         {
-            LogDebug(m_log, LogComponent("ProcessTreeModel"), "REMOVING %zu [%s]", removed->pid, Erc::toUtf8(removed->comm).c_str());
+            Er::ObjectLock<Item> locked(removed.get());
+
+            LogDebug(m_log, LogComponent("ProcessTreeModel"), "REMOVING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
             m_tree->remove(removed.get(), beginRemove, endRemove, beginMove, endMove);
         }
@@ -86,6 +88,8 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
         // handle new/modified processes
         for (auto item: changeset->items)
         {
+            Er::ObjectLock<Item> locked(item.get());
+
             auto node = static_cast<ItemTree::Node*>(item->context());
 
             if (!node)
@@ -138,6 +142,7 @@ QVariant ProcessTreeModel::data(const QModelIndex& index, int role) const
         return QVariant();
 
     auto node = static_cast<ItemTreeNode*>(index.internalPointer());
+    Er::ObjectLock<Item> lock(node->data());
 
     switch (role)
     {

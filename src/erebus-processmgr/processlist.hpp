@@ -2,11 +2,13 @@
 
 #include "processmgr.hpp"
 
+#include <erebus/lockable.hxx>
 #include <erebus/trackable.hxx>
 #include <erebus-clt/erebus-clt.hxx>
 #include <erebus-processmgr/processprops.hxx>
 
 #include <chrono>
+#include <mutex>
 #include <vector>
 
 #include <QString>
@@ -83,7 +85,7 @@ using TrackableProcessInformation = Er::Trackable<ProcessInformation>;
 
 struct IProcessList
 {
-    using Item = TrackableProcessInformation;
+    using Item = Er::ExternallyLockableObject<TrackableProcessInformation, std::recursive_mutex>;
     using ItemPtr = std::shared_ptr<Item>;
     using Items = std::vector<ItemPtr>;
 
@@ -91,12 +93,10 @@ struct IProcessList
     {
         Items items;
         Items removed;
-        size_t processCount = 0;
 
-        Changeset(Items&& items, Items&& removed, size_t processCount) noexcept
+        Changeset(Items&& items, Items&& removed) noexcept
             : items(std::move(items))
             , removed(std::move(removed))
-            , processCount(processCount)
         {
         }
     };

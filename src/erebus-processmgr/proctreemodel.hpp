@@ -58,7 +58,7 @@ private:
     QModelIndex index(const ItemTree::Node* node) const;
 
     Er::Log::ILog* m_log;
-    std::shared_ptr<ItemTree> m_tree;
+    std::unique_ptr<ItemTree> m_tree;
     const ProcessColumns& m_columns;
 };
 

@@ -1,8 +1,10 @@
 #include "processlist.hpp"
 
 #include <erebus/exception.hxx>
-#include <erebus/util/exceptionutil.hxx>
+#include <erebus/mutexpool.hxx>
 #include <erebus/system/time.hxx>
+#include <erebus/util/exceptionutil.hxx>
+
 
 #include <unordered_map>
 
@@ -91,6 +93,7 @@ public:
     explicit ProcessListImpl(Er::Client::IClient* client, Er::Log::ILog* log)
         : m_client(client)
         , m_log(log)
+        , m_mutexPool(MutexPoolSize)
     {
     }
 
@@ -114,7 +117,7 @@ public:
 
         m_log->write(Er::Log::Level::Debug, LogInstance("ProcessList"), "collect() <- items: %zu cleaned: %zu ", items.size(), cleanedItems.size());
 
-        return std::make_shared<Changeset>(std::move(items), std::move(cleanedItems), m_collection.size());
+        return std::make_shared<Changeset>(std::move(items), std::move(cleanedItems));
     }
 
 private:
@@ -123,7 +126,7 @@ private:
         try
         {
             ProcessInformation parsed(std::move(bag));
-            auto tracked = std::make_shared<Item>(firstRun, now, std::move(parsed));
+            auto tracked = std::make_shared<Item>(m_mutexPool.mutex(), firstRun, now, std::move(parsed));
             return tracked;
 
         }
@@ -203,11 +206,13 @@ private:
 
         auto getItem = [](ItemContainer::iterator it)
         {
-            return it->second;
+            // return a locked object
+            return Er::ObjectLock<Item>(it->second.get());
         };
 
         auto updateItem = [this, &cleanedItems](ItemContainer::iterator it, Item::State newState, Item::State prevState) -> ItemContainer::iterator
         {
+            // assume we're inside an object lock
             auto next = std::next(it);
 
             auto itemPtr = it->second;
@@ -245,6 +250,8 @@ private:
 
     Er::Client::IClient* m_client;
     Er::Log::ILog* m_log;
+    static constexpr size_t MutexPoolSize = 5;
+    Er::MutexPool<std::recursive_mutex> m_mutexPool;
     ItemContainer m_collection;
 };
 
