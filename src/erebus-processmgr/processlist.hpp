@@ -29,7 +29,9 @@ struct ProcessInformation
     void* _context = nullptr;
 
     // cached for fast access
-    bool valid = false;
+    unsigned valid:1 = 0;
+    unsigned deleted:1 = 0;
+    unsigned added:1 = 0;
     QString error;
     Key pid = InvalidKey;
     Key ppid = InvalidKey;
@@ -47,6 +49,8 @@ struct ProcessInformation
 
     ProcessInformation(ProcessInformation&& o) = default;
     ProcessInformation& operator=(ProcessInformation&& o) = default;
+
+    void updateFromDiff(const ProcessInformation& diff);
 
     constexpr const Key& key() const noexcept
     {
@@ -87,16 +91,18 @@ struct IProcessList
 {
     using Item = Er::ExternallyLockableObject<TrackableProcessInformation, std::recursive_mutex>;
     using ItemPtr = std::shared_ptr<Item>;
-    using Items = std::vector<ItemPtr>;
+    using ItemContainer = std::unordered_map<typename Item::Key, ItemPtr>;
 
     struct Changeset
     {
-        Items items;
-        Items removed;
+        bool firstRun;
+        ItemContainer modified;
+        ItemContainer tracked;
+        ItemContainer untracked;
+        ItemContainer purged;
 
-        Changeset(Items&& items, Items&& removed) noexcept
-            : items(std::move(items))
-            , removed(std::move(removed))
+        explicit Changeset(bool firstRun) noexcept
+            : firstRun(firstRun)
         {
         }
     };

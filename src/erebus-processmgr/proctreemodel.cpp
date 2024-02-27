@@ -23,19 +23,14 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
 {
     m_log->write(Er::Log::Level::Debug, LogInstance("Model"), "update() ->");
 
-    // sort items being added in ascending order of PIDs so that parents get inserted prior to children thus avoiding unnecessary reparentings in the process
-    std::sort(changeset->items.begin(), changeset->items.end(), [](const ItemPtr& a, const ItemPtr& b) { return (a->pid < b->pid); });
-    // for the same purpose sort items being removed in descending order of PIDs
-    std::sort(changeset->removed.begin(), changeset->removed.end(), [](const ItemPtr& a, const ItemPtr& b) { return (a->pid > b->pid); });
-
     std::vector<QModelIndex> parentsToExpand;
 
     if (!m_tree)
     {
         beginResetModel();
 
-        assert(changeset->removed.empty());
-        m_tree.reset(new ItemTree(changeset->items));
+        assert(changeset->firstRun);
+        m_tree.reset(new ItemTree(changeset->modified));
 
         endResetModel();
 
@@ -76,58 +71,66 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
         };
 
         // handle removed processes
-        for (auto removed: changeset->removed)
+        for (auto& removed: changeset->purged)
         {
-            Er::ObjectLock<Item> locked(removed.get());
+            Er::ObjectLock<Item> locked(removed.second.get());
 
             LogDebug(m_log, LogComponent("ProcessTreeModel"), "REMOVING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
-            m_tree->remove(removed.get(), beginRemove, endRemove, beginMove, endMove);
+            m_tree->remove(removed.second.get(), beginRemove, endRemove, beginMove, endMove);
         }
 
-        // handle new/modified processes
-        for (auto item: changeset->items)
+        assert(!changeset->firstRun);
+
+        // handle modified processes
+        for (auto& modified : changeset->modified)
         {
-            Er::ObjectLock<Item> locked(item.get());
+            Er::ObjectLock<Item> locked(modified.second.get());
 
-            auto node = static_cast<ItemTree::Node*>(item->context());
+            LogDebug(m_log, LogComponent("ProcessTreeModel"), "MODIFYING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
+            auto node = static_cast<ItemTree::Node*>(locked->context());
+            assert(node);
             if (!node)
-            {
-                // new item
-                LogDebug(m_log, LogComponent("ProcessTreeModel"), "INSERTING %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
+                continue;
 
-                m_tree->insert(item, beginInsert, endInsert, beginMove, endMove);
-                assert(item->context());
-                node = static_cast<ItemTree::Node*>(item->context());
+            QVector<int> roles;
+            roles.push_back(Qt::DisplayRole);
+            emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+        }
 
-                node->statePainted = item->state();
-                node->timePainted = item->timeModified();
-            }
-            else if ((node->statePainted != item->state()) || (node->timePainted < item->timeModified()))
-            {
-                // item changed state
-                QVector<int> roles;
+        // handle tracked processes
+        for (auto& tracked : changeset->tracked)
+        {
+            Er::ObjectLock<Item> locked(tracked.second.get());
 
-                if ((node->statePainted != item->state()))
-                {
-                    LogDebug(m_log, LogComponent("ProcessTreeModel"), "STATE CHANGED for %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
+            LogDebug(m_log, LogComponent("ProcessTreeModel"), "TRACKINGING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
-                    roles.push_back(Qt::BackgroundRole);
-                }
+            auto node = static_cast<ItemTree::Node*>(locked->context());
+            assert(node);
+            if (!node)
+                continue;
 
-                if (node->timePainted < item->timeModified())
-                {
-                    LogDebug(m_log, LogComponent("ProcessTreeModel"), "DATA CHANGED for %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
+            QVector<int> roles;
+            roles.push_back(Qt::BackgroundRole);
+            emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+        }
 
-                    roles.push_back(Qt::DisplayRole);
-                }
+        // handle untracked processes
+        for (auto& untracked : changeset->untracked)
+        {
+            Er::ObjectLock<Item> locked(untracked.second.get());
 
-                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+            LogDebug(m_log, LogComponent("ProcessTreeModel"), "UNTRACKINGING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
-                node->statePainted = item->state();
-                node->timePainted = item->timeModified();
-            }
+            auto node = static_cast<ItemTree::Node*>(locked->context());
+            assert(node);
+            if (!node)
+                continue;
+
+            QVector<int> roles;
+            roles.push_back(Qt::BackgroundRole);
+            emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
         }
     }
 
@@ -241,8 +244,9 @@ int ProcessTreeModel::columnCount(const QModelIndex& parent) const
 
 QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id) const noexcept
 {
-    return Erc::Ui::protectedCall<QVariant>(
+    return Er::protectedCall<QVariant>(
         m_log,
+        LogInstance("ProcessTreeModel"),
         [this, item, id]()
         {
             auto it = item->data()->properties.find(id);

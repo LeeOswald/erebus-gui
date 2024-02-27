@@ -1,5 +1,6 @@
 #pragma once
 
+#include <erebus/empty.hxx>
 #include <erebus/tree.hxx>
 
 #include "processcolumns.hpp"
@@ -40,14 +41,7 @@ public:
 private:
     using Item = IProcessList::Item;
     using ItemPtr = std::shared_ptr<Item>;
-
-    struct NodeData
-    {
-        Item::TimePoint timePainted = Item::Never;
-        Item::State statePainted = Item::State::Existing;
-    };
-
-    using ItemTree = Er::Tree<Item, ItemPtr, NodeData>;
+    using ItemTree = Er::Tree<Item, ItemPtr, Er::Empty>;
     using ItemTreeNode = ItemTree::Node;
 
     QVariant formatItemProperty(ItemTreeNode* item, Er::PropId id) const noexcept;

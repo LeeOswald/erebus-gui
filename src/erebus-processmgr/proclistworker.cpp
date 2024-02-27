@@ -37,8 +37,9 @@ void ProcessListWorker::refresh(Er::ProcessProps::PropMask required, int thresho
 {
     m_log->write(Er::Log::Level::Debug, LogInstance("Worker"), "refresh() ->");
 
-    Erc::Ui::protectedCall<void>(
+    Er::protectedCall<void>(
         m_log,
+        LogInstance("ProcessWorker"),
         [this, required, threshold]()
         {
             auto changeset = m_processList->collect(required, std::chrono::milliseconds(threshold));

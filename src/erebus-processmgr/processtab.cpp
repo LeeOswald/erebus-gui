@@ -131,8 +131,9 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset)
 {
     m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "dataReady() ->");
 
-    Erc::Ui::protectedCall<void>(
+    Er::protectedCall<void>(
         m_params.log,
+        LogInstance("ProcessTab"),
         [this, changeset]()
         {
             if (!m_model)

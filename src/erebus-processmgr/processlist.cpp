@@ -17,13 +17,21 @@ namespace Private
 ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
     : properties(std::move(bag))
 {
-    // find PID
+    // find PID (must always be present)
     auto it = properties.find(Er::ProcessProps::Pid::Id::value);
     if (it == properties.end())
         throw Er::Exception(ER_HERE(), "No PID in process properties");
 
     this->pid = std::any_cast<uint64_t>(it->second.value);
 
+    it = properties.find(Er::ProcessProps::IsDeleted::Id::value);
+    if (it != properties.end())
+    {
+        this->deleted = 1;
+        return;
+    }
+
+    // find 'Valid' property (must always be present unless the process is deleted)
     it = properties.find(Er::ProcessProps::Valid::Id::value);
     if (it == properties.end())
         throw Er::Exception(ER_HERE(), "No \'valid\' in process properties");
@@ -32,6 +40,7 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
     this->valid = std::any_cast<bool>(it->second.value);
     if (!this->valid)
     {
+        // maybe we've got an error message
         it = properties.find(Er::ProcessProps::Error::Id::value);
         if (it != properties.end())
             this->error = Erc::fromUtf8(std::any_cast<std::string>(it->second.value));
@@ -44,10 +53,9 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
     {
         switch (it->second.id)
         {
-        case Er::ProcessProps::Valid::Id::value:
-        case Er::ProcessProps::Error::Id::value:
-        case Er::ProcessProps::Pid::Id::value:
-            continue;
+        case Er::ProcessProps::IsNew::Id::value:
+            this->added = std::any_cast<bool>(it->second.value);
+            break;
 
         case Er::ProcessProps::PPid::Id::value:
             this->ppid = std::any_cast<uint64_t>(it->second.value);
@@ -77,182 +85,234 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         this->ppid = this->pid;
 }
 
+void ProcessInformation::updateFromDiff(const ProcessInformation& diff)
+{
+    for (auto it = diff.properties.begin(); it != diff.properties.end(); ++it)
+    {
+        auto& diffProp = it->second;
+        auto myPropIt = this->properties.find(diffProp.id);
+        if (myPropIt == this->properties.end())
+            this->properties.insert({ diffProp.id, diffProp });
+        else
+            myPropIt->second = diffProp;
+
+        // update cached props if modified
+        switch (diffProp.id)
+        {
+        case Er::ProcessProps::PPid::Id::value:
+            assert(diff.pid != InvalidKey);
+            this->ppid = diff.pid;
+            break;
+
+        case Er::ProcessProps::StartTime::Id::value:
+        {
+            assert(diff.startTime > 0);
+            this->startTime = diff.startTime;
+            assert(!diff.startTimeUtc.isEmpty());
+            this->startTimeUtc = diff.startTimeUtc;
+            break;
+        }
+
+        case Er::ProcessProps::State::Id::value:
+            this->processState = diff.processState;
+            break;
+
+        case Er::ProcessProps::Comm::Id::value:
+            this->comm = diff.comm;
+            break;
+        }
+    }
+}
 
 namespace
 {
 
-class ProcessListImpl final
+class ProcessListImpl
     : public IProcessList
     , public Er::NonCopyable
 {
 public:
     ~ProcessListImpl()
     {
+        Er::protectedCall<void>(
+            m_log,
+            LogInstance("ProcessListImpl"),
+            [this]()
+            {
+                m_client->endSession(Er::ProcessRequests::ListProcessesDiff, m_sessionId);
+            }
+        );
     }
 
     explicit ProcessListImpl(Er::Client::IClient* client, Er::Log::ILog* log)
         : m_client(client)
         , m_log(log)
         , m_mutexPool(MutexPoolSize)
+        , m_sessionId(client->beginSession(Er::ProcessRequests::ListProcessesDiff))
     {
     }
 
     std::shared_ptr<Changeset> collect(Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold) override
     {
-        m_log->write(Er::Log::Level::Debug, LogInstance("ProcessList"), "collect() ->");
-
         auto firstRun = m_collection.empty();
         auto now = Item::now();
 
-        auto newCount = enumerateProcesses(firstRun, now, required, trackThreshold);
+        auto diff = std::make_shared<Changeset>(firstRun);
+        enumerateProcesses(firstRun, now, required, trackThreshold, diff.get());
+        trackNewOrDeletedProcesses(now, trackThreshold, diff.get());
 
-        auto cleanedItems = trackNewDeletedProcesses(now, trackThreshold);
-
-        std::vector<ItemPtr> items;
-        items.reserve(m_collection.size());
-        for (auto& p : m_collection)
-        {
-            items.push_back(p.second);
-        }
-
-        m_log->write(Er::Log::Level::Debug, LogInstance("ProcessList"), "collect() <- items: %zu cleaned: %zu ", items.size(), cleanedItems.size());
-
-        return std::make_shared<Changeset>(std::move(items), std::move(cleanedItems));
+        return diff;
     }
 
 private:
+    using ItemContainer = std::unordered_map<typename Item::Key, std::shared_ptr<Item>>;
+    
     std::shared_ptr<Item> makeProcessItem(Er::PropertyBag&& bag, Item::TimePoint now, bool firstRun) noexcept
     {
-        try
-        {
-            ProcessInformation parsed(std::move(bag));
-            auto tracked = std::make_shared<Item>(m_mutexPool.mutex(), firstRun, now, std::move(parsed));
-            return tracked;
+        return Er::protectedCall<std::shared_ptr<Item>>(
+            m_log,
+            LogInstance("ProcessListImpl"),
+            [this](Er::PropertyBag&& bag, Item::TimePoint now, bool firstRun)
+            {
+                ProcessInformation parsed(std::move(bag));
+                auto tracked = std::make_shared<Item>(m_mutexPool.mutex(), firstRun, now, std::move(parsed));
+                return tracked;
 
-        }
-        catch (Er::Exception& e)
-        {
-            Er::Util::logException(m_log, Er::Log::Level::Error, e);
-        }
-        catch (std::exception& e)
-        {
-            Er::Util::logException(m_log, Er::Log::Level::Error, e);
-        }
-
-        return std::shared_ptr<Item>();
+            },
+            std::move(bag),
+            now,
+            firstRun
+        );
     }
 
-    size_t enumerateProcesses(bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold) noexcept
+    void enumerateProcesses(bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff) noexcept
     {
-        size_t newCount = 0;
-
-        try
-        {
-            Er::PropertyBag req;
-            req.insert({ Er::ProcessProps::RequiredFields::Id::value, Er::Property(Er::ProcessProps::RequiredFields::Id::value, required.pack<uint64_t>()) });
-
-            auto list = m_client->requestStream(Er::ProcessRequests::ListProcesses, req);
-            for (auto& process : list)
+        Er::protectedCall<void>(
+            m_log,
+            LogInstance("ProcessListImpl"),
+            [this](bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff)
             {
-                auto parsedProcess = makeProcessItem(std::move(process), now, firstRun);
-                if (!parsedProcess)
-                    continue;
+                return enumerateProcessesImpl(firstRun, now, required, trackThreshold, diff);
+            },
+            firstRun,
+            now,
+            required,
+            trackThreshold,
+            diff
+        );
+    }
 
-                // is this an existing process?
-                auto existing = m_collection.find(parsedProcess->pid);
-                if (existing == m_collection.end())
+    void enumerateProcessesImpl(bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff)
+    {
+        Er::PropertyBag req;
+        req.insert({ Er::ProcessProps::RequiredFields::Id::value, Er::Property(Er::ProcessProps::RequiredFields::Id::value, required.pack<uint64_t>()) });
+
+        auto list = m_client->requestStream(Er::ProcessRequests::ListProcessesDiff, req, m_sessionId);
+        for (auto& process : list)
+        {
+            auto parsedProcess = makeProcessItem(std::move(process), now, firstRun);
+            if (!parsedProcess)
+                continue;
+
+            // is this an existing process?
+            auto existing = m_collection.find(parsedProcess->pid);
+            if (parsedProcess->deleted)
+            {
+                if (existing != m_collection.end())
                 {
-                    m_collection.insert({ parsedProcess->pid, parsedProcess });
-                    ++newCount;
+                    // the process has exited; place it into the 'deleted' list unless it's already there
+                    Er::ObjectLock<Item> item(existing->second.get());
+                    assert(!item->deleted);
+                    item->markDeleted(now);
+                    m_tracked.insert({ item->pid, existing->second });
+                    diff->tracked.insert({ item->pid, existing->second });
 
-                    LogDebug(m_log, LogNowhere(), "%s process %zu [%s]", (firstRun ? "EXISTING" : "NEW"), parsedProcess->pid, Erc::toUtf8(parsedProcess->comm).c_str());
+                    LogDebug(m_log, LogNowhere(), "DELETED process %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
                 }
                 else
                 {
-                    auto& processData = existing->second;
-                    if (processData->state() == Item::State::Deleted)
-                    {
-                        // we've been enumerating processes for so long that the system reused the PID
-                        assert(!firstRun);
-                        LogDebug(m_log, LogNowhere(), "%s process %zu [%s]", (firstRun ? "EXISTING" : "NEW"), parsedProcess->pid, Erc::toUtf8(parsedProcess->comm).c_str());
-
-                        std::swap(parsedProcess, processData);
-
-                        ++newCount;
-                    }
-                    else
-                    {
-                        // just update the timestamp
-                        processData->updateTimeChecked(now);
-                    }
+                    LogWarning(m_log, LogNowhere(), "Unknown exited process %zu", parsedProcess->pid);
                 }
+
+                continue;
             }
-        }
-        catch (Er::Exception& e)
-        {
-            Er::Util::logException(m_log, Er::Log::Level::Error, e);
-        }
-        catch (std::exception& e)
-        {
-            Er::Util::logException(m_log, Er::Log::Level::Error, e);
-        }
 
-        return newCount;
-    }
-
-    std::vector<ItemPtr> trackNewDeletedProcesses(Item::TimePoint now, std::chrono::milliseconds trackThreshold)
-    {
-        std::vector<ItemPtr> cleanedItems;
-
-        auto getItem = [](ItemContainer::iterator it)
-        {
-            // return a locked object
-            return Er::ObjectLock<Item>(it->second.get());
-        };
-
-        auto updateItem = [this, &cleanedItems](ItemContainer::iterator it, Item::State newState, Item::State prevState) -> ItemContainer::iterator
-        {
-            // assume we're inside an object lock
-            auto next = std::next(it);
-
-            auto itemPtr = it->second;
-
-            if (newState == Item::State::Cleaned)
+            if (existing == m_collection.end())
             {
-                cleanedItems.push_back(itemPtr);
+                // this is a new process
+                m_collection.insert({ parsedProcess->pid, parsedProcess });
+                diff->modified.insert({ parsedProcess->pid, parsedProcess });
 
-                m_collection.erase(it);
+                if (!firstRun)
+                {
+                    // also track this process as 'new'
+                    assert(parsedProcess->state() == Item::State::New);
+                    m_tracked.insert({ parsedProcess->pid, parsedProcess });
+                    diff->tracked.insert({ parsedProcess->pid, parsedProcess });
+
+                    LogDebug(m_log, LogNowhere(), "NEW process %zu [%s]", parsedProcess->pid, Erc::toUtf8(parsedProcess->comm).c_str());
+                }
+                else
+                {
+                    // this is the first run; all processes are just added w/out marking as 'new'
+
+                    LogDebug(m_log, LogNowhere(), "EXISTING process %zu [%s]", parsedProcess->pid, Erc::toUtf8(parsedProcess->comm).c_str());
+                }
+
+                continue;
             }
+            
+            // this is an existing process and we've just got a few fields updated
+            assert(!firstRun);
+            Er::ObjectLock<Item> item(existing->second.get());
+            item->updateFromDiff(*parsedProcess.get());
 
-            LogDebug(m_log, LogNowhere(), "%s->%s process %zu [%s]", toString(prevState), toString(newState), itemPtr->pid, Erc::toUtf8(itemPtr->comm).c_str());
+            diff->modified.insert({ item->pid, existing->second });
 
-            return next;
-        };
-
-        Item::trackNewDeleted(m_collection, now, trackThreshold, getItem, updateItem);
-
-        return cleanedItems;
-    }
-
-    static const char* toString(Item::State state) noexcept
-    {
-        switch (state)
-        {
-        case Item::State::New: return "NEW";
-        case Item::State::Existing: return "EXISTING";
-        case Item::State::Deleted: return "DELETED";
-        case Item::State::Cleaned: return "CLEANED";
-        default: return "???";
+            LogDebug(m_log, LogNowhere(), "MODIFIED process %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
         }
     }
 
-    using ItemContainer = std::unordered_map<typename Item::Key, std::shared_ptr<Item>>;
+    void trackNewOrDeletedProcesses(Item::TimePoint now, std::chrono::milliseconds trackThreshold, Changeset* diff)
+    {
+        for (auto it = m_tracked.begin(); it != m_tracked.end();)
+        {
+            Er::ObjectLock<Item> item(it->second.get());
+
+            if (item->cleanAwayIfNecessary(now, trackThreshold))
+            {
+                // item has been being marked 'deleted' for quite a long; time to purge it
+                auto next = std::next(it);
+                m_tracked.erase(it);
+                it = next;
+
+                diff->untracked.insert({ item->pid, it->second });
+                diff->purged.insert({ item->pid, it->second });
+
+                LogDebug(m_log, LogNowhere(), "DELETED -> PURGED process %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
+            }
+            else if (item->markNotNewIfNecessary(now, trackThreshold))
+            {
+                // item has been being marked 'new' for quite a long
+                auto next = std::next(it);
+                m_tracked.erase(it);
+                it = next;
+
+                diff->untracked.insert({ item->pid, it->second });
+
+                LogDebug(m_log, LogNowhere(), "NEW -> EXISTING process %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
+            }
+        }
+    }
+
 
     Er::Client::IClient* m_client;
     Er::Log::ILog* m_log;
     static constexpr size_t MutexPoolSize = 5;
     Er::MutexPool<std::recursive_mutex> m_mutexPool;
+    Er::Client::IClient::SessionId m_sessionId;
     ItemContainer m_collection;
+    ItemContainer m_tracked; // processes being temporarily tracked as 'recently exited' or 'recently started'
 };
 
 } // namespace {}
