@@ -21,8 +21,6 @@ ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset
 
 std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
 {
-    m_log->write(Er::Log::Level::Debug, LogInstance("Model"), "update() ->");
-
     std::vector<QModelIndex> parentsToExpand;
 
     if (!m_tree)
@@ -33,8 +31,6 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
         m_tree.reset(new ItemTree(changeset->modified));
 
         endResetModel();
-
-        m_log->write(Er::Log::Level::Debug, LogInstance("Model"), "TREE RESET");
     }
     else
     {
@@ -75,8 +71,6 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
         {
             Er::ObjectLock<Item> locked(removed.get());
 
-            LogDebug(m_log, LogComponent("ProcessTreeModel"), "REMOVING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
-
             m_tree->remove(removed.get(), beginRemove, endRemove, beginMove, endMove);
         }
 
@@ -91,16 +85,12 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
             if (!node)
             {
                 // new item
-                LogDebug(m_log, LogComponent("ProcessTreeModel"), "INSERTING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
-
                 m_tree->insert(modified, beginInsert, endInsert, beginMove, endMove);
                 assert(locked->context());
             }
             else
             {
                 // existing item
-                LogDebug(m_log, LogComponent("ProcessTreeModel"), "MODIFYING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
-
                 QVector<int> roles;
                 roles.push_back(Qt::DisplayRole);
                 emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
@@ -111,8 +101,6 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
         for (auto& tracked : changeset->tracked)
         {
             Er::ObjectLock<Item> locked(tracked.get());
-
-            LogDebug(m_log, LogComponent("ProcessTreeModel"), "TRACKINGING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
             auto node = static_cast<ItemTree::Node*>(locked->context());
             assert(node);
@@ -134,8 +122,6 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
         {
             Er::ObjectLock<Item> locked(untracked.get());
 
-            LogDebug(m_log, LogComponent("ProcessTreeModel"), "UNTRACKING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
-
             auto node = static_cast<ItemTree::Node*>(locked->context());
             assert(node);
             if (!node)
@@ -149,8 +135,6 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
             }
         }
     }
-
-    m_log->write(Er::Log::Level::Debug, LogInstance("Model"), "update() <-");
 
     return parentsToExpand;
 }

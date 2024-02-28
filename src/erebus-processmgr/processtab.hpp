@@ -29,6 +29,7 @@ public:
 
     void saveColumns();
     void reloadColumns();
+    void setRefreshInterval(unsigned interval);
 
 private slots:
     void dataReady(ProcessChangesetPtr changeset);

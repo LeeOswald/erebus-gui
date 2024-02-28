@@ -226,8 +226,6 @@ private:
                     item->markDeleted(now);
                     m_tracked.insert({ item->pid, existing->second });
                     diff->tracked.insert(existing->second);
-
-                    LogDebug(m_log, LogNowhere(), "DELETED process %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
                 }
                 else
                 {
@@ -249,14 +247,10 @@ private:
                     assert(parsedProcess->state() == Item::State::New);
                     m_tracked.insert({ parsedProcess->pid, parsedProcess });
                     diff->tracked.insert(parsedProcess);
-
-                    LogDebug(m_log, LogNowhere(), "NEW process %zu [%s]", parsedProcess->pid, Erc::toUtf8(parsedProcess->comm).c_str());
                 }
                 else
                 {
                     // this is the first run; all processes are just added w/out marking as 'new'
-
-                    LogDebug(m_log, LogNowhere(), "EXISTING process %zu [%s]", parsedProcess->pid, Erc::toUtf8(parsedProcess->comm).c_str());
                 }
 
                 continue;
@@ -268,26 +262,18 @@ private:
             item->updateFromDiff(*parsedProcess.get());
 
             diff->modified.insert(existing->second);
-
-            LogDebug(m_log, LogNowhere(), "MODIFIED process %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
         }
     }
 
     void trackNewOrDeletedProcesses(Item::TimePoint now, std::chrono::milliseconds trackThreshold, Changeset* diff)
     {
-        LogDebug(m_log, LogNowhere(), "trackNewOrDeletedProcesses() ->");
-
         for (auto it = m_tracked.begin(); it != m_tracked.end();)
         {
             auto ref = it->second;
             Er::ObjectLock<Item> item(ref.get());
 
-            LogDebug(m_log, LogNowhere(), "%zu %s", ref->pid, Erc::toUtf8(ref->comm).c_str());
-
             if (item->maybeUntrackDeleted(now, trackThreshold))
             {
-                LogDebug(m_log, LogNowhere(), "    purging");
-
                 // item has been being marked 'deleted' for quite a long; time to purge it
                 auto next = std::next(it);
                 
@@ -295,13 +281,9 @@ private:
 
                 m_tracked.erase(it);
                 it = next;
-
-                LogDebug(m_log, LogNowhere(), "DELETED -> PURGED process %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
             }
             else if (item->maybeUntrackNew(now, trackThreshold))
             {
-                LogDebug(m_log, LogNowhere(), "    unnewing");
-
                 // item has been being marked 'new' for quite a long
                 auto next = std::next(it);
 
@@ -309,16 +291,12 @@ private:
 
                 m_tracked.erase(it);
                 it = next;
-
-                LogDebug(m_log, LogNowhere(), "NEW -> EXISTING process %zu [%s]", item->pid, Erc::toUtf8(item->comm).c_str());
             }
             else
             {
                 ++it;
             }
         }
-
-        LogDebug(m_log, LogNowhere(), "trackNewOrDeletedProcesses() <-");
     }
 
 

@@ -74,6 +74,14 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     QTimer::singleShot(0, this, SLOT(refresh()));
 }
 
+void ProcessTab::setRefreshInterval(unsigned interval)
+{
+    Q_ASSERT(interval >= 500);
+    m_refreshRate = interval;
+
+    LogDebug(m_params.log, LogInstance("ProcessTab"), "Set refresh interval to %d msec", m_refreshRate);
+}
+
 void ProcessTab::requireAdditionalProps(Er::ProcessProps::PropMask& required) noexcept
 {
     // what we need even if there's no corresponding visible column
@@ -88,16 +96,12 @@ void ProcessTab::saveColumns()
 
 void ProcessTab::reloadColumns()
 {
-    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "reloadColumns() ->");
-
     delete m_model;
     m_model = nullptr;
 
     m_columns = loadProcessColumns(m_params.settings);
     m_required = makePropMask(m_columns);
     requireAdditionalProps(m_required);
-    
-    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "reloadColumns() <-");
 }
 
 void ProcessTab::startWorker()
@@ -120,18 +124,14 @@ void ProcessTab::startWorker()
 
 void ProcessTab::refresh()
 {
-    m_params.log->write(Er::Log::Level::Debug, LogInstance("Tab"), "refresh() ->");
     if (m_worker)
     {
         QMetaObject::invokeMethod(m_worker, "refresh", Qt::AutoConnection, Q_ARG(Er::ProcessProps::PropMask, m_required), Q_ARG(int, 5000));
     }
-    m_params.log->write(Er::Log::Level::Debug, LogInstance("Tab"), "refresh() <-");
 }
 
 void ProcessTab::dataReady(ProcessChangesetPtr changeset)
 {
-    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "dataReady() ->");
-
     Er::protectedCall<void>(
         m_params.log,
         LogInstance("ProcessTab"),
@@ -139,7 +139,6 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset)
         {
             if (!m_model)
             {
-                m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "Model CREATING");
                 m_model = new ProcessTreeModel(m_params.log, changeset, m_columns, this);
 
                 m_treeView->setModel(m_model);
@@ -149,7 +148,6 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset)
             }
             else
             {
-                m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "Model exists");
                 // QTreeView does not expand new items automatically; we need to do this explicitly
                 auto parentsToExpand = m_model->update(changeset);
                 for (auto& index : parentsToExpand)
@@ -160,8 +158,7 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset)
         }
     );
 
-    m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "dataReady() <-");
-
+    // schedule the next refresh
     QTimer::singleShot(m_refreshRate, this, SLOT(refresh()));
 }
 

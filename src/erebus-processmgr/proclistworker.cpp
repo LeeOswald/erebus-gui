@@ -35,8 +35,6 @@ ProcessListWorker::ProcessListWorker(Er::Client::IClient* client, Er::Log::ILog*
 
 void ProcessListWorker::refresh(Er::ProcessProps::PropMask required, int threshold)
 {
-    m_log->write(Er::Log::Level::Debug, LogInstance("Worker"), "refresh() ->");
-
     Er::protectedCall<void>(
         m_log,
         LogInstance("ProcessWorker"),
@@ -47,8 +45,6 @@ void ProcessListWorker::refresh(Er::ProcessProps::PropMask required, int thresho
             emit dataReady(changeset);
         }
     );
-
-    m_log->write(Er::Log::Level::Debug, LogInstance("Worker"), "refresh() <-");
 }
 
 
