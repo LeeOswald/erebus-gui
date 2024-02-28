@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <mutex>
+#include <set>
 #include <vector>
 
 #include <QString>
@@ -91,15 +92,35 @@ struct IProcessList
 {
     using Item = Er::ExternallyLockableObject<TrackableProcessInformation, std::recursive_mutex>;
     using ItemPtr = std::shared_ptr<Item>;
-    using ItemContainer = std::unordered_map<typename Item::Key, ItemPtr>;
+
+    struct ItemIsPredecessor
+    {
+        bool operator()(ItemPtr a, ItemPtr b) const noexcept
+        {
+            return a->pid < b->pid;
+        }
+    };
+
+    struct ItemIsSuccessor
+    {
+        bool operator()(ItemPtr a, ItemPtr b) const noexcept
+        {
+            return b->pid < a->pid;
+        }
+    };
 
     struct Changeset
     {
+        // insert new items into the view in the order of their PIDs
+        // and remove them in the reverse order
+        // so that parents are removed only after their children
+        // and children are inserted only after their parents
+
         bool firstRun;
-        ItemContainer modified;
-        ItemContainer tracked;
-        ItemContainer untracked;
-        ItemContainer purged;
+        std::set<ItemPtr, ItemIsPredecessor> modified;  
+        std::set<ItemPtr, ItemIsPredecessor> tracked;
+        std::set<ItemPtr, ItemIsPredecessor> untracked;
+        std::set<ItemPtr, ItemIsSuccessor> purged;
 
         explicit Changeset(bool firstRun) noexcept
             : firstRun(firstRun)

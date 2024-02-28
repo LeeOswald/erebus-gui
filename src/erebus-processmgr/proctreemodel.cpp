@@ -73,11 +73,11 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
         // handle removed processes
         for (auto& removed: changeset->purged)
         {
-            Er::ObjectLock<Item> locked(removed.second.get());
+            Er::ObjectLock<Item> locked(removed.get());
 
             LogDebug(m_log, LogComponent("ProcessTreeModel"), "REMOVING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
-            m_tree->remove(removed.second.get(), beginRemove, endRemove, beginMove, endMove);
+            m_tree->remove(removed.get(), beginRemove, endRemove, beginMove, endMove);
         }
 
         assert(!changeset->firstRun);
@@ -85,24 +85,32 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
         // handle modified processes
         for (auto& modified : changeset->modified)
         {
-            Er::ObjectLock<Item> locked(modified.second.get());
-
-            LogDebug(m_log, LogComponent("ProcessTreeModel"), "MODIFYING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
+            Er::ObjectLock<Item> locked(modified.get());
 
             auto node = static_cast<ItemTree::Node*>(locked->context());
-            assert(node);
             if (!node)
-                continue;
+            {
+                // new item
+                LogDebug(m_log, LogComponent("ProcessTreeModel"), "INSERTING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
-            QVector<int> roles;
-            roles.push_back(Qt::DisplayRole);
-            emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+                m_tree->insert(modified, beginInsert, endInsert, beginMove, endMove);
+                assert(locked->context());
+            }
+            else
+            {
+                // existing item
+                LogDebug(m_log, LogComponent("ProcessTreeModel"), "MODIFYING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
+
+                QVector<int> roles;
+                roles.push_back(Qt::DisplayRole);
+                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+            }
         }
 
         // handle tracked processes
         for (auto& tracked : changeset->tracked)
         {
-            Er::ObjectLock<Item> locked(tracked.second.get());
+            Er::ObjectLock<Item> locked(tracked.get());
 
             LogDebug(m_log, LogComponent("ProcessTreeModel"), "TRACKINGING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
@@ -111,26 +119,34 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
             if (!node)
                 continue;
 
-            QVector<int> roles;
-            roles.push_back(Qt::BackgroundRole);
-            emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+            if (node->statePainted != locked->state())
+            {
+                QVector<int> roles;
+                roles.push_back(Qt::BackgroundRole);
+                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+
+                node->statePainted = locked->state();
+            }
         }
 
         // handle untracked processes
         for (auto& untracked : changeset->untracked)
         {
-            Er::ObjectLock<Item> locked(untracked.second.get());
+            Er::ObjectLock<Item> locked(untracked.get());
 
-            LogDebug(m_log, LogComponent("ProcessTreeModel"), "UNTRACKINGING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
+            LogDebug(m_log, LogComponent("ProcessTreeModel"), "UNTRACKING %zu [%s]", locked->pid, Erc::toUtf8(locked->comm).c_str());
 
             auto node = static_cast<ItemTree::Node*>(locked->context());
             assert(node);
             if (!node)
                 continue;
 
-            QVector<int> roles;
-            roles.push_back(Qt::BackgroundRole);
-            emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+            if (node->statePainted != locked->state())
+            {
+                QVector<int> roles;
+                roles.push_back(Qt::BackgroundRole);
+                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+            }
         }
     }
 

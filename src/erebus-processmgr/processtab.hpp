@@ -8,7 +8,6 @@
 #include "proctreemodel.hpp"
 
 #include <QPointer>
-#include <QTimer>
 #include <QTreeView>
 #include <QThread>
 #include <QWidget>
@@ -42,11 +41,11 @@ private:
     static void requireAdditionalProps(Er::ProcessProps::PropMask& required) noexcept;
 
     Erc::PluginParams m_params;
+    unsigned m_refreshRate; // msec
     ProcessColumns m_columns;
     Er::ProcessProps::PropMask m_required;
     Er::Client::IClient* m_client;
     std::string m_endpoint;
-    QTimer* m_timer;
     QWidget* m_widget;
     QTreeView* m_treeView;
     QPointer<QThread> m_thread;

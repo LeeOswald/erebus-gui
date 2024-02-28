@@ -2,6 +2,7 @@
 
 #include <QGridLayout>
 #include <QHeaderView>
+#include <QTimer>
 
 namespace Erp
 {
@@ -34,11 +35,11 @@ ProcessTab::~ProcessTab()
 ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* client, const std::string& endpoint)
     : QObject()
     , m_params(params)
+    , m_refreshRate(Erc::Option<unsigned>::get(params.settings, Erp::Settings::refreshRate, Erp::Settings::RefreshRateDefault))
     , m_columns(loadProcessColumns(m_params.settings))
     , m_required(makePropMask(m_columns))
     , m_client(client)
     , m_endpoint(endpoint)
-    , m_timer(new QTimer(this))
     , m_widget(new QWidget(params.tabWidget))
     , m_treeView(new QTreeView(m_widget))
     , m_thread()
@@ -67,8 +68,8 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
 
     startWorker();
 
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(refresh()));
-    m_timer->start(5000);
+    if (m_refreshRate < 500)
+        m_refreshRate = 500;
 
     QTimer::singleShot(0, this, SLOT(refresh()));
 }
@@ -160,6 +161,8 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset)
     );
 
     m_params.log->write(Er::Log::Level::Debug, LogNowhere(), "dataReady() <-");
+
+    QTimer::singleShot(m_refreshRate, this, SLOT(refresh()));
 }
 
 void ProcessTab::restoreColumnWidths()
