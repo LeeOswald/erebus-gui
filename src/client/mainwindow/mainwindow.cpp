@@ -49,7 +49,6 @@ MainWindow::MainWindow(
     , m_statusLabel(new QLabel(m_statusbar))
     , m_pluginMgr(Erc::PluginParams(settings, log, m_tabWidget, m_mainMenu.menuBar))
 {
-    setObjectName("MainWindow");
     resize(1024, 768);
     QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     sizePolicy.setHorizontalStretch(0);
@@ -64,23 +63,17 @@ MainWindow::MainWindow(
 
     setMenuBar(m_mainMenu.menuBar);
 
-    m_centralWidget->setObjectName("centralWidget");
     sizePolicy.setHeightForWidth(m_centralWidget->sizePolicy().hasHeightForWidth());
     m_centralWidget->setSizePolicy(sizePolicy);
     setCentralWidget(m_centralWidget);
 
-
     m_mainLayout->setSpacing(2);
-    m_mainLayout->setObjectName("mainLayout");
     m_mainLayout->setContentsMargins(2, 2, 2, 2);
 
-    m_mainSplitter->setObjectName("mainSplitter");
     sizePolicy.setHeightForWidth(m_mainSplitter->sizePolicy().hasHeightForWidth());
     m_mainSplitter->setSizePolicy(sizePolicy);
     m_mainSplitter->setOrientation(Qt::Vertical);
     m_mainSplitter->setHandleWidth(2);
-
-    m_tabWidget->setObjectName("tabWidget");
 
     m_mainSplitter->addWidget(m_tabWidget);
     m_mainSplitter->addWidget(m_logView->view());
@@ -89,8 +82,6 @@ MainWindow::MainWindow(
     m_mainSplitter->setStretchFactor(int(SplitterPane::Log), 0);
 
     m_mainLayout->addWidget(m_mainSplitter);
-
-
 
     QObject::connect(m_mainMenu.actionExit, SIGNAL(triggered()), this, SLOT(quit()));
     QObject::connect(m_mainMenu.actionAlwaysOnTop, SIGNAL(triggered()), this, SLOT(toggleAlwaysOnTop()));

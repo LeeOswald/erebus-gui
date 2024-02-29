@@ -33,7 +33,7 @@ ProcessTab::~ProcessTab()
 }
 
 ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* client, const std::string& endpoint)
-    : QObject()
+    : QObject(params.tabWidget)
     , m_params(params)
     , m_refreshRate(Erc::Option<unsigned>::get(params.settings, Erp::Settings::refreshRate, Erp::Settings::RefreshRateDefault))
     , m_columns(loadProcessColumns(m_params.settings))
@@ -42,18 +42,13 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     , m_endpoint(endpoint)
     , m_widget(new QWidget(params.tabWidget))
     , m_treeView(new QTreeView(m_widget))
-    , m_thread()
-    , m_worker()
 {
     requireAdditionalProps(m_required);
 
-    m_widget->setObjectName("processTabWidget");
     auto layout = new QGridLayout(m_widget);
     layout->setSpacing(0);
-    layout->setObjectName("gridLayout");
     layout->setContentsMargins(0, 0, 0, 0);
 
-    m_treeView->setObjectName("processesTree");
     m_treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_treeView->setProperty("showDropIndicator", QVariant(false));
     m_treeView->setIconSize(QSize(16, 16));

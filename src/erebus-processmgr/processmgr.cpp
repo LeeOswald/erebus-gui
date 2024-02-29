@@ -23,6 +23,7 @@ class ProcessMgrPlugin final
 public:
     ~ProcessMgrPlugin()
     {
+        delete m_menuProcess;
         Er::ProcessProps::Private::unregisterAll();
     }
 
@@ -41,7 +42,7 @@ public:
         m_refreshIntervalActionGroup->setExclusive(true);
         connect(m_refreshIntervalActionGroup, &QActionGroup::triggered, this, &ProcessMgrPlugin::setRefreshInterval);
 
-        auto menuRefreshInterval = new QMenu();
+        auto menuRefreshInterval = new QMenu(m_menuProcess);
         m_actionRefreshInterval->setMenu(menuRefreshInterval);
 
         m_refresh05Action = new QAction(tr("Fast (0.5s)"), m_refreshIntervalActionGroup);

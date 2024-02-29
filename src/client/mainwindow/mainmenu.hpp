@@ -29,15 +29,6 @@ struct MainMenu final
         , actionLog(new QAction(QCoreApplication::translate("FileMenu", "Log", nullptr), mainWindow))
         , actionExit(new QAction(QCoreApplication::translate("FileMenu", "Exit", nullptr), mainWindow))
     {
-        menuBar->setObjectName("menu");
-        menuFile->setObjectName("menuFile");
-        menuView->setObjectName("menuView");
-
-        actionAlwaysOnTop->setObjectName("actionAlwaysOnTop");
-        actionHideOnClose->setObjectName("actionHideOnClose");
-        actionLog->setObjectName("actionLog");
-        actionExit->setObjectName("actionExit");
-
         actionAlwaysOnTop->setCheckable(true);
         actionHideOnClose->setCheckable(true);
 

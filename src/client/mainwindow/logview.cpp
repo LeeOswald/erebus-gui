@@ -33,7 +33,7 @@ LogView::LogView(
     , m_logCtl(logCtl)
     , m_settings(settings)
     , m_view(new QPlainTextEdit(parent))
-    , m_menu(new QMenu())
+    , m_menu(new QMenu(mainWindow))
     , m_actionGroup(new QActionGroup(mainWindow))
     , m_actionDebug(new QAction(m_actionGroup))
     , m_actionInfo(new QAction(m_actionGroup))
@@ -43,7 +43,6 @@ LogView::LogView(
     , m_actionOff(new QAction(m_actionGroup))
     , m_actionClear(new QAction(m_actionGroup))
 {
-    m_view->setObjectName("logView");
     QFont font;
     font.setFamilies({QString::fromUtf8("Courier New")});
     font.setPointSize(10);
@@ -56,15 +55,6 @@ LogView::LogView(
 
     m_actionGroup->setExclusive(true);
     connect(m_actionGroup, SIGNAL(triggered(QAction*)), this, SLOT(setLogLevel(QAction*)));
-
-
-    m_actionDebug->setObjectName("actionDebug");
-    m_actionInfo->setObjectName("actionInfo");
-    m_actionWarning->setObjectName("actionWarning");
-    m_actionError->setObjectName("actionError");
-    m_actionFatal->setObjectName("actionFatal");
-    m_actionOff->setObjectName("actionOff");
-    m_actionClear->setObjectName("actionClear");
 
     actionLog->setMenu(m_menu);
 
