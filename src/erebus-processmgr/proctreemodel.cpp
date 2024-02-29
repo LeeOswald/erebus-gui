@@ -313,6 +313,9 @@ QVariant ProcessTreeModel::textForCell(ItemTreeNode* item, int column) const
     case Er::ProcessProps::PropIndices::Ruid:
         return formatItemProperty(item, Er::ProcessProps::Ruid::Id::value);
 
+    case Er::ProcessProps::PropIndices::User:
+        return formatItemProperty(item, Er::ProcessProps::User::Id::value);
+
     case Er::ProcessProps::PropIndices::CmdLine:
         return formatItemProperty(item, Er::ProcessProps::CmdLine::Id::value);
 
