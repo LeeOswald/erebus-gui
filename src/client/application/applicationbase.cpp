@@ -78,7 +78,7 @@ QString ApplicationBase::generateKey()
 {
     QString key(kAppKey);
 
-    key.append(QString::fromUtf8(Er::System::CurrentUser::name()));
+    key.append(QString::fromUtf8(Er::System::User::current().name));
 
     QByteArray ba;
     ba.append(key.toUtf8());

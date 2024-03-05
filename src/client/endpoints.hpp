@@ -16,7 +16,7 @@ class RecentEndpoints final
 {
 public:
     explicit RecentEndpoints(const std::string& packed, size_t limit)
-        : m_endpoints(Er::Util::split(packed, ';'))
+        : m_endpoints(Er::Util::split(packed, std::string_view(";"), Er::Util::SplitSkipEmptyParts))
         , m_limit(limit)
     {
     }
