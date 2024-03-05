@@ -120,8 +120,12 @@ set(EREBUS_CLTLIB erebus-clt)
 # component names
 set(EREBUS_CLIENT erebus-gui)
 set(EREBUS_GUILIB erebus)
+set(EREBUS_ICONCACHE erebus-iconcache)
 
 add_subdirectory(submodules/erebus-server)
 add_subdirectory(src/erebus-gui)
 add_subdirectory(src/erebus-processmgr)
 add_subdirectory(src/client)
+if(ER_LINUX)
+    add_subdirectory(src/erebus-iconcache)
+endif()
