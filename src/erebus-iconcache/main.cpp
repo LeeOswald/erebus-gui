@@ -1,4 +1,4 @@
-#include <erebus/erebus.hxx>
+#include <erebus/util/sha256.hxx>
 
 #include <QGuiApplication>
 #include <QIcon>
@@ -55,18 +55,83 @@ bool checkCache(const std::string& dir)
     return true;
 }
 
+std::string makeCachePath(const std::string& dir, const std::string& name, unsigned size)
+{
+    std::filesystem::path path(dir);
+    auto sz = std::to_string(size);
+    if (std::filesystem::path(name).is_absolute())
+    {
+        // make path like /tmp/iconcache/39534cecc15cd261e9eb3c8cd3544d4f839db599979a9348bf54afc896a25ce8_32x32.png
+        Er::Util::Sha256 hash;
+        hash.update(name);
+        auto hashStr = hash.str(hash.digest());
+
+        std::string fileName(std::move(hashStr));
+        fileName.append("_");
+        fileName.append(sz);
+        fileName.append("x");
+        fileName.append(sz);
+        fileName.append(".png");
+
+        path.append(fileName);
+
+        return path.string();
+    }
+
+    // make path like /tmp/iconcache/mtapp_32x32.png
+    std::string fileName(name);
+    fileName.append("_");
+    fileName.append(sz);
+    fileName.append("x");
+    fileName.append(sz);
+    fileName.append(".png");
+
+    path.append(fileName);
+
+    return path.string();
+}
+
+bool cacheIconFromAbsolutePath(const std::string& dir, const std::string& name, unsigned size)
+{
+    auto iconFileName = makeCachePath(dir, name, size);
+    std::filesystem::path path(iconFileName);
+
+    if (std::filesystem::exists(path))
+    {
+        std::cout << "Found icon " << name << "\n";
+        return true;
+    }
+
+    std::filesystem::path sourcePath(name);
+    if (!std::filesystem::exists(sourcePath))
+    {
+        std::cerr << "Icon " << name << " does not exist\n";
+        return false;
+    }
+
+    QPixmap ico;
+    if (!ico.load(QString::fromUtf8(name)))
+    {
+        std::cerr << "Icon " << name << " could not be loaded\n";
+        return false;
+    }
+
+    if (!ico.save(QString::fromUtf8(iconFileName)))
+    {
+        std::cerr << "Failed to save " << iconFileName << "\n";
+        return false;
+    }
+
+    std::cout << "Cached icon " << name << "\n";
+
+    return true;
+}
+
 bool cacheIcon(const std::string& dir, const std::string& name, unsigned size)
 {
-    std::string iconFileName(name);
-    iconFileName.append(std::to_string(size));
-    iconFileName.append("x");
-    iconFileName.append(std::to_string(size));
-    iconFileName.append(".png");
+    auto iconFileName = makeCachePath(dir, name, size);
+    std::filesystem::path path(iconFileName);
 
-    std::filesystem::path path(dir);
-    path.append(iconFileName);
-
-    std::error_code ec;
     if (std::filesystem::exists(path))
     {
         std::cout << "Found icon " << name << "\n";
@@ -81,10 +146,10 @@ bool cacheIcon(const std::string& dir, const std::string& name, unsigned size)
     }
 
     auto pixmap = ico.pixmap(int(size));
-    auto destPath = path.string();
-    if (!pixmap.save(QString::fromUtf8(destPath)))
+
+    if (!pixmap.save(QString::fromUtf8(iconFileName)))
     {
-        std::cerr << "Failed to save " << destPath << "\n";
+        std::cerr << "Failed to save " << iconFileName << "\n";
         return false;
     }
 
@@ -132,7 +197,7 @@ int main(int argc, char *argv[])
             if (size == 0)
             {
                 std::cerr << "Expected a valid icon size (--size <px>)\n";
-                return EXIT_FAILURE;
+                return -1;
             }
             iconSize = size;
         }
@@ -145,7 +210,7 @@ int main(int argc, char *argv[])
     if (cacheDir.empty())
     {
         std::cerr << "Cache directory not specified (--cache <dir>)\n";
-        return EXIT_FAILURE;
+        return -1;
     }
 
     if (clear)
@@ -156,7 +221,7 @@ int main(int argc, char *argv[])
         if (!clear)
         {
             std::cerr << "Usage: erebus-iconcache --cache </path/to/cache> [--clear|--size <icon-size> <icon1> <icon2> ... <iconN>]\n";
-            return EXIT_FAILURE;
+            return -1;
         }
 
         return EXIT_SUCCESS;
@@ -165,20 +230,29 @@ int main(int argc, char *argv[])
     if (!iconSize || !*iconSize)
     {
         std::cerr << "Expected a valid icon size (--size <px>)\n";
-        return EXIT_FAILURE;
+        return -1;
     }
 
     if (!checkCache(cacheDir))
-        return EXIT_FAILURE;
+        return -1;
 
-    size_t succeeded = 0;
+    int succeeded = 0;
     for (auto& requested: requestedIcons)
     {
-        if (cacheIcon(cacheDir, requested, *iconSize))
-            ++succeeded;
+        std::filesystem::path path(requested);
+        if (path.is_absolute())
+        {
+            if (cacheIconFromAbsolutePath(cacheDir, requested, *iconSize))
+                ++succeeded;
+        }
+        else
+        {
+            if (cacheIcon(cacheDir, requested, *iconSize))
+                ++succeeded;
+        }
     }
 
-    return (succeeded > 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return succeeded;
 }
 
 
