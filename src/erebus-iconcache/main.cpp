@@ -3,6 +3,7 @@
 #include <QGuiApplication>
 #include <QIcon>
 
+#include <fstream>
 #include <iostream>
 #include <filesystem>
 #include <vector>
@@ -165,12 +166,14 @@ int main(int argc, char *argv[])
     QGuiApplication a(argc, argv);
 
     std::string cacheDir;
+    std::string sourceFile;
     std::vector<std::string> requestedIcons;
     std::optional<unsigned> iconSize;
 
     bool clear = false;
     bool nextIsCache = false;
     bool nextIsSize = false;
+    bool nextIsSource = false;
     for (int i = 1; i < argc; ++i)
     {
         if (!std::strcmp(argv[i], "--clear"))
@@ -185,6 +188,15 @@ int main(int argc, char *argv[])
         {
             nextIsCache = false;
             cacheDir = argv[i];
+        }
+        else if (!std::strcmp(argv[i], "--source"))
+        {
+            nextIsSource = true;
+        }
+        else if (nextIsSource)
+        {
+            nextIsSource = false;
+            sourceFile = argv[i];
         }
         else if (!std::strcmp(argv[i], "--size"))
         {
@@ -204,6 +216,24 @@ int main(int argc, char *argv[])
         else
         {
             requestedIcons.emplace_back(argv[i]);
+        }
+
+        if (!sourceFile.empty())
+        {
+            std::ifstream source(sourceFile);
+            if (!source.is_open())
+            {
+                std::cerr << "Failed to open " << sourceFile << "\n";
+                return -1;
+            }
+            else
+            {
+                std::string line;
+                while (std::getline(source, line))
+                {
+                    requestedIcons.push_back(std::move(line));
+                }
+            }
         }
     }
 
