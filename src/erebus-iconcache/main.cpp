@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <vector>
 
+#include <fcntl.h>
 
 namespace
 {
@@ -92,6 +93,12 @@ std::string makeCachePath(const std::string& dir, const std::string& name, unsig
     return path.string();
 }
 
+void createEmptyFile(const std::string& path)
+{
+    // create an empty file to prevent further load attempts if the icon in question cannot be found
+    ::close(::creat(path.c_str(), S_IRUSR | S_IWUSR));
+}
+
 bool cacheIconFromAbsolutePath(const std::string& dir, const std::string& name, unsigned size)
 {
     auto iconFileName = makeCachePath(dir, name, size);
@@ -107,6 +114,7 @@ bool cacheIconFromAbsolutePath(const std::string& dir, const std::string& name, 
     if (!std::filesystem::exists(sourcePath))
     {
         std::cerr << "Icon " << name << " does not exist\n";
+        createEmptyFile(iconFileName);
         return false;
     }
 
@@ -114,12 +122,14 @@ bool cacheIconFromAbsolutePath(const std::string& dir, const std::string& name, 
     if (!ico.load(QString::fromUtf8(name)))
     {
         std::cerr << "Icon " << name << " could not be loaded\n";
+        createEmptyFile(iconFileName);
         return false;
     }
 
     if (!ico.save(QString::fromUtf8(iconFileName)))
     {
         std::cerr << "Failed to save " << iconFileName << "\n";
+        createEmptyFile(iconFileName);
         return false;
     }
 
@@ -143,6 +153,7 @@ bool cacheIcon(const std::string& dir, const std::string& name, unsigned size)
     if (ico.isNull())
     {
         std::cerr << "No theme icon found for " << name << "\n";
+        createEmptyFile(iconFileName);
         return false;
     }
 
@@ -151,6 +162,7 @@ bool cacheIcon(const std::string& dir, const std::string& name, unsigned size)
     if (!pixmap.save(QString::fromUtf8(iconFileName)))
     {
         std::cerr << "Failed to save " << iconFileName << "\n";
+        createEmptyFile(iconFileName);
         return false;
     }
 
