@@ -306,7 +306,7 @@ bool MainWindow::promptForConnection()
                 this,
                 [this](const std::string& path)
                 {
-                    return Er::Util::loadFile(path);
+                    return Er::Util::loadTextFile(path);
                 },
                 dlg.rootCA()
             );

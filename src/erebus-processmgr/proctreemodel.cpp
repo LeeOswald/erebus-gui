@@ -15,6 +15,7 @@ ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset
     : QAbstractItemModel(parent)
     , m_log(log)
     , m_columns(columns)
+    , m_iconCache(IconCacheSize)
 {
     update(changeset);
 }
@@ -395,7 +396,41 @@ QVariant ProcessTreeModel::backgroundForRow(const ItemTreeNode* item) const
 
 QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
 {
-    return QVariant();
+    return Er::protectedCall<QVariant>(
+        m_log,
+        LogInstance("ProcessTreeModel"),
+        [this, item]()
+        {
+            // look in cache
+            auto& key = item->data()->comm;
+
+            auto ico = m_iconCache.get(key);
+            if (ico)
+            {
+                return QVariant(*ico);
+            }
+
+            auto it = item->data()->properties.find(Er::ProcessProps::Icon::Id::value);
+            if (it == item->data()->properties.end())
+                return QVariant();
+
+            auto& property = it->second;
+            auto rawIcon = std::any_cast<Er::Bytes>(property.value);
+            
+            QPixmap pixmap;
+            if (!pixmap.loadFromData(reinterpret_cast<const uchar*>(rawIcon.bytes.data()), rawIcon.bytes.size()))
+            {
+                m_log->write(Er::Log::Level::Warning, LogNowhere(), "Failed to load icon for %s", key.toUtf8().constData());
+                return QVariant();
+            }
+
+            QIcon icon(pixmap);
+
+            m_iconCache.put(key, icon);
+
+            return QVariant(icon);
+        }
+    );
 }
 
 

@@ -81,6 +81,8 @@ void ProcessTab::requireAdditionalProps(Er::ProcessProps::PropMask& required) no
 {
     // what we need even if there's no corresponding visible column
     required.set(Er::ProcessProps::PropIndices::CmdLine);
+    required.set(Er::ProcessProps::PropIndices::Exe);
+    required.set(Er::ProcessProps::PropIndices::Icon);
 }
 
 void ProcessTab::saveColumns()
