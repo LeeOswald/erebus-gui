@@ -72,14 +72,15 @@ add_definitions(${Qt6Widgets_DEFINITIONS} ${Qt6Network_DEFINITIONS})
 
 # require Boost
 if(MSVC)
-    find_package(Boost REQUIRED COMPONENTS system)
+    find_package(Boost REQUIRED COMPONENTS system program_options)
 else()
     find_package(Boost REQUIRED COMPONENTS 
         stacktrace_basic
         stacktrace_backtrace
         stacktrace_addr2line
         stacktrace_noop 
-        system 
+        system
+        program_options
     )
 endif()
 

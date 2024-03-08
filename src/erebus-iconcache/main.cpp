@@ -1,4 +1,5 @@
 #include <erebus/util/sha256.hxx>
+#include <erebus/util/stringutil.hxx>
 
 #include <QGuiApplication>
 #include <QIcon>
@@ -6,12 +7,17 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <string_view>
 #include <vector>
+
+#include <boost/program_options.hpp>
 
 #include <fcntl.h>
 
 namespace
 {
+
+const std::string_view DefaultIcon("application-x-executable");
 
 bool clearCache(const std::string& dir)
 {
@@ -152,9 +158,18 @@ bool cacheIcon(const std::string& dir, const std::string& name, unsigned size)
     auto ico = QIcon::fromTheme(QString::fromUtf8(name));
     if (ico.isNull())
     {
-        std::cerr << "No theme icon found for " << name << "\n";
-        createEmptyFile(iconFileName);
-        return false;
+        std::cerr << "No theme icon found for " << name << ": using default icon\n";
+
+        // use default icon
+        if (name != DefaultIcon)
+            ico = QIcon::fromTheme(QLatin1String(DefaultIcon));
+
+        if (ico.isNull())
+        {
+            std::cerr << "No theme icon found for " << DefaultIcon << "\n";
+            createEmptyFile(iconFileName);
+            return false;
+        }
     }
 
     auto pixmap = ico.pixmap(int(size));
@@ -175,60 +190,57 @@ bool cacheIcon(const std::string& dir, const std::string& name, unsigned size)
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication a(argc, argv);
-
-    std::string cacheDir;
-    std::string sourceFile;
-    std::vector<std::string> requestedIcons;
-    std::optional<unsigned> iconSize;
-
-    bool clear = false;
-    bool nextIsCache = false;
-    bool nextIsSize = false;
-    bool nextIsSource = false;
-    for (int i = 1; i < argc; ++i)
+    try
     {
-        if (!std::strcmp(argv[i], "--clear"))
+        QGuiApplication a(argc, argv);
+
+        std::string themeName;
+        std::string cacheDir;
+        std::string sourceFile;
+        std::string iconList;
+        std::vector<std::string> requestedIcons;
+        unsigned iconSize = 0;
+
+        namespace po = boost::program_options;
+        po::options_description options("Command line options");
+        options.add_options()
+            ("help,?", "display this message")
+            ("theme", po::value<std::string>(&themeName)->default_value("hicolor"), "theme name")
+            ("clear", "clear cache")
+            ("cache", po::value<std::string>(&cacheDir), "icon cache directory path")
+            ("source", po::value<std::string>(&sourceFile), "icon list file path")
+            ("size", po::value<unsigned>(&iconSize)->default_value(16), "icon size")
+            ("icons", po::value<std::string>(&iconList), "requested icon names (colon-separated)")
+        ;
+
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, options), vm);
+        po::notify(vm);
+
+        if (vm.count("help"))
         {
-            clear = true;
+            std::cout << options << "\n";
+            return 0;
         }
-        else if (!std::strcmp(argv[i], "--cache"))
-        {
-            nextIsCache = true;
-        }
-        else if (nextIsCache)
-        {
-            nextIsCache = false;
-            cacheDir = argv[i];
-        }
-        else if (!std::strcmp(argv[i], "--source"))
-        {
-            nextIsSource = true;
-        }
-        else if (nextIsSource)
-        {
-            nextIsSource = false;
-            sourceFile = argv[i];
-        }
-        else if (!std::strcmp(argv[i], "--size"))
-        {
-            nextIsSize = true;
-        }
-        else if (nextIsSize)
-        {
-            nextIsSize = false;
-            auto size = std::strtoul(argv[i], nullptr, 10);
-            if (size == 0)
-            {
-                std::cerr << "Expected a valid icon size (--size <px>)\n";
-                return -1;
-            }
-            iconSize = size;
-        }
-        else
-        {
-            requestedIcons.emplace_back(argv[i]);
-        }
+
+        if (!iconList.empty())
+            requestedIcons = Er::Util::split(iconList, std::string_view(":"), Er::Util::SplitSkipEmptyParts);
+
+        QIcon::setThemeName(QString::fromUtf8(themeName));
+
+        auto theme = QIcon::themeName();
+        std::cout << "Theme name: " << theme.toUtf8().constData() << "\n";
+        theme = QIcon::fallbackThemeName();
+        std::cout << "Fallback theme name: " << theme.toUtf8().constData() << "\n";
+
+
+        auto paths = QIcon::themeSearchPaths();
+        for (auto& path: paths)
+            std::cout << "Theme search path: " << path.toUtf8().constData() << "\n";
+
+        paths = QIcon::fallbackSearchPaths();
+        for (auto& path: paths)
+            std::cout << "Fallback search path: " << path.toUtf8().constData() << "\n";
 
         if (!sourceFile.empty())
         {
@@ -247,54 +259,60 @@ int main(int argc, char *argv[])
                 }
             }
         }
-    }
 
-    if (cacheDir.empty())
-    {
-        std::cerr << "Cache directory not specified (--cache <dir>)\n";
-        return -1;
-    }
-
-    if (clear)
-        clearCache(cacheDir);
-
-    if (requestedIcons.empty())
-    {
-        if (!clear)
+        if (cacheDir.empty())
         {
-            std::cerr << "Usage: erebus-iconcache --cache </path/to/cache> [--clear|--size <icon-size> <icon1> <icon2> ... <iconN>]\n";
+            std::cerr << "Cache directory not specified\n";
+            std::cerr << options << "\n";
             return -1;
         }
 
-        return EXIT_SUCCESS;
-    }
-
-    if (!iconSize || !*iconSize)
-    {
-        std::cerr << "Expected a valid icon size (--size <px>)\n";
-        return -1;
-    }
-
-    if (!checkCache(cacheDir))
-        return -1;
-
-    int succeeded = 0;
-    for (auto& requested: requestedIcons)
-    {
-        std::filesystem::path path(requested);
-        if (path.is_absolute())
+        if (vm.count("clear") > 0)
         {
-            if (cacheIconFromAbsolutePath(cacheDir, requested, *iconSize))
-                ++succeeded;
+            clearCache(cacheDir);
         }
-        else
+
+        if (requestedIcons.empty())
         {
-            if (cacheIcon(cacheDir, requested, *iconSize))
-                ++succeeded;
+            std::cout << "Nothing to do\n";
+            return 0;
         }
+
+        if (!iconSize)
+        {
+            std::cerr << "Expected a valid icon size\n";
+            std::cerr << options << "\n";
+            return -1;
+        }
+
+        if (!checkCache(cacheDir))
+            return -1;
+
+        int succeeded = 0;
+        for (auto& requested: requestedIcons)
+        {
+            std::filesystem::path path(requested);
+            if (path.is_absolute())
+            {
+                if (cacheIconFromAbsolutePath(cacheDir, requested, iconSize))
+                    ++succeeded;
+            }
+            else
+            {
+                if (cacheIcon(cacheDir, requested, iconSize))
+                    ++succeeded;
+            }
+        }
+
+        return succeeded;
+
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Unexpected error: " << e.what() << "\n";
     }
 
-    return succeeded;
+    return -1;
 }
 
 
