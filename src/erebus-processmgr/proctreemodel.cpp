@@ -418,7 +418,7 @@ QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
             auto rawIcon = std::any_cast<Er::Bytes>(property.value);
             
             QPixmap pixmap;
-            if (!pixmap.loadFromData(reinterpret_cast<const uchar*>(rawIcon.bytes.data()), rawIcon.bytes.size()))
+            if (!pixmap.loadFromData(reinterpret_cast<const uchar*>(rawIcon.data()), rawIcon.size()))
             {
                 m_log->write(Er::Log::Level::Warning, LogNowhere(), "Failed to load icon for %s", key.toUtf8().constData());
                 return QVariant();
