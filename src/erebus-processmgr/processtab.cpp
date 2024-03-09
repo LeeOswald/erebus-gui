@@ -55,6 +55,7 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     m_treeView->setSortingEnabled(false);
     m_treeView->header()->setProperty("showSortIndicator", QVariant(false));
     m_treeView->header()->setStretchLastSection(false);
+    m_treeView->setUniformRowHeights(true);
 
     layout->addWidget(m_treeView, 0, 0, 1, 1);
 
