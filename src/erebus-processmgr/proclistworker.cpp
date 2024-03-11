@@ -33,16 +33,16 @@ ProcessListWorker::ProcessListWorker(Er::Client::IClient* client, Er::Log::ILog*
     static bool s_metatypesRegistered = registerMetatypes();
 }
 
-void ProcessListWorker::refresh(Er::ProcessProps::PropMask required, int threshold)
+void ProcessListWorker::refresh(Er::ProcessProps::PropMask required, int trackDuration, bool manual)
 {
     Er::protectedCall<void>(
         m_log,
         LogInstance("ProcessWorker"),
-        [this, required, threshold]()
+        [this, required, trackDuration, manual]()
         {
-            auto changeset = m_processList->collect(required, std::chrono::milliseconds(threshold));
+            auto changeset = m_processList->collect(required, std::chrono::milliseconds(trackDuration));
 
-            emit dataReady(changeset);
+            emit dataReady(changeset, manual);
         }
     );
 }

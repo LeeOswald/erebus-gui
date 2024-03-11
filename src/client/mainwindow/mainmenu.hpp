@@ -24,8 +24,8 @@ struct MainMenu final
         : menuBar(new QMenuBar(mainWindow))
         , menuFile(menuBar->addMenu(QCoreApplication::translate("MainMenu", "File", nullptr)))
         , menuView(menuBar->addMenu(QCoreApplication::translate("MainMenu", "View", nullptr)))
-        , actionAlwaysOnTop(new QAction(QCoreApplication::translate("ViewMenu", "Always On Top", nullptr), mainWindow))
-        , actionHideOnClose(new QAction(QCoreApplication::translate("ViewMenu", "Hide When Minimized", nullptr), mainWindow))
+        , actionAlwaysOnTop(new QAction(QCoreApplication::translate("ViewMenu", "Always on top", nullptr), mainWindow))
+        , actionHideOnClose(new QAction(QCoreApplication::translate("ViewMenu", "Hide when minimized", nullptr), mainWindow))
         , actionLog(new QAction(QCoreApplication::translate("FileMenu", "Log", nullptr), mainWindow))
         , actionExit(new QAction(QCoreApplication::translate("FileMenu", "Exit", nullptr), mainWindow))
     {

@@ -28,6 +28,7 @@ public:
     ~ProcessTreeModel();
     explicit ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset> changeset, const ProcessColumns& columns, QObject* parent = nullptr);
 
+    void setColumns(const ProcessColumns& columns);
     std::vector<QModelIndex> update(std::shared_ptr<Changeset> changeset);
 
     QVariant data(const QModelIndex& index, int role) const override;
@@ -59,7 +60,7 @@ private:
 
     Er::Log::ILog* m_log;
     std::unique_ptr<ItemTree> m_tree;
-    const ProcessColumns& m_columns;
+    const ProcessColumns* m_columns;
     static constexpr size_t IconCacheSize = 1024;
     mutable Er::LruCache<QString, QIcon> m_iconCache; // comm -> icon
 };

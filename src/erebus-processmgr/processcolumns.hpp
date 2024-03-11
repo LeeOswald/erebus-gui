@@ -29,35 +29,38 @@ struct ProcessColumnDef
     unsigned id;      // index in ProcessProps::PropIndices
     Type type;
     const char* label;
+    unsigned minWidth;
 
     constexpr ProcessColumnDef() noexcept
         : id(InvalidId)
         , type(Type::Regular)
         , label(nullptr)
+        , minWidth(30)
     {}
 
-    constexpr ProcessColumnDef(unsigned id, Type type, const char* label) noexcept
+    constexpr ProcessColumnDef(unsigned id, Type type, const char* label, unsigned minWidth) noexcept
         : id(id)
         , type(type)
         , label(label)
+        , minWidth(minWidth)
     {}
 };
 
 
 constexpr ProcessColumnDef ProcessColumnDefs[] =
 {
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Comm, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("Name")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Pid, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("PID")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::PPid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Parent PID")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::PGrp, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Group ID")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Tpgid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Terminal Group ID")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Session, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Session ID")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Ruid, ProcessColumnDef::Type::Default, QT_TR_NOOP("User ID")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::User, ProcessColumnDef::Type::Default, QT_TR_NOOP("User Name")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::CmdLine, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Command Line")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Exe, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Executable Name")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::StartTime, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Start Time")),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::State, ProcessColumnDef::Type::Default, QT_TR_NOOP("State")),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::Comm, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("Name"), 200),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::Pid, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("PID"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::PPid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Parent PID"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::PGrp, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Group ID"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::Tpgid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Terminal Group ID"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::Session, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Session ID"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::Ruid, ProcessColumnDef::Type::Default, QT_TR_NOOP("User ID"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::User, ProcessColumnDef::Type::Default, QT_TR_NOOP("User Name"), 100),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::CmdLine, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Command Line"), 300),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::Exe, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Executable Name"), 300),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::StartTime, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Start Time"), 100),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::State, ProcessColumnDef::Type::Default, QT_TR_NOOP("State"), 30),
 };
 
 
@@ -79,7 +82,7 @@ struct ProcessColumn
         : id(def.id)
         , type(def.type)
         , label(Erc::fromUtf8(def.label))
-        , width(def.id == Er::ProcessProps::PropIndices::Comm ? Erp::Settings::MinLabelColumnWidth : Erp::Settings::MinColumnWidth)
+        , width(def.minWidth)
     {}
 
     ProcessColumn(unsigned id, ProcessColumnDef::Type type, const char* label, unsigned width) noexcept
@@ -98,6 +101,8 @@ void saveProcessColumns(Erc::ISettingsStorage* settings, const ProcessColumns& c
 ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings);
 
 Er::ProcessProps::PropMask makePropMask(const ProcessColumns& columns) noexcept;
+
+bool isProcessColumnsOrderSame(const ProcessColumns& prev, const ProcessColumns& current);
 
 
 } // namespace Private {}

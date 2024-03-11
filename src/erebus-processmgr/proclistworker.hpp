@@ -27,10 +27,10 @@ public:
     explicit ProcessListWorker(Er::Client::IClient* client, Er::Log::ILog* log, QObject* parent);
 
 public slots:
-    void refresh(Er::ProcessProps::PropMask required, int threshold);
+    void refresh(Er::ProcessProps::PropMask required, int trackDuration, bool manual);
 
 signals:
-    void dataReady(ProcessChangesetPtr);
+    void dataReady(ProcessChangesetPtr, bool);
 
 private:
     Er::Log::ILog* m_log;

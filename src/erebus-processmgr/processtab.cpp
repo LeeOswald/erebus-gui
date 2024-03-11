@@ -2,7 +2,6 @@
 
 #include <QGridLayout>
 #include <QHeaderView>
-#include <QTimer>
 
 namespace Erp
 {
@@ -13,6 +12,8 @@ namespace Private
 
 ProcessTab::~ProcessTab()
 {
+    m_refreshTimer->stop();
+    
     saveColumns();
 
     m_worker.clear();
@@ -35,7 +36,10 @@ ProcessTab::~ProcessTab()
 ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* client, const std::string& endpoint)
     : QObject(params.tabWidget)
     , m_params(params)
+    , m_autoRefresh(Erc::Option<bool>::get(params.settings, Erp::Settings::autoRefresh, true))
     , m_refreshRate(Erc::Option<unsigned>::get(params.settings, Erp::Settings::refreshRate, Erp::Settings::RefreshRateDefault))
+    , m_trackDuration(Erc::Option<unsigned>::get(params.settings, Erp::Settings::trackDuration, Erp::Settings::TrackDurationDefault))
+    , m_refreshTimer(new QTimer(this))
     , m_columns(loadProcessColumns(m_params.settings))
     , m_required(makePropMask(m_columns))
     , m_client(client)
@@ -67,7 +71,22 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     if (m_refreshRate < 500)
         m_refreshRate = 500;
 
-    QTimer::singleShot(0, this, SLOT(refresh()));
+    m_refreshTimer->setSingleShot(true);
+    connect(m_refreshTimer, &QTimer::timeout, this, [this]() { refresh(false); });
+    m_refreshTimer->start(m_refreshRate);
+}
+
+void ProcessTab::setAutoRefresh(bool autoRefresh)
+{
+    auto prev = m_autoRefresh;
+    m_autoRefresh = autoRefresh;
+
+    m_refreshTimer->stop();
+
+    if (autoRefresh && !prev)
+    {
+        m_refreshTimer->start(m_refreshRate);
+    }
 }
 
 void ProcessTab::setRefreshInterval(unsigned interval)
@@ -94,10 +113,9 @@ void ProcessTab::saveColumns()
 
 void ProcessTab::reloadColumns()
 {
-    delete m_model;
-    m_model = nullptr;
-
+    auto prevColumns = m_columns;
     m_columns = loadProcessColumns(m_params.settings);
+    m_columnsChanged = !isProcessColumnsOrderSame(prevColumns, m_columns);
     m_required = makePropMask(m_columns);
     requireAdditionalProps(m_required);
 }
@@ -115,20 +133,22 @@ void ProcessTab::startWorker()
     m_worker->moveToThread(m_thread);
 
     // know when worker has data
-    connect(m_worker, SIGNAL(dataReady(ProcessChangesetPtr)), this, SLOT(dataReady(ProcessChangesetPtr)));
+    connect(m_worker, SIGNAL(dataReady(ProcessChangesetPtr,bool)), this, SLOT(dataReady(ProcessChangesetPtr,bool)));
 
     m_thread->start();
 }
 
-void ProcessTab::refresh()
+void ProcessTab::refresh(bool manual)
 {
     if (m_worker)
     {
-        QMetaObject::invokeMethod(m_worker, "refresh", Qt::AutoConnection, Q_ARG(Er::ProcessProps::PropMask, m_required), Q_ARG(int, 5000));
+        LogDebug(m_params.log, LogInstance("ProcessTab"), "Refreshing...");
+
+        QMetaObject::invokeMethod(m_worker, "refresh", Qt::AutoConnection, Q_ARG(Er::ProcessProps::PropMask, m_required), Q_ARG(int, m_trackDuration), Q_ARG(bool, manual));
     }
 }
 
-void ProcessTab::dataReady(ProcessChangesetPtr changeset)
+void ProcessTab::dataReady(ProcessChangesetPtr changeset, bool manual)
 {
     Er::protectedCall<void>(
         m_params.log,
@@ -146,6 +166,14 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset)
             }
             else
             {
+                if (m_columnsChanged)
+                {
+                    m_columnsChanged = false;
+                    m_model->setColumns(m_columns);
+
+                    restoreColumnWidths();
+                }
+
                 // QTreeView does not expand new items automatically; we need to do this explicitly
                 auto parentsToExpand = m_model->update(changeset);
                 for (auto& index : parentsToExpand)
@@ -156,8 +184,11 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset)
         }
     );
 
-    // schedule the next refresh
-    QTimer::singleShot(m_refreshRate, this, SLOT(refresh()));
+    if (!manual && m_autoRefresh)
+    {
+        // schedule the next refresh
+        m_refreshTimer->start(m_refreshRate);
+    }
 }
 
 void ProcessTab::restoreColumnWidths()

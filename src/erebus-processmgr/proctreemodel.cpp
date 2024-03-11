@@ -14,10 +14,33 @@ ProcessTreeModel::~ProcessTreeModel()
 ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset> changeset, const ProcessColumns& columns, QObject* parent)
     : QAbstractItemModel(parent)
     , m_log(log)
-    , m_columns(columns)
+    , m_columns(&columns)
     , m_iconCache(IconCacheSize)
 {
+    Q_ASSERT(columns.size() >= 2);
+    Q_ASSERT(columns[0].id == Er::ProcessProps::PropIndices::Comm);
+    Q_ASSERT(columns[1].id == Er::ProcessProps::PropIndices::Pid);
+
     update(changeset);
+}
+
+void ProcessTreeModel::setColumns(const ProcessColumns& columns)
+{
+    Q_ASSERT(columns.size() >= 2);
+    Q_ASSERT(columns[0].id == Er::ProcessProps::PropIndices::Comm);
+    Q_ASSERT(columns[1].id == Er::ProcessProps::PropIndices::Pid);
+
+    // remove everything except [Comm] and [Pid] which are mandatory
+    auto toRemove = (m_columns->size() > 2) ? (m_columns->size() - 2) : 0;
+    if (toRemove)
+        removeColumns(2, toRemove);
+
+    // and then insert any columns required
+    auto toInsert = (columns.size() > 2) ? (columns.size() - 2) : 0;
+    if (toInsert)
+        insertColumns(2, toInsert);
+
+    m_columns = &columns;
 }
 
 std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
@@ -94,7 +117,7 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
                 // existing item
                 QVector<int> roles;
                 roles.push_back(Qt::DisplayRole);
-                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns->size(), index(node->parent())), roles);
             }
         }
 
@@ -112,7 +135,7 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
             {
                 QVector<int> roles;
                 roles.push_back(Qt::BackgroundRole);
-                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns->size(), index(node->parent())), roles);
 
                 node->statePainted = locked->state();
             }
@@ -132,7 +155,7 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
             {
                 QVector<int> roles;
                 roles.push_back(Qt::BackgroundRole);
-                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns.size(), index(node->parent())), roles);
+                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns->size(), index(node->parent())), roles);
             }
         }
     }
@@ -172,12 +195,12 @@ QVariant ProcessTreeModel::headerData(int section, Qt::Orientation orientation, 
     if (orientation != Qt::Horizontal)
         return QVariant();
 
-    if (section >= m_columns.size())
+    if (section >= m_columns->size())
         return QVariant();
 
     if (role == Qt::DisplayRole)
     {
-        return QVariant(m_columns[section].label);
+        return QVariant((*m_columns)[section].label);
     }
 
     return QVariant();
@@ -240,7 +263,7 @@ int ProcessTreeModel::rowCount(const QModelIndex& parent) const
 
 int ProcessTreeModel::columnCount(const QModelIndex& parent) const
 {
-    return static_cast<int>(m_columns.size());
+    return static_cast<int>(m_columns->size());
 }
 
 QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id) const noexcept
@@ -270,10 +293,10 @@ QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id)
 
 QVariant ProcessTreeModel::textForCell(ItemTreeNode* item, int column) const
 {
-    if (column >= m_columns.size())
+    if (column >= m_columns->size())
         return QVariant();
 
-    auto id = m_columns[column].id;
+    auto id = (*m_columns)[column].id;
 
     if (!item->data()->valid)
     {
@@ -336,10 +359,10 @@ QVariant ProcessTreeModel::textForCell(ItemTreeNode* item, int column) const
 
 QVariant ProcessTreeModel::tooltipForCell(ItemTreeNode* item, int column) const
 {
-    if (column >= m_columns.size())
+    if (column >= m_columns->size())
         return QVariant();
 
-    auto id = m_columns[column].id;
+    auto id = (*m_columns)[column].id;
 
     if (!item->data()->valid)
     {

@@ -30,10 +30,13 @@ public:
     explicit ProcessMgrPlugin(const Erc::PluginParams& params)
         : QObject()
         , m_params(params)
+        , m_autoRefresh(Erc::Option<bool>::get(params.settings, Erp::Settings::autoRefresh, true))
         , m_refreshInterval(Erc::Option<unsigned>::get(params.settings, Erp::Settings::refreshRate, Erp::Settings::RefreshRateDefault))
         , m_menuProcess(params.mainMenu->addMenu(tr("Process")))
-        , m_actionRefreshInterval(new QAction(tr("Refresh Interval"), this))
-        , m_actionSelectColumns(new QAction(tr("Select Columns..."), this))
+        , m_actionAutoRefresh(new QAction(tr("Refresh automatically"), this))
+        , m_actionRefreshInterval(new QAction(tr("Refresh interval"), this))
+        , m_actionRefreshNow(new QAction(tr("Refresh now"), this))
+        , m_actionSelectColumns(new QAction(tr("Select columns..."), this))
         , m_refreshIntervalActionGroup(new QActionGroup(this))
     {
         if (m_refreshInterval < 500)
@@ -70,9 +73,17 @@ public:
         menuRefreshInterval->addAction(m_refresh10Action);
         m_refresh10Action->setChecked(m_refreshInterval == 10000);
 
-        m_menuProcess->addAction(m_actionSelectColumns);
+        m_menuProcess->addAction(m_actionAutoRefresh);
+        m_menuProcess->addAction(m_actionRefreshNow);
         m_menuProcess->addAction(m_actionRefreshInterval);
+        m_menuProcess->addSeparator();
+        m_menuProcess->addAction(m_actionSelectColumns);
 
+        m_actionAutoRefresh->setCheckable(true);
+        m_actionAutoRefresh->setChecked(m_autoRefresh);
+
+        QObject::connect(m_actionAutoRefresh, &QAction::triggered, this, &ProcessMgrPlugin::autoRefresh);
+        QObject::connect(m_actionRefreshNow, &QAction::triggered, this, &ProcessMgrPlugin::refreshNow);
         QObject::connect(m_actionSelectColumns, &QAction::triggered, this, &ProcessMgrPlugin::selectColumns);
 
         Er::ProcessProps::Private::registerAll();
@@ -112,33 +123,43 @@ private slots:
 
         auto columns = Erp::Private::loadProcessColumns(m_params.settings);
 
-        Erp::Private::ColumnsDlg dlg(columns, std::begin(Erp::Private::ProcessColumnDefs), std::end(Erp::Private::ProcessColumnDefs), m_params.tabWidget);
+        Erp::Private::ColumnsDlg dlg(columns, Erp::Private::ProcessColumnDefs, m_params.tabWidget);
         if (dlg.exec() != QDialog::Accepted)
             return;
 
         columns = dlg.columns();
-
-        // force min widths
-        for (auto& c: columns)
-        {
-            if (c.id == Er::ProcessProps::PropIndices::Comm)
-            {
-                if (c.width < Erp::Settings::MinLabelColumnWidth)
-                    c.width = Erp::Settings::MinLabelColumnWidth;
-            }
-            else
-            {
-                if (c.width < Erp::Settings::MinColumnWidth)
-                    c.width = Erp::Settings::MinColumnWidth;
-            }
-        }
-
         Erp::Private::saveProcessColumns(m_params.settings, columns);
-
 
         for (auto& tab: m_tabs)
         {
             tab.second->reloadColumns();
+        }
+    }
+
+    void autoRefresh()
+    {
+        if (m_autoRefresh)
+        {
+            m_autoRefresh = false;
+            m_actionAutoRefresh->setChecked(false);
+        }
+        else
+        {
+            m_autoRefresh = true;
+            m_actionAutoRefresh->setChecked(true);
+        }
+
+        for (auto& tab : m_tabs)
+        {
+            tab.second->setAutoRefresh(m_autoRefresh);
+        }
+    }
+
+    void refreshNow()
+    {
+        for (auto& tab : m_tabs)
+        {
+            tab.second->refresh(true);
         }
     }
 
@@ -162,9 +183,12 @@ private slots:
 
 private:
     Erc::PluginParams m_params;
+    bool m_autoRefresh;
     unsigned m_refreshInterval;
     QMenu* m_menuProcess;
     QAction* m_actionSelectColumns;
+    QAction* m_actionAutoRefresh;
+    QAction* m_actionRefreshNow;
     QAction* m_actionRefreshInterval;
     QActionGroup* m_refreshIntervalActionGroup;
     QAction* m_refresh05Action;

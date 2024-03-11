@@ -4,6 +4,8 @@
 #include <QDataStream>
 #include <QIODevice>
 
+#include <span>
+
 
 namespace Erp
 {
@@ -32,27 +34,19 @@ void saveProcessColumns(Erc::ISettingsStorage* settings, const ProcessColumns& c
 namespace
 {
 
-ProcessColumns loadDefaultColumns(const ProcessColumnDef* columnDefBegin, const ProcessColumnDef* columnDefEnd)
+ProcessColumns loadDefaultColumns(std::span<const ProcessColumnDef> columnDefs)
 {
     ProcessColumns columns;
 
-    for (auto c = columnDefBegin; c != columnDefEnd && (c->id != ProcessColumnDef::InvalidId); ++c)
+    for (auto& c: columnDefs)
     {
-        if (c->type >= ProcessColumnDef::Type::Default)
+        if (c.type >= ProcessColumnDef::Type::Default)
         {
-            columns.append(ProcessColumn(*c));
+            columns.append(ProcessColumn(c));
 
             auto& column = columns.back();
-            if (column.id == Er::ProcessProps::PropIndices::Comm)
-            {
-                if (column.width < Erp::Settings::MinLabelColumnWidth)
-                    column.width = Erp::Settings::MinLabelColumnWidth;
-            }
-            else
-            {
-                if (column.width < Erp::Settings::MinColumnWidth)
-                    column.width = Erp::Settings::MinColumnWidth;
-            }
+            if (column.width < c.minWidth)
+                column.width = c.minWidth;
         }
     }
 
@@ -66,7 +60,7 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
     auto a = Erc::Option<QByteArray>::get(settings, Erp::Settings::columns, QByteArray());
     if (a.isNull() || a.isEmpty())
     {
-        return loadDefaultColumns(std::begin(ProcessColumnDefs), std::end(ProcessColumnDefs));
+        return loadDefaultColumns(ProcessColumnDefs);
     }
 
     QDataStream s(&a, QIODevice::ReadOnly);
@@ -74,7 +68,7 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
     s >> count;
     if (count < 1)
     {
-        return loadDefaultColumns(std::begin(ProcessColumnDefs), std::end(ProcessColumnDefs));
+        return loadDefaultColumns(ProcessColumnDefs);
     }
 
     ProcessColumns columns;
@@ -98,6 +92,10 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
         if (def == std::end(ProcessColumnDefs))
             continue;
 
+        // force min width
+        if (width < def->minWidth)
+            width = def->minWidth;
+
         // check if already loaded
         auto loaded = std::find_if(columns.begin(), columns.end(), [id](const ProcessColumn& c) { return c.id == id; });
         if (loaded != columns.end())
@@ -107,7 +105,7 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
     }
 
     // append mandatory columns
-    for (auto c = std::begin(ProcessColumnDefs); c != std::end(ProcessColumnDefs) && (c->id != ProcessColumnDef::InvalidId); ++c)
+    for (auto c = std::begin(ProcessColumnDefs); c != std::end(ProcessColumnDefs); ++c)
     {
         if (c->type == ProcessColumnDef::Type::Mandatory)
         {
@@ -117,22 +115,11 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
         }
     }
 
-    // force min widths
-    for (auto& c: columns)
-    {
-        if (c.width < Settings::MinColumnWidth)
-            c.width = Settings::MinColumnWidth;
-    }
-
-    // force [Name] column to be the first one
+    // force [Comm] column to be the first one
     for (qsizetype index = 0; index < columns.size(); ++index)
     {
         if (columns[index].id == Er::ProcessProps::PropIndices::Comm)
         {
-            // force min [Name] width
-            if (columns[index].width < Settings::MinLabelColumnWidth)
-                columns[index].width = Settings::MinLabelColumnWidth;
-
             // force [Name] to be the first column
             if (index > 0)
                 std::swap(columns[index], columns[0]);
@@ -155,6 +142,29 @@ Er::ProcessProps::PropMask makePropMask(const ProcessColumns& columns) noexcept
     }
 
     return mask;
+}
+
+bool isProcessColumnsOrderSame(const ProcessColumns& prev, const ProcessColumns& current)
+{
+    if (prev.size() != current.size())
+        return false;
+
+    auto itPrev = prev.begin();
+    auto itCurr = current.begin();
+
+    while (itPrev != prev.end())
+    {
+        if (itCurr == current.end())
+            return false;
+
+        if (itCurr->id != itPrev->id)
+            return false;
+
+        ++itPrev;
+        ++itCurr;
+    }
+
+    return true;
 }
 
 

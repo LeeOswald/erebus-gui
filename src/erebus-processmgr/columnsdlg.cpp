@@ -13,7 +13,7 @@ ColumnsDlg::~ColumnsDlg()
     delete m_ui;
 }
 
-ColumnsDlg::ColumnsDlg(const ProcessColumns& columns, const ProcessColumnDef* columnDefsBegin, const ProcessColumnDef* columnDefsEnd, QWidget* parent)
+ColumnsDlg::ColumnsDlg(const ProcessColumns& columns, std::span<const ProcessColumnDef> columnDefs, QWidget* parent)
     : QDialog(parent)
     , m_ui(new Ui::ColumnsDlg())
     , m_columns()
@@ -38,12 +38,12 @@ ColumnsDlg::ColumnsDlg(const ProcessColumns& columns, const ProcessColumnDef* co
     }
 
     // inactive columns
-    for (auto def = columnDefsBegin; def != columnDefsEnd && (def->id != ProcessColumnDef::InvalidId); ++def)
+    for (auto& def: columnDefs)
     {
-        auto it = std::find_if(columns.begin(), columns.end(), [id = def->id](const ProcessColumn& c) { return c.id == id; });
+        auto it = std::find_if(columns.begin(), columns.end(), [id = def.id](const ProcessColumn& c) { return c.id == id; });
         if (it == columns.end())
         {
-            auto item = new Item(*def, m_ui->listInactive);
+            auto item = new Item(def, m_ui->listInactive);
             m_inactive.push_back(item);
             m_ui->listInactive->addItem(item);
         }

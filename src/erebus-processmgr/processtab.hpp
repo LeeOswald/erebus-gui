@@ -8,6 +8,7 @@
 #include "proctreemodel.hpp"
 
 #include <QPointer>
+#include <QTimer>
 #include <QTreeView>
 #include <QThread>
 #include <QWidget>
@@ -30,11 +31,14 @@ public:
     void saveColumns();
     void reloadColumns();
     void setRefreshInterval(unsigned interval);
+    void setAutoRefresh(bool autoRefresh);
+
+public slots:
+    void refresh(bool manual);
 
 private slots:
-    void dataReady(ProcessChangesetPtr changeset);
-    void refresh();
-
+    void dataReady(ProcessChangesetPtr changeset, bool manual);
+    
 private:
     void captureColumnWidths();
     void restoreColumnWidths();
@@ -42,8 +46,12 @@ private:
     static void requireAdditionalProps(Er::ProcessProps::PropMask& required) noexcept;
 
     Erc::PluginParams m_params;
+    bool m_autoRefresh;
     unsigned m_refreshRate; // msec
+    unsigned m_trackDuration;
+    QTimer* m_refreshTimer;
     ProcessColumns m_columns;
+    bool m_columnsChanged = false;
     Er::ProcessProps::PropMask m_required;
     Er::Client::IClient* m_client;
     std::string m_endpoint;

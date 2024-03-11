@@ -9,11 +9,15 @@ namespace Settings
 {
 
 constexpr std::string_view columns("processtab/columns");
+
+constexpr std::string_view autoRefresh("processtab/auto_refresh");
+
 constexpr std::string_view refreshRate("processtab/refresh_rate");
 constexpr unsigned RefreshRateDefault = 1000; // 1 sec
 
-const unsigned MinColumnWidth = 30;
-const unsigned MinLabelColumnWidth = 200;
+constexpr std::string_view trackDuration("processtab/track_duration");
+constexpr unsigned TrackDurationDefault = 5000; // 5 sec
+
 
 } // namespace Settings {}
 

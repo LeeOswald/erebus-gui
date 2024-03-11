@@ -7,6 +7,8 @@
 
 #include <QDialog>
 
+#include <span>
+
 
 namespace Erp
 {
@@ -21,7 +23,7 @@ class ColumnsDlg final
 
 public:
     ~ColumnsDlg();
-    explicit ColumnsDlg(const ProcessColumns& columns, const ProcessColumnDef* columnDefsBegin, const ProcessColumnDef* columnDefsEnd, QWidget* parent = nullptr);
+    explicit ColumnsDlg(const ProcessColumns& columns, std::span<const ProcessColumnDef> columnDefs, QWidget* parent = nullptr);
 
     const ProcessColumns& columns() const
     {
