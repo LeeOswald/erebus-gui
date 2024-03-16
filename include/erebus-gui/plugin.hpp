@@ -6,6 +6,7 @@
 #include <erebus/log.hxx>
 
 #include <QMenuBar>
+#include <QStatusBar>
 #include <QString>
 #include <QTabWidget>
 
@@ -18,6 +19,7 @@ struct PluginParams
     Er::Log::ILog* log = nullptr;
     QTabWidget* tabWidget = nullptr;
     QMenuBar* mainMenu = nullptr;
+    QStatusBar* statusBar = nullptr;
 
     constexpr PluginParams() noexcept = default;
 
@@ -25,12 +27,14 @@ struct PluginParams
         Erc::ISettingsStorage* settings,
         Er::Log::ILog* log,
         QTabWidget* tabWidget,
-        QMenuBar* mainMenu
+        QMenuBar* mainMenu,
+        QStatusBar* statusBar
     )
         : settings(settings)
         , log(log)
         , tabWidget(tabWidget)
         , mainMenu(mainMenu)
+        , statusBar(statusBar)
     {
     }
 };

@@ -24,7 +24,8 @@ public:
     ~ProcessMgrPlugin()
     {
         delete m_menuProcess;
-        Er::ProcessProps::Private::unregisterAll();
+        Er::ProcessProps::Private::unregisterAll(m_params.log);
+        Er::ProcessesGlobal::Private::unregisterAll(m_params.log);
     }
 
     explicit ProcessMgrPlugin(const Erc::PluginParams& params)
@@ -86,7 +87,8 @@ public:
         QObject::connect(m_actionRefreshNow, &QAction::triggered, this, &ProcessMgrPlugin::refreshNow);
         QObject::connect(m_actionSelectColumns, &QAction::triggered, this, &ProcessMgrPlugin::selectColumns);
 
-        Er::ProcessProps::Private::registerAll();
+        Er::ProcessesGlobal::Private::registerAll(m_params.log);
+        Er::ProcessProps::Private::registerAll(m_params.log);
     }
 
     void addConnection(Er::Client::IClient* client, const std::string& endpoint) override

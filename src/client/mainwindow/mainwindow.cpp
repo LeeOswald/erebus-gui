@@ -46,8 +46,7 @@ MainWindow::MainWindow(
     , m_logView(new LogView(log, logCtl, settings, this, m_mainSplitter, m_mainMenu.actionLog))
     , m_tabWidget(new QTabWidget(m_mainSplitter))
     , m_statusbar(new QStatusBar(this))
-    , m_statusLabel(new QLabel(m_statusbar))
-    , m_pluginMgr(Erc::PluginParams(settings, log, m_tabWidget, m_mainMenu.menuBar))
+    , m_pluginMgr(Erc::PluginParams(settings, log, m_tabWidget, m_mainMenu.menuBar, m_statusbar))
 {
     resize(1024, 768);
     QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -122,9 +121,6 @@ MainWindow::MainWindow(
 
     m_statusbar->setObjectName("statusBar");
     setStatusBar(m_statusbar);
-
-    m_statusLabel->setText(tr("Processes: 0"));
-    m_statusbar->addPermanentWidget(m_statusLabel);
 
     QObject::connect(this, SIGNAL(connected(std::shared_ptr<Er::Client::IClient>,std::string)), this, SLOT(onConnected(std::shared_ptr<Er::Client::IClient>,std::string)));
     QObject::connect(this, SIGNAL(disconnected(Er::Client::IClient*)), this, SLOT(onDisconnected(Er::Client::IClient*)));

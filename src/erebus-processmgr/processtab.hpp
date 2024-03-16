@@ -7,6 +7,7 @@
 #include "proclistworker.hpp"
 #include "proctreemodel.hpp"
 
+#include <QLabel>
 #include <QPointer>
 #include <QTimer>
 #include <QTreeView>
@@ -60,6 +61,7 @@ private:
     QPointer<QThread> m_thread;
     QPointer<ProcessListWorker> m_worker;
     ProcessTreeModel* m_model = nullptr;
+    QLabel* m_labelTotalProcesses;
 };
 
 } // namespace Private {}

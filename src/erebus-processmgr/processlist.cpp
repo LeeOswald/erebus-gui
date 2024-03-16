@@ -158,8 +158,13 @@ public:
         auto now = Item::now();
 
         auto diff = std::make_shared<Changeset>(firstRun);
+        
         enumerateProcesses(firstRun, now, required, trackThreshold, diff.get());
         trackNewOrDeletedProcesses(now, trackThreshold, diff.get());
+
+        // this should go after enumerateProcesses() so that the server can just send 
+        // what it has collected during enumerateProcesses()
+        readProcessesGlobal(diff.get());
 
         return diff;
     }
@@ -183,6 +188,30 @@ private:
             now,
             firstRun
         );
+    }
+
+    void readProcessesGlobal(Changeset* diff) noexcept
+    {
+        Er::protectedCall<void>(
+            m_log,
+            LogInstance("ProcessListImpl"),
+            [this, diff]()
+            {
+                return readProcessesGlobalImpl(diff);
+            }
+        );
+    }
+
+    void readProcessesGlobalImpl(Changeset* diff)
+    {
+        Er::ProcessesGlobal::PropMask required{ Er::ProcessesGlobal::PropIndices::ProcessCount };
+        Er::PropertyBag req;
+        req.insert({ Er::ProcessesGlobal::RequiredFields::Id::value, Er::Property(Er::ProcessesGlobal::RequiredFields::Id::value, required.pack<uint64_t>()) });
+        req.insert({ Er::ProcessesGlobal::Lazy::Id::value, Er::Property(Er::ProcessesGlobal::Lazy::Id::value, true) });
+
+        auto response = m_client->request(Er::ProcessRequests::ProcessesGlobal, req);
+        
+        diff->totalProcesses = Er::getProperty(response, Er::ProcessesGlobal::ProcessCount::Id::value, std::size_t(0));
     }
 
     void enumerateProcesses(bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff) noexcept

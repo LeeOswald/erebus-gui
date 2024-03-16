@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
             return EXIT_SUCCESS;
         }
 
-        Er::LibScope er;
+        Er::LibScope er(&log);
         Er::Client::LibParams cltParams(&log, log.level());
         Er::Client::LibScope cs(cltParams);
 

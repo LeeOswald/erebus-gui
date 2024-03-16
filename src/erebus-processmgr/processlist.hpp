@@ -121,6 +121,7 @@ struct IProcessList
         std::set<ItemPtr, ItemIsPredecessor> tracked;
         std::set<ItemPtr, ItemIsPredecessor> untracked;
         std::set<ItemPtr, ItemIsSuccessor> purged;
+        std::size_t totalProcesses = 0;
 
         explicit Changeset(bool firstRun) noexcept
             : firstRun(firstRun)

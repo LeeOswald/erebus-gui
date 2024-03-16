@@ -29,6 +29,9 @@ ProcessTab::~ProcessTab()
     Q_ASSERT(index >= 0);
     m_params.tabWidget->removeTab(index);
 
+    m_params.statusBar->removeWidget(m_labelTotalProcesses);
+    delete m_labelTotalProcesses;
+
     delete m_treeView;
     delete m_widget;
 }
@@ -46,6 +49,7 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     , m_endpoint(endpoint)
     , m_widget(new QWidget(params.tabWidget))
     , m_treeView(new QTreeView(m_widget))
+    , m_labelTotalProcesses(new QLabel(m_widget))
 {
     requireAdditionalProps(m_required);
 
@@ -65,6 +69,8 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
 
     params.tabWidget->addTab(m_widget, QString());
     params.tabWidget->setTabText(params.tabWidget->indexOf(m_widget), tr("Processes"));
+
+    params.statusBar->addWidget(m_labelTotalProcesses);
 
     startWorker();
 
@@ -181,6 +187,8 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset, bool manual)
                     m_treeView->expandRecursively(index);
                 }
             }
+
+            m_labelTotalProcesses->setText(tr("Processes: ") + QString::number(changeset->totalProcesses));
         }
     );
 

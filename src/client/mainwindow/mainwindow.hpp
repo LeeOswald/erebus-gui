@@ -94,7 +94,6 @@ private:
     LogView* m_logView;
     QTabWidget* m_tabWidget;
     QStatusBar* m_statusbar;
-    QLabel* m_statusLabel;
     std::shared_ptr<Er::Client::IClient> m_client;
     std::optional<Er::Client::Params> m_connectionParams;
     Erc::Private::PluginManager m_pluginMgr;
