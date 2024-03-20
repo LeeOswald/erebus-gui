@@ -29,6 +29,9 @@ ProcessTab::~ProcessTab()
     Q_ASSERT(index >= 0);
     m_params.tabWidget->removeTab(index);
 
+    m_params.statusBar->removeWidget(m_labelCpuUsage);
+    delete m_labelCpuUsage;
+
     m_params.statusBar->removeWidget(m_labelTotalProcesses);
     delete m_labelTotalProcesses;
 
@@ -50,6 +53,7 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     , m_widget(new QWidget(params.tabWidget))
     , m_treeView(new QTreeView(m_widget))
     , m_labelTotalProcesses(new QLabel(m_widget))
+    , m_labelCpuUsage(new QLabel(m_widget))
 {
     requireAdditionalProps(m_required);
 
@@ -71,11 +75,12 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
     params.tabWidget->setTabText(params.tabWidget->indexOf(m_widget), tr("Processes"));
 
     params.statusBar->addWidget(m_labelTotalProcesses);
+    params.statusBar->addWidget(m_labelCpuUsage);
 
     startWorker();
 
     if (m_refreshRate < 500)
-        m_refreshRate = 500;
+        m_refreshRate = 1000;
 
     m_refreshTimer->setSingleShot(true);
     connect(m_refreshTimer, &QTimer::timeout, this, [this]() { refresh(false); });
@@ -109,6 +114,8 @@ void ProcessTab::requireAdditionalProps(Er::ProcessProps::PropMask& required) no
     required.set(Er::ProcessProps::PropIndices::CmdLine);
     required.set(Er::ProcessProps::PropIndices::Exe);
     required.set(Er::ProcessProps::PropIndices::Icon);
+    required.set(Er::ProcessProps::PropIndices::UTime);
+    required.set(Er::ProcessProps::PropIndices::STime);
 }
 
 void ProcessTab::saveColumns()
@@ -189,6 +196,20 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset, bool manual)
             }
 
             m_labelTotalProcesses->setText(tr("Processes: ") + QString::number(changeset->totalProcesses));
+
+            if (changeset->firstRun)
+            {
+                m_labelCpuUsage->clear();
+            }
+            else
+            {
+                auto usage = (changeset->sTime + changeset->uTime) * 100.0 / changeset->rTime;
+                usage = Er::clamp(usage, 0.0, 100.0);
+
+                std::ostringstream ss;
+                ss << "CPU: " << std::fixed << std::setprecision(2) << usage << "%";
+                m_labelCpuUsage->setText(QString::fromLatin1(ss.str()));
+            }
         }
     );
 

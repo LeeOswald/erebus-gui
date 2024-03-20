@@ -62,6 +62,7 @@ private:
     QPointer<ProcessListWorker> m_worker;
     ProcessTreeModel* m_model = nullptr;
     QLabel* m_labelTotalProcesses;
+    QLabel* m_labelCpuUsage;
 };
 
 } // namespace Private {}

@@ -51,16 +51,21 @@ constexpr ProcessColumnDef ProcessColumnDefs[] =
 {
     ProcessColumnDef(Er::ProcessProps::PropIndices::Comm, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("Name"), 200),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Pid, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("PID"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::CpuUsage, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("CPU"), 30),
     ProcessColumnDef(Er::ProcessProps::PropIndices::PPid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Parent PID"), 30),
     ProcessColumnDef(Er::ProcessProps::PropIndices::PGrp, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Group ID"), 30),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Tpgid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Terminal Group ID"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::Tty, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Terminal"), 30),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Session, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Session ID"), 30),
     ProcessColumnDef(Er::ProcessProps::PropIndices::Ruid, ProcessColumnDef::Type::Default, QT_TR_NOOP("User ID"), 30),
     ProcessColumnDef(Er::ProcessProps::PropIndices::User, ProcessColumnDef::Type::Default, QT_TR_NOOP("User Name"), 100),
     ProcessColumnDef(Er::ProcessProps::PropIndices::CmdLine, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Command Line"), 300),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Exe, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Executable Name"), 300),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::Exe, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Executable"), 300),
     ProcessColumnDef(Er::ProcessProps::PropIndices::StartTime, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Start Time"), 100),
     ProcessColumnDef(Er::ProcessProps::PropIndices::State, ProcessColumnDef::Type::Default, QT_TR_NOOP("State"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::UTime, ProcessColumnDef::Type::Default, QT_TR_NOOP("CPU Time (User)"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::STime, ProcessColumnDef::Type::Default, QT_TR_NOOP("CPU Time (System)"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::ThreadCount, ProcessColumnDef::Type::Default, QT_TR_NOOP("Threads"), 30),
 };
 
 

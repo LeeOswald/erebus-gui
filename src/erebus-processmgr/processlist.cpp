@@ -78,6 +78,14 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         case Er::ProcessProps::Comm::Id::value:
             this->comm = Erc::fromUtf8(std::any_cast<std::string>(it->second.value));
             break;
+
+        case Er::ProcessProps::UTime::Id::value:
+            this->uTime = std::any_cast<double>(it->second.value);
+            break;
+
+        case Er::ProcessProps::STime::Id::value:
+            this->sTime = std::any_cast<double>(it->second.value);
+            break;
         }
     }
 
@@ -87,6 +95,13 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
 
 void ProcessInformation::updateFromDiff(const ProcessInformation& diff)
 {
+    this->uTimePrev = this->uTime;
+    this->sTimePrev = this->sTime;
+    this->uTime = 0.0;
+    this->sTime = 0.0;
+    this->uTimeDiff = std::nullopt;
+    this->sTimeDiff = std::nullopt;
+
     for (auto it = diff.properties.begin(); it != diff.properties.end(); ++it)
     {
         auto& diffProp = it->second;
@@ -119,6 +134,18 @@ void ProcessInformation::updateFromDiff(const ProcessInformation& diff)
 
         case Er::ProcessProps::Comm::Id::value:
             this->comm = diff.comm;
+            break;
+
+        case Er::ProcessProps::UTime::Id::value:
+            this->uTime = diff.uTime;
+            if (this->uTimePrev > 0.0)
+                this->uTimeDiff = this->uTime - this->uTimePrev;
+            break;
+
+        case Er::ProcessProps::STime::Id::value:
+            this->sTime = diff.sTime;
+            if (this->sTimePrev > 0.0)
+                this->sTimeDiff = this->sTime - this->sTimePrev;
             break;
         }
     }
@@ -204,7 +231,14 @@ private:
 
     void readProcessesGlobalImpl(Changeset* diff)
     {
-        Er::ProcessesGlobal::PropMask required{ Er::ProcessesGlobal::PropIndices::ProcessCount };
+        Er::ProcessesGlobal::PropMask required
+        { 
+            Er::ProcessesGlobal::PropIndices::ProcessCount,
+            Er::ProcessesGlobal::PropIndices::RTime,
+            Er::ProcessesGlobal::PropIndices::STime,
+            Er::ProcessesGlobal::PropIndices::UTime,
+        };
+
         Er::PropertyBag req;
         req.insert({ Er::ProcessesGlobal::RequiredFields::Id::value, Er::Property(Er::ProcessesGlobal::RequiredFields::Id::value, required.pack<uint64_t>()) });
         req.insert({ Er::ProcessesGlobal::Lazy::Id::value, Er::Property(Er::ProcessesGlobal::Lazy::Id::value, true) });
@@ -212,6 +246,19 @@ private:
         auto response = m_client->request(Er::ProcessRequests::ProcessesGlobal, req);
         
         diff->totalProcesses = Er::getProperty(response, Er::ProcessesGlobal::ProcessCount::Id::value, std::size_t(0));
+
+        m_rTimePrev = m_rTime;
+        m_rTime = Er::getProperty(response, Er::ProcessesGlobal::RTime::Id::value, 0.0);
+
+        m_sTimePrev = m_sTime;
+        m_sTime = Er::getProperty(response, Er::ProcessesGlobal::STime::Id::value, 0.0);
+
+        m_uTimePrev = m_uTime;
+        m_uTime = Er::getProperty(response, Er::ProcessesGlobal::UTime::Id::value, 0.0);
+
+        diff->rTime = m_rTime - m_rTimePrev;
+        diff->sTime = m_sTime - m_sTimePrev;
+        diff->uTime = m_uTime - m_uTimePrev;
     }
 
     void enumerateProcesses(bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff) noexcept
@@ -336,6 +383,12 @@ private:
     Er::Client::IClient::SessionId m_sessionId;
     ItemContainer m_collection;
     ItemContainer m_tracked; // processes being temporarily tracked as 'recently exited' or 'recently started'
+    double m_rTime = 0;
+    double m_rTimePrev = 0;
+    double m_uTime = 0;
+    double m_uTimePrev = 0;
+    double m_sTime = 0;
+    double m_sTimePrev = 0;
 };
 
 } // namespace {}

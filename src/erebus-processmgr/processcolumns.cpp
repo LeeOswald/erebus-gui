@@ -109,22 +109,29 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
     {
         if (c->type == ProcessColumnDef::Type::Mandatory)
         {
-            auto def = std::find_if(std::begin(ProcessColumnDefs), std::end(ProcessColumnDefs), [id = c->id](const ProcessColumnDef& c) { return c.id == id; });
-            if (def == std::end(ProcessColumnDefs))
-                columns.append(ProcessColumn(*def));
+            auto def = std::find_if(columns.begin(), columns.end(), [id = c->id](const ProcessColumn& c) { return c.id == id; });
+            if (def == columns.end())
+                columns.append(ProcessColumn(*c));
         }
     }
 
-    // force [Comm] column to be the first one
+    // [Comm], [PID] & [%CPU] are hardcoded and must precede any other columns
     for (qsizetype index = 0; index < columns.size(); ++index)
     {
         if (columns[index].id == Er::ProcessProps::PropIndices::Comm)
         {
-            // force [Name] to be the first column
-            if (index > 0)
+            if (index != 0)
                 std::swap(columns[index], columns[0]);
-
-            break;
+        }
+        else if (columns[index].id == Er::ProcessProps::PropIndices::Pid)
+        {
+            if (index != 1)
+                std::swap(columns[index], columns[1]);
+        }
+        else if (columns[index].id == Er::ProcessProps::PropIndices::CpuUsage)
+        {
+            if (index != 2)
+                std::swap(columns[index], columns[2]);
         }
     }
 

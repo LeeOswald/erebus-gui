@@ -40,6 +40,12 @@ struct ProcessInformation
     QString startTimeUtc;
     QString processState = QLatin1String("?");
     QString comm;
+    double uTime = 0.0; // user CPU time (sec)
+    double sTime = 0.0; // system CPU time (sec)
+    double uTimePrev = 0.0;
+    double sTimePrev = 0.0;
+    std::optional<double> uTimeDiff;
+    std::optional<double> sTimeDiff;
 
     ProcessInformation() noexcept = default;
 
@@ -122,6 +128,9 @@ struct IProcessList
         std::set<ItemPtr, ItemIsPredecessor> untracked;
         std::set<ItemPtr, ItemIsSuccessor> purged;
         std::size_t totalProcesses = 0;
+        double rTime = 0.0; // clock time diff (sec)
+        double sTime = 0.0; // system CPU time diff (sec)
+        double uTime = 0.0; // user CPU time diff (sec)
 
         explicit Changeset(bool firstRun) noexcept
             : firstRun(firstRun)

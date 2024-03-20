@@ -17,28 +17,30 @@ ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset
     , m_columns(&columns)
     , m_iconCache(IconCacheSize)
 {
-    Q_ASSERT(columns.size() >= 2);
+    Q_ASSERT(columns.size() >= 3);
     Q_ASSERT(columns[0].id == Er::ProcessProps::PropIndices::Comm);
     Q_ASSERT(columns[1].id == Er::ProcessProps::PropIndices::Pid);
+    Q_ASSERT(columns[2].id == Er::ProcessProps::PropIndices::CpuUsage);
 
     update(changeset);
 }
 
 void ProcessTreeModel::setColumns(const ProcessColumns& columns)
 {
-    Q_ASSERT(columns.size() >= 2);
+    Q_ASSERT(columns.size() >= 3);
     Q_ASSERT(columns[0].id == Er::ProcessProps::PropIndices::Comm);
     Q_ASSERT(columns[1].id == Er::ProcessProps::PropIndices::Pid);
+    Q_ASSERT(columns[2].id == Er::ProcessProps::PropIndices::CpuUsage);
 
-    // remove everything except [Comm] and [Pid] which are mandatory
-    auto toRemove = (m_columns->size() > 2) ? (m_columns->size() - 2) : 0;
+    // remove everything except [Comm], [Pid] & [%CPU] which are mandatory
+    auto toRemove = (m_columns->size() > 3) ? (m_columns->size() - 3) : 0;
     if (toRemove)
-        removeColumns(2, toRemove);
+        removeColumns(3, toRemove);
 
     // and then insert any columns required
-    auto toInsert = (columns.size() > 2) ? (columns.size() - 2) : 0;
+    auto toInsert = (columns.size() > 3) ? (columns.size() - 3) : 0;
     if (toInsert)
-        insertColumns(2, toInsert);
+        insertColumns(3, toInsert);
 
     m_columns = &columns;
 }
@@ -46,6 +48,9 @@ void ProcessTreeModel::setColumns(const ProcessColumns& columns)
 std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> changeset)
 {
     std::vector<QModelIndex> parentsToExpand;
+
+    m_firstRun = changeset->firstRun;
+    m_rTime = changeset->rTime;
 
     if (!m_tree)
     {
@@ -346,11 +351,45 @@ QVariant ProcessTreeModel::textForCell(ItemTreeNode* item, int column) const
     case Er::ProcessProps::PropIndices::Exe:
         return formatItemProperty(item, Er::ProcessProps::Exe::Id::value);
 
+    case Er::ProcessProps::PropIndices::ThreadCount:
+        return formatItemProperty(item, Er::ProcessProps::ThreadCount::Id::value);
+
+    case Er::ProcessProps::PropIndices::Tty:
+        return formatItemProperty(item, Er::ProcessProps::Tty::Id::value);
+
+    case Er::ProcessProps::PropIndices::STime:
+        return formatItemProperty(item, Er::ProcessProps::STime::Id::value);
+
+    case Er::ProcessProps::PropIndices::UTime:
+        return formatItemProperty(item, Er::ProcessProps::UTime::Id::value);
+
     case Er::ProcessProps::PropIndices::StartTime:
         return QVariant(item->data()->startTimeUtc);
 
     case Er::ProcessProps::PropIndices::State:
         return QVariant(item->data()->processState);
+
+    case Er::ProcessProps::PropIndices::CpuUsage:
+    {
+        if (m_firstRun || (m_rTime < 0.0000001))
+            return QVariant();
+
+        auto s = item->data()->sTimeDiff;
+        auto u = item->data()->uTimeDiff;
+
+        if (!s && !u)
+            return QVariant();
+
+        auto usage = ((s ? *s : 0.0) + (u ? *u : 0.0)) * 100.0 / m_rTime;
+        usage = Er::clamp(usage, 0.0, 100.0);
+        if (usage < 0.01)
+            return QVariant();
+
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(2) << usage;
+
+        return QVariant(QString::fromLatin1(ss.str()));
+    }
 
     default:
         return QVariant();

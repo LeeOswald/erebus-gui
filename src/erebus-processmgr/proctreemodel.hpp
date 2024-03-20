@@ -63,6 +63,8 @@ private:
     const ProcessColumns* m_columns;
     static constexpr size_t IconCacheSize = 1024;
     mutable Er::LruCache<QString, QIcon> m_iconCache; // comm -> icon
+    bool m_firstRun = false;
+    double m_rTime = 0.0;
 };
 
 
