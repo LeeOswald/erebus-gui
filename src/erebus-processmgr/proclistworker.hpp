@@ -28,9 +28,11 @@ public:
 
 public slots:
     void refresh(Er::ProcessProps::PropMask required, int trackDuration, bool manual);
+    void kill(quint64 pid, QLatin1String signame);
 
 signals:
     void dataReady(ProcessChangesetPtr, bool);
+    void posixResult(Erp::Private::IProcessList::PosixResult);
 
 private:
     Er::Log::ILog* m_log;

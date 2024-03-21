@@ -168,6 +168,17 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
     return parentsToExpand;
 }
 
+uint64_t ProcessTreeModel::pid(const QModelIndex& index) const
+{
+    if (!index.isValid())
+        return uint64_t(-1);
+
+    auto node = static_cast<ItemTreeNode*>(index.internalPointer());
+    Er::ObjectLock<Item> lock(node->data());
+
+    return node->data()->pid;
+}
+
 QVariant ProcessTreeModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())

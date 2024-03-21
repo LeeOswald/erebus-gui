@@ -14,6 +14,8 @@ qt6_wrap_ui(UI_SOURCES ${UIS})
 add_library(${PROCESSMGR_PLUGIN} SHARED
     columnsdlg.cpp
     columnsdlg.hpp
+    itemmenu.cpp
+    itemmenu.hpp
     processcolumns.cpp
     processcolumns.hpp
     processlist.cpp

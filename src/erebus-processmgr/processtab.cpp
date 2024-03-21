@@ -25,6 +25,8 @@ ProcessTab::~ProcessTab()
         m_thread.clear();
     }
 
+    delete m_contextMenu;
+
     auto index = m_params.tabWidget->indexOf(m_widget);
     Q_ASSERT(index >= 0);
     m_params.tabWidget->removeTab(index);
@@ -76,6 +78,9 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::IClient* cli
 
     params.statusBar->addWidget(m_labelTotalProcesses);
     params.statusBar->addWidget(m_labelCpuUsage);
+
+    m_contextMenu = new ItemMenu(m_treeView);
+    connect(m_contextMenu, SIGNAL(kill(quint64,QLatin1String)), this, SLOT(kill(quint64,QLatin1String)));
 
     startWorker();
 
@@ -147,6 +152,7 @@ void ProcessTab::startWorker()
 
     // know when worker has data
     connect(m_worker, SIGNAL(dataReady(ProcessChangesetPtr,bool)), this, SLOT(dataReady(ProcessChangesetPtr,bool)));
+    connect(m_worker, SIGNAL(posixResult(Erp::Private::IProcessList::PosixResult)), this, SLOT(posixResult(Erp::Private::IProcessList::PosixResult)));
 
     m_thread->start();
 }
@@ -174,6 +180,7 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset, bool manual)
 
                 m_treeView->setModel(m_model);
                 m_treeView->expandAll();
+                m_contextMenu->setModel(m_model);
 
                 restoreColumnWidths();
             }
@@ -237,6 +244,31 @@ void ProcessTab::captureColumnWidths()
     {
         c.width = m_treeView->columnWidth(index);
         ++index;
+    }
+}
+
+void ProcessTab::kill(quint64 pid, QLatin1String signal)
+{
+    if (m_worker)
+    {
+        LogDebug(m_params.log, LogInstance("ProcessTab"), "Kill(%zu, %s)", pid, signal.data());
+
+        QMetaObject::invokeMethod(m_worker, "kill", Qt::AutoConnection, Q_ARG(quint64, pid), Q_ARG(QLatin1String, signal));
+    }
+}
+
+void ProcessTab::posixResult(Erp::Private::IProcessList::PosixResult result)
+{
+    if (result.code != 0)
+    {
+        if (!result.message.empty())
+        {
+            LogError(m_params.log, LogInstance("ProcessTab"), "%d %s", result.code, result.message.c_str());
+        }
+        else
+        {
+            LogError(m_params.log, LogInstance("ProcessTab"), "Unspecified error %d", result.code);
+        }
     }
 }
 

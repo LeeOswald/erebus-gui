@@ -2,6 +2,7 @@
 
 #include <erebus-clt/erebus-clt.hxx>
 
+#include "itemmenu.hpp"
 #include "processcolumns.hpp"
 #include "processmgr.hpp"
 #include "proclistworker.hpp"
@@ -39,7 +40,9 @@ public slots:
 
 private slots:
     void dataReady(ProcessChangesetPtr changeset, bool manual);
-    
+    void kill(quint64 pid, QLatin1String signal);
+    void posixResult(Erp::Private::IProcessList::PosixResult);
+        
 private:
     void captureColumnWidths();
     void restoreColumnWidths();
@@ -63,6 +66,7 @@ private:
     ProcessTreeModel* m_model = nullptr;
     QLabel* m_labelTotalProcesses;
     QLabel* m_labelCpuUsage;
+    ItemMenu* m_contextMenu = nullptr;
 };
 
 } // namespace Private {}

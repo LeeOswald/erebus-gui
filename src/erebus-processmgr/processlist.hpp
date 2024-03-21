@@ -138,8 +138,23 @@ struct IProcessList
         }
     };
 
+    struct PosixResult
+    {
+        int code = -1;
+        std::string message;
+
+        PosixResult() noexcept = default;
+
+        template <typename MessageT>
+        PosixResult(int code, MessageT&& message)
+            : code(code)
+            , message(std::forward<MessageT>(message))
+        {}
+    };
+
     virtual ~IProcessList() {}
     virtual std::shared_ptr<Changeset> collect(Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold) = 0;
+    virtual PosixResult kill(uint64_t pid, std::string_view signame) = 0;
 };
 
 

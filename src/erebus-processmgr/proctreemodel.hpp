@@ -31,6 +31,8 @@ public:
     void setColumns(const ProcessColumns& columns);
     std::vector<QModelIndex> update(std::shared_ptr<Changeset> changeset);
 
+    uint64_t pid(const QModelIndex& index) const;
+
     QVariant data(const QModelIndex& index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;

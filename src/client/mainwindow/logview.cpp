@@ -35,13 +35,13 @@ LogView::LogView(
     , m_view(new QPlainTextEdit(parent))
     , m_menu(new QMenu(mainWindow))
     , m_actionGroup(new QActionGroup(mainWindow))
-    , m_actionDebug(new QAction(m_actionGroup))
-    , m_actionInfo(new QAction(m_actionGroup))
-    , m_actionWarning(new QAction(m_actionGroup))
-    , m_actionError(new QAction(m_actionGroup))
-    , m_actionFatal(new QAction(m_actionGroup))
-    , m_actionOff(new QAction(m_actionGroup))
-    , m_actionClear(new QAction(m_actionGroup))
+    , m_actionDebug(new QAction(QCoreApplication::translate("LogMenu", "Debug", nullptr), m_actionGroup))
+    , m_actionInfo(new QAction(QCoreApplication::translate("LogMenu", "Info", nullptr), m_actionGroup))
+    , m_actionWarning(new QAction(QCoreApplication::translate("LogMenu", "Warning", nullptr), m_actionGroup))
+    , m_actionError(new QAction(QCoreApplication::translate("LogMenu", "Error", nullptr), m_actionGroup))
+    , m_actionFatal(new QAction(QCoreApplication::translate("LogMenu", "Fatal", nullptr), m_actionGroup))
+    , m_actionOff(new QAction(QCoreApplication::translate("LogMenu", "Off", nullptr), m_actionGroup))
+    , m_actionClear(new QAction(QCoreApplication::translate("LogMenu", "Clear Log", nullptr), m_menu))
 {
     QFont font;
     font.setFamilies({QString::fromUtf8("Courier New")});
@@ -59,39 +59,32 @@ LogView::LogView(
     actionLog->setMenu(m_menu);
 
     auto level = m_log->level();
-    m_actionDebug = new QAction(QCoreApplication::translate("LogMenu", "Debug", nullptr), m_actionGroup);
     m_actionDebug->setCheckable(true);
     m_menu->addAction(m_actionDebug);
     m_actionDebug->setChecked(level == Er::Log::Level::Debug);
 
-    m_actionInfo = new QAction(QCoreApplication::translate("LogMenu", "Info", nullptr), m_actionGroup);
     m_actionInfo->setCheckable(true);
     m_menu->addAction(m_actionInfo);
     m_actionInfo->setChecked(level == Er::Log::Level::Info);
 
-    m_actionWarning = new QAction(QCoreApplication::translate("LogMenu", "Warning", nullptr), m_actionGroup);
     m_actionWarning->setCheckable(true);
     m_menu->addAction(m_actionWarning);
     m_actionWarning->setChecked(level == Er::Log::Level::Warning);
 
-    m_actionError = new QAction(QCoreApplication::translate("LogMenu", "Error", nullptr), m_actionGroup);
     m_actionError->setCheckable(true);
     m_menu->addAction(m_actionError);
     m_actionError->setChecked(level == Er::Log::Level::Error);
 
-    m_actionFatal = new QAction(QCoreApplication::translate("LogMenu", "Fatal", nullptr), m_actionGroup);
     m_actionFatal->setCheckable(true);
     m_menu->addAction(m_actionFatal);
     m_actionFatal->setChecked(level == Er::Log::Level::Fatal);
 
-    m_actionOff = new QAction(QCoreApplication::translate("LogMenu", "Off", nullptr), m_actionGroup);
     m_actionOff->setCheckable(true);
     m_menu->addAction(m_actionOff);
     m_actionOff->setChecked(level == Er::Log::Level::Off);
 
     m_menu->addSeparator();
 
-    m_actionClear = new QAction(QCoreApplication::translate("LogMenu", "Clear Log", nullptr), m_menu);
     connect(m_actionClear, SIGNAL(triggered()), this, SLOT(clearLog()));
     m_menu->addAction(m_actionClear);
 

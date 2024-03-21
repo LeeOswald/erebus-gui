@@ -196,6 +196,27 @@ public:
         return diff;
     }
 
+    PosixResult kill(uint64_t pid, std::string_view signame) override
+    {
+        return Er::protectedCall<PosixResult>(
+            m_log,
+            LogInstance("ProcessListImpl"),
+            [this, pid, signame]()
+            {
+                Er::PropertyBag request;
+                request.insert({ Er::ProcessesGlobal::Pid::Id::value, Er::Property(Er::ProcessesGlobal::Pid::Id::value, pid) });
+                request.insert({ Er::ProcessesGlobal::Signal::Id::value, Er::Property(Er::ProcessesGlobal::Signal::Id::value, std::string(signame)) });
+
+                auto response = m_client->request(Er::ProcessRequests::KillProcess, request);
+
+                auto code = Er::getProperty<Er::ProcessesGlobal::PosixResult::ValueType>(response, Er::ProcessesGlobal::PosixResult::Id::value);
+                auto message = Er::getProperty<Er::ProcessesGlobal::ErrorText::ValueType>(response, Er::ProcessesGlobal::ErrorText::Id::value);
+
+                return PosixResult(code ? *code : -1, message ? std::move(*message) : "");
+            }
+        );
+    }
+
 private:
     using ItemContainer = std::unordered_map<typename Item::Key, std::shared_ptr<Item>>;
     
