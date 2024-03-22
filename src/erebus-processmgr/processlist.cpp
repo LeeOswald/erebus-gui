@@ -189,10 +189,6 @@ public:
         enumerateProcesses(firstRun, now, required, trackThreshold, diff.get());
         trackNewOrDeletedProcesses(now, trackThreshold, diff.get());
 
-        // this should go after enumerateProcesses() so that the server can just send 
-        // what it has collected during enumerateProcesses()
-        readProcessesGlobal(diff.get());
-
         return diff;
     }
 
@@ -204,13 +200,13 @@ public:
             [this, pid, signame]()
             {
                 Er::PropertyBag request;
-                request.insert({ Er::ProcessesGlobal::Pid::Id::value, Er::Property(Er::ProcessesGlobal::Pid::Id::value, pid) });
-                request.insert({ Er::ProcessesGlobal::Signal::Id::value, Er::Property(Er::ProcessesGlobal::Signal::Id::value, std::string(signame)) });
+                Er::addProperty<Er::ProcessesGlobal::Pid>(request, pid);
+                Er::addProperty<Er::ProcessesGlobal::Signal>(request, std::string(signame));
 
                 auto response = m_client->request(Er::ProcessRequests::KillProcess, request);
 
-                auto code = Er::getProperty<Er::ProcessesGlobal::PosixResult::ValueType>(response, Er::ProcessesGlobal::PosixResult::Id::value);
-                auto message = Er::getProperty<Er::ProcessesGlobal::ErrorText::ValueType>(response, Er::ProcessesGlobal::ErrorText::Id::value);
+                auto code = Er::getProperty<Er::ProcessesGlobal::PosixResult>(response);
+                auto message = Er::getProperty<Er::ProcessesGlobal::ErrorText>(response);
 
                 return PosixResult(code ? *code : -1, message ? std::move(*message) : "");
             }
@@ -238,44 +234,18 @@ private:
         );
     }
 
-    void readProcessesGlobal(Changeset* diff) noexcept
+    void parseGlobals(const Er::PropertyBag& bag, Changeset* diff)
     {
-        Er::protectedCall<void>(
-            m_log,
-            LogInstance("ProcessListImpl"),
-            [this, diff]()
-            {
-                return readProcessesGlobalImpl(diff);
-            }
-        );
-    }
-
-    void readProcessesGlobalImpl(Changeset* diff)
-    {
-        Er::ProcessesGlobal::PropMask required
-        { 
-            Er::ProcessesGlobal::PropIndices::ProcessCount,
-            Er::ProcessesGlobal::PropIndices::RTime,
-            Er::ProcessesGlobal::PropIndices::STime,
-            Er::ProcessesGlobal::PropIndices::UTime,
-        };
-
-        Er::PropertyBag req;
-        req.insert({ Er::ProcessesGlobal::RequiredFields::Id::value, Er::Property(Er::ProcessesGlobal::RequiredFields::Id::value, required.pack<uint64_t>()) });
-        req.insert({ Er::ProcessesGlobal::Lazy::Id::value, Er::Property(Er::ProcessesGlobal::Lazy::Id::value, true) });
-
-        auto response = m_client->request(Er::ProcessRequests::ProcessesGlobal, req);
-        
-        diff->totalProcesses = Er::getProperty(response, Er::ProcessesGlobal::ProcessCount::Id::value, std::size_t(0));
+        diff->totalProcesses = Er::getProperty<Er::ProcessesGlobal::ProcessCount>(bag, std::size_t(0));
 
         m_rTimePrev = m_rTime;
-        m_rTime = Er::getProperty(response, Er::ProcessesGlobal::RTime::Id::value, 0.0);
+        m_rTime = Er::getProperty<Er::ProcessesGlobal::RTime>(bag, 0.0);
 
         m_sTimePrev = m_sTime;
-        m_sTime = Er::getProperty(response, Er::ProcessesGlobal::STime::Id::value, 0.0);
+        m_sTime = Er::getProperty<Er::ProcessesGlobal::STime>(bag, 0.0);
 
         m_uTimePrev = m_uTime;
-        m_uTime = Er::getProperty(response, Er::ProcessesGlobal::UTime::Id::value, 0.0);
+        m_uTime = Er::getProperty<Er::ProcessesGlobal::UTime>(bag, 0.0);
 
         diff->rTime = m_rTime - m_rTimePrev;
         diff->sTime = m_sTime - m_sTimePrev;
@@ -302,12 +272,19 @@ private:
     void enumerateProcessesImpl(bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff)
     {
         Er::PropertyBag req;
-        req.insert({ Er::ProcessProps::RequiredFields::Id::value, Er::Property(Er::ProcessProps::RequiredFields::Id::value, required.pack<uint64_t>()) });
+        Er::addProperty<Er::ProcessProps::RequiredFields>(req, required.pack<uint64_t>());
 
         auto list = m_client->requestStream(Er::ProcessRequests::ListProcessesDiff, req, m_sessionId);
-        for (auto& process : list)
+        for (auto& item : list)
         {
-            auto parsedProcess = makeProcessItem(std::move(process), now, firstRun);
+            if (Er::propertyPresent(item, Er::ProcessesGlobal::Global::Id::value))
+            {
+                // this is a global state record
+                parseGlobals(item, diff);
+                continue;
+            }
+
+            auto parsedProcess = makeProcessItem(std::move(item), now, firstRun);
             if (!parsedProcess)
                 continue;
 
