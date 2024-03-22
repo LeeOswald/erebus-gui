@@ -13,6 +13,7 @@
 #include <boost/program_options.hpp>
 
 #include <fcntl.h>
+#include <sys/stat.h>
 
 namespace
 {
@@ -190,6 +191,9 @@ bool cacheIcon(const std::string& dir, const std::string& name, unsigned size)
 
 int main(int argc, char *argv[])
 {
+    // let the icon cache be accessible
+    ::umask(0);
+
     try
     {
         QGuiApplication a(argc, argv);

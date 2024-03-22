@@ -332,8 +332,8 @@ private:
             
             // this is an existing process and we've just got a few fields updated
             assert(!firstRun);
-            Er::ObjectLock<Item> item(existing->second.get());
-            item->updateFromDiff(*parsedProcess.get());
+            Er::ObjectLock<Item> locked(existing->second.get());
+            locked->updateFromDiff(*parsedProcess.get());
 
             diff->modified.insert(existing->second);
         }

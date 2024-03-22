@@ -63,8 +63,8 @@ constexpr ProcessColumnDef ProcessColumnDefs[] =
     ProcessColumnDef(Er::ProcessProps::PropIndices::Exe, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Executable"), 300),
     ProcessColumnDef(Er::ProcessProps::PropIndices::StartTime, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Start Time"), 100),
     ProcessColumnDef(Er::ProcessProps::PropIndices::State, ProcessColumnDef::Type::Default, QT_TR_NOOP("State"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::UTime, ProcessColumnDef::Type::Default, QT_TR_NOOP("CPU Time (User)"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::STime, ProcessColumnDef::Type::Default, QT_TR_NOOP("CPU Time (System)"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::UTime, ProcessColumnDef::Type::Default, QT_TR_NOOP("CPU (User)"), 30),
+    ProcessColumnDef(Er::ProcessProps::PropIndices::STime, ProcessColumnDef::Type::Default, QT_TR_NOOP("CPU (System)"), 30),
     ProcessColumnDef(Er::ProcessProps::PropIndices::ThreadCount, ProcessColumnDef::Type::Default, QT_TR_NOOP("Threads"), 30),
 };
 

@@ -386,16 +386,14 @@ void MainWindow::refreshTitle()
     if (!m_client)
     {
         setWindowTitle(QLatin1String(EREBUS_APPLICATION_NAME));
-        m_trayIcon.resetToolTip();
+        m_trayIcon.setToolTip(QLatin1String(EREBUS_APPLICATION_NAME));
     }
     else
     {
         Q_ASSERT(m_connectionParams);
-        QString connection = Erc::fromUtf8(m_connectionParams->user) + QLatin1String("@") + Erc::fromUtf8(m_connectionParams->endpoint);
+        QString connection = Erc::fromUtf8(m_connectionParams->endpoint);
 
-        QString title = QLatin1String(EREBUS_APPLICATION_NAME) + QLatin1String(" ") + connection;
-
-        setWindowTitle(title);
+        setWindowTitle(connection);
         m_trayIcon.setToolTip(connection);
     }
 }

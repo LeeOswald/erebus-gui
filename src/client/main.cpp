@@ -86,24 +86,38 @@ int main(int argc, char *argv[])
         Er::Client::LibParams cltParams(&log, log.level());
         Er::Client::LibScope cs(cltParams);
 
-        Erc::Private::Ui::MainWindow w(&log, &log, &settings);
-
-        if (a.primary())
+        try
         {
-            QObject::connect(
-                &a,
-                &Erc::Private::Application::receivedMessage,
-                &w,
-                [&w](QByteArray message) { w.restore(); }
-            );
+            Erc::Private::Ui::MainWindow w(&log, &log, &settings);
+
+            if (a.primary())
+            {
+                QObject::connect(
+                    &a,
+                    &Erc::Private::Application::receivedMessage,
+                    &w,
+                    [&w](QByteArray message) { w.restore(); }
+                );
+            }
+
+            auto result = a.exec();
+
+            g_log = nullptr;
+            ::qInstallMessageHandler(nullptr);
+
+            return result;
+        }
+        catch (Er::Exception& e)
+        {
+            auto msg = Er::Util::formatException(e);
+            Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Unexpected Error"), QString::fromUtf8(msg));
+        }
+        catch (std::exception& e)
+        {
+            auto msg = Er::Util::formatException(e);
+            Erc::Ui::errorBox(QCoreApplication::translate("Erebus", "Unexpected Error"), QString::fromUtf8(msg));
         }
 
-        auto result = a.exec();
-
-        g_log = nullptr;
-        ::qInstallMessageHandler(nullptr);
-
-        return result;
     }
     catch (Er::Exception& e)
     {
