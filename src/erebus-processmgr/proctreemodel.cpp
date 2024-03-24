@@ -50,7 +50,7 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
     std::vector<QModelIndex> parentsToExpand;
 
     m_firstRun = changeset->firstRun;
-    m_rTime = changeset->rTime;
+    m_rTime = changeset->realTime;
 
     if (!m_tree)
     {
@@ -382,7 +382,7 @@ QVariant ProcessTreeModel::textForCell(ItemTreeNode* item, int column) const
 
     case Er::ProcessProps::PropIndices::CpuUsage:
     {
-        if (m_firstRun || (m_rTime < 0.0000001))
+        if (m_firstRun || (m_rTime < 0.000001))
             return QVariant();
 
         auto s = item->data()->sTimeDiff;
@@ -392,7 +392,7 @@ QVariant ProcessTreeModel::textForCell(ItemTreeNode* item, int column) const
             return QVariant();
 
         auto usage = ((s ? *s : 0.0) + (u ? *u : 0.0)) * 100.0 / m_rTime;
-        usage = Er::clamp(usage, 0.0, 100.0);
+        usage = std::clamp(usage, 0.0, 100.0);
         if (usage < 0.01)
             return QVariant();
 

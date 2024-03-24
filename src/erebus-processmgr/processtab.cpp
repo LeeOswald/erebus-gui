@@ -210,8 +210,8 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset, bool manual)
             }
             else
             {
-                auto usage = (changeset->sTime + changeset->uTime) * 100.0 / changeset->rTime;
-                usage = Er::clamp(usage, 0.0, 100.0);
+                auto usage = changeset->cpuTime * 100.0 / changeset->realTime;
+                usage = std::clamp(usage, 0.0, 100.0);
 
                 std::ostringstream ss;
                 ss << "CPU: " << std::fixed << std::setprecision(2) << usage << "%";

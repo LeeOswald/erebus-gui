@@ -238,18 +238,14 @@ private:
     {
         diff->totalProcesses = Er::getProperty<Er::ProcessesGlobal::ProcessCount>(bag, std::size_t(0));
 
-        m_rTimePrev = m_rTime;
-        m_rTime = Er::getProperty<Er::ProcessesGlobal::RTime>(bag, 0.0);
+        m_realTimePrev = m_realTime;
+        m_realTime = Er::getProperty<Er::ProcessesGlobal::RealTime>(bag, 0.0);
 
-        m_sTimePrev = m_sTime;
-        m_sTime = Er::getProperty<Er::ProcessesGlobal::STime>(bag, 0.0);
+        m_cpuTimePrev = m_cpuTime;
+        m_cpuTime = Er::getProperty<Er::ProcessesGlobal::TotalTime>(bag, 0.0);
 
-        m_uTimePrev = m_uTime;
-        m_uTime = Er::getProperty<Er::ProcessesGlobal::UTime>(bag, 0.0);
-
-        diff->rTime = m_rTime - m_rTimePrev;
-        diff->sTime = m_sTime - m_sTimePrev;
-        diff->uTime = m_uTime - m_uTimePrev;
+        diff->realTime = Er::saturatingSub(m_realTime, m_realTimePrev);
+        diff->cpuTime = Er::saturatingSub(m_cpuTime, m_cpuTimePrev);
     }
 
     void enumerateProcesses(bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff) noexcept
@@ -381,12 +377,10 @@ private:
     Er::Client::IClient::SessionId m_sessionId;
     ItemContainer m_collection;
     ItemContainer m_tracked; // processes being temporarily tracked as 'recently exited' or 'recently started'
-    double m_rTime = 0;
-    double m_rTimePrev = 0;
-    double m_uTime = 0;
-    double m_uTimePrev = 0;
-    double m_sTime = 0;
-    double m_sTimePrev = 0;
+    double m_realTime = 0;
+    double m_realTimePrev = 0;
+    double m_cpuTime = 0;
+    double m_cpuTimePrev = 0;
 };
 
 } // namespace {}
