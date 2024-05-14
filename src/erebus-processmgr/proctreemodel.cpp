@@ -286,7 +286,7 @@ QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id)
 {
     return Er::protectedCall<QVariant>(
         m_log,
-        LogInstance("ProcessTreeModel"),
+        ErLogInstance("ProcessTreeModel"),
         [this, item, id]()
         {
             auto it = item->data()->properties.find(id);
@@ -471,7 +471,7 @@ QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
 {
     return Er::protectedCall<QVariant>(
         m_log,
-        LogInstance("ProcessTreeModel"),
+        ErLogInstance("ProcessTreeModel"),
         [this, item]()
         {
             // look in cache
@@ -488,12 +488,12 @@ QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
                 return QVariant();
 
             auto& property = it->second;
-            auto rawIcon = std::any_cast<Er::Bytes>(property.value);
+            auto rawIcon = std::get<Er::Bytes>(property.value);
             
             QPixmap pixmap;
             if (!pixmap.loadFromData(reinterpret_cast<const uchar*>(rawIcon.data()), rawIcon.size()))
             {
-                m_log->write(Er::Log::Level::Warning, LogNowhere(), "Failed to load icon for %s", key.toUtf8().constData());
+                m_log->write(Er::Log::Level::Warning, ErLogNowhere(), "Failed to load icon for %s", key.toUtf8().constData());
                 return QVariant();
             }
 

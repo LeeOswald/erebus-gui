@@ -48,10 +48,8 @@ endif()
     
 add_executable(${EREBUS_CLIENT} ${IMAGE_SUBSYSTEM} ${SOURCE_FILES} ${RESOURCE_SOURCES} ${UI_SOURCES} ${WINDOWS_RESOURCE_SCRIPT})
 
-target_compile_features(${EREBUS_CLIENT} PUBLIC ${EREBUS_CXX_FEATURES})
-
 # Qt6Widgets_LIBRARIES variable also includes QtGui and QtCore
-target_link_libraries (${EREBUS_CLIENT} PRIVATE ${Qt6Widgets_LIBRARIES} ${Qt6Network_LIBRARIES} ${PLATFORM_LIBRARIES} ${EREBUS_RTLLIB} ${EREBUS_CLTLIB} ${EREBUS_GUILIB})
+target_link_libraries (${EREBUS_CLIENT} PRIVATE ${Qt6Widgets_LIBRARIES} ${Qt6Network_LIBRARIES} ${EREBUS_RTLLIB} ${EREBUS_CLTLIB} ${EREBUS_GUILIB})
 
 
 

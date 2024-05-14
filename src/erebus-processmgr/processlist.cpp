@@ -18,32 +18,24 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
     : properties(std::move(bag))
 {
     // find PID (must always be present)
-    auto it = properties.find(Er::ProcessProps::Pid::Id::value);
-    if (it == properties.end())
+    this->pid = Er::getPropertyOr<Er::ProcessProps::Pid>(properties, Er::ProcessProps::Pid::ValueType(-1));
+    if (this->pid == Er::ProcessProps::Pid::ValueType(-1))
         throw Er::Exception(ER_HERE(), "No PID in process properties");
 
-    this->pid = std::any_cast<uint64_t>(it->second.value);
-
-    it = properties.find(Er::ProcessProps::IsDeleted::Id::value);
-    if (it != properties.end())
+    if (Er::propertyPresent<Er::ProcessProps::IsDeleted>(properties))
     {
         this->deleted = 1;
         return;
     }
 
-    // find 'Valid' property (must always be present unless the process is deleted)
-    it = properties.find(Er::ProcessProps::Valid::Id::value);
-    if (it == properties.end())
-        throw Er::Exception(ER_HERE(), "No \'valid\' in process properties");
-
     // find 'Valid' property
-    this->valid = std::any_cast<bool>(it->second.value);
+    this->valid = Er::getPropertyOr<Er::ProcessProps::Valid>(properties, false);
     if (!this->valid)
     {
         // maybe we've got an error message
-        it = properties.find(Er::ProcessProps::Error::Id::value);
-        if (it != properties.end())
-            this->error = Erc::fromUtf8(std::any_cast<std::string>(it->second.value));
+        auto msg = Er::getProperty<Er::ProcessProps::Error>(properties);
+        if (msg)
+            this->error = Erc::fromUtf8(*msg);
 
         return;
     }
@@ -54,37 +46,37 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         switch (it->second.id)
         {
         case Er::ProcessProps::IsNew::Id::value:
-            this->added = std::any_cast<bool>(it->second.value);
+            this->added = std::get<bool>(it->second.value);
             break;
 
         case Er::ProcessProps::PPid::Id::value:
-            this->ppid = std::any_cast<uint64_t>(it->second.value);
+            this->ppid = std::get<uint64_t>(it->second.value);
             break;
 
         case Er::ProcessProps::StartTime::Id::value:
         {
-            this->startTime = std::any_cast<uint64_t>(it->second.value);
+            this->startTime = std::get<uint64_t>(it->second.value);
             Er::TimeFormatter<"%H:%M:%S %d %b %y", Er::TimeZone::Utc> fmt;
             std::ostringstream ss;
-            fmt(it->second, ss);
+            fmt(this->startTime, ss);
             this->startTimeUtc = Erc::fromUtf8(ss.str());
             break;
         }
 
         case Er::ProcessProps::State::Id::value:
-            this->processState = Erc::fromUtf8(std::any_cast<std::string>(it->second.value));
+            this->processState = Erc::fromUtf8(std::get<std::string>(it->second.value));
             break;
 
         case Er::ProcessProps::Comm::Id::value:
-            this->comm = Erc::fromUtf8(std::any_cast<std::string>(it->second.value));
+            this->comm = Erc::fromUtf8(std::get<std::string>(it->second.value));
             break;
 
         case Er::ProcessProps::UTime::Id::value:
-            this->uTime = std::any_cast<double>(it->second.value);
+            this->uTime = std::get<double>(it->second.value);
             break;
 
         case Er::ProcessProps::STime::Id::value:
-            this->sTime = std::any_cast<double>(it->second.value);
+            this->sTime = std::get<double>(it->second.value);
             break;
         }
     }
@@ -163,7 +155,7 @@ public:
     {
         Er::protectedCall<void>(
             m_log,
-            LogInstance("ProcessListImpl"),
+            ErLogInstance("ProcessListImpl"),
             [this]()
             {
                 m_client->endSession(Er::ProcessRequests::ListProcessesDiff, m_sessionId);
@@ -196,7 +188,7 @@ public:
     {
         return Er::protectedCall<PosixResult>(
             m_log,
-            LogInstance("ProcessListImpl"),
+            ErLogInstance("ProcessListImpl"),
             [this, pid, signame]()
             {
                 Er::PropertyBag request;
@@ -220,7 +212,7 @@ private:
     {
         return Er::protectedCall<std::shared_ptr<Item>>(
             m_log,
-            LogInstance("ProcessListImpl"),
+            ErLogInstance("ProcessListImpl"),
             [this](Er::PropertyBag&& bag, Item::TimePoint now, bool firstRun)
             {
                 ProcessInformation parsed(std::move(bag));
@@ -236,13 +228,13 @@ private:
 
     void parseGlobals(const Er::PropertyBag& bag, Changeset* diff)
     {
-        diff->totalProcesses = Er::getProperty<Er::ProcessesGlobal::ProcessCount>(bag, std::size_t(0));
+        diff->totalProcesses = Er::getPropertyOr<Er::ProcessesGlobal::ProcessCount>(bag, std::size_t(0));
 
         m_realTimePrev = m_realTime;
-        m_realTime = Er::getProperty<Er::ProcessesGlobal::RealTime>(bag, 0.0);
+        m_realTime = Er::getPropertyOr<Er::ProcessesGlobal::RealTime>(bag, 0.0);
 
         m_cpuTimePrev = m_cpuTime;
-        m_cpuTime = Er::getProperty<Er::ProcessesGlobal::TotalTime>(bag, 0.0);
+        m_cpuTime = Er::getPropertyOr<Er::ProcessesGlobal::TotalTime>(bag, 0.0);
 
         diff->realTime = Er::saturatingSub(m_realTime, m_realTimePrev);
         diff->cpuTime = Er::saturatingSub(m_cpuTime, m_cpuTimePrev);
@@ -252,7 +244,7 @@ private:
     {
         Er::protectedCall<void>(
             m_log,
-            LogInstance("ProcessListImpl"),
+            ErLogInstance("ProcessListImpl"),
             [this](bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff)
             {
                 return enumerateProcessesImpl(firstRun, now, required, trackThreshold, diff);
@@ -273,7 +265,7 @@ private:
         auto list = m_client->requestStream(Er::ProcessRequests::ListProcessesDiff, req, m_sessionId);
         for (auto& item : list)
         {
-            if (Er::propertyPresent(item, Er::ProcessesGlobal::Global::Id::value))
+            if (Er::propertyPresent<Er::ProcessesGlobal::Global>(item))
             {
                 // this is a global state record
                 parseGlobals(item, diff);
@@ -299,7 +291,7 @@ private:
                 }
                 else
                 {
-                    LogWarning(m_log, LogNowhere(), "Unknown exited process %zu", parsedProcess->pid);
+                    ErLogWarning(m_log, ErLogNowhere(), "Unknown exited process %zu", parsedProcess->pid);
                 }
 
                 continue;

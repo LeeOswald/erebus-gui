@@ -36,6 +36,4 @@ add_library(${PROCESSMGR_PLUGIN} SHARED
 
 add_compile_definitions(EREBUSPROCMGR_EXPORTS=1)
 
-target_compile_features(${PROCESSMGR_PLUGIN} PUBLIC ${ER_CXX_FEATURES})
-
 target_link_libraries(${PROCESSMGR_PLUGIN} PUBLIC ${Qt6Widgets_LIBRARIES} ${EREBUS_RTLLIB} ${EREBUS_GUILIB})

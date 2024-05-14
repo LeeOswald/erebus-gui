@@ -38,7 +38,7 @@ void ProcessListWorker::refresh(Er::ProcessProps::PropMask required, int trackDu
 {
     Er::protectedCall<void>(
         m_log,
-        LogInstance("ProcessWorker"),
+        ErLogInstance("ProcessWorker"),
         [this, required, trackDuration, manual]()
         {
             auto changeset = m_processList->collect(required, std::chrono::milliseconds(trackDuration));
@@ -52,7 +52,7 @@ void ProcessListWorker::kill(quint64 pid, QLatin1String signame)
 {
     Er::protectedCall<void>(
         m_log,
-        LogInstance("ProcessWorker"),
+        ErLogInstance("ProcessWorker"),
         [this, pid, signame]()
         {
             auto result = m_processList->kill(pid, std::string_view(signame.data(), signame.length()));

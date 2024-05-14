@@ -29,19 +29,19 @@ void qtMessageHandler(QtMsgType type, const QMessageLogContext& context, const Q
     switch (type)
     {
     case QtDebugMsg:
-        LogDebug(g_log, LogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogDebug(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
         break;
     case QtInfoMsg:
-        LogInfo(g_log, LogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogInfo(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
         break;
     case QtWarningMsg:
-        LogWarning(g_log, LogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogWarning(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
         break;
     case QtCriticalMsg:
-        LogError(g_log, LogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogError(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
         break;
     case QtFatalMsg:
-        LogFatal(g_log, LogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogFatal(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
         break;
     }
 }
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     auto logLevel = static_cast<Er::Log::Level>(Erc::Option<int>::get(&settings, Erc::Private::AppSettings::Log::level, int(Erc::Private::AppSettings::Log::defaultLevel)));
     auto singleInstance = Erc::Option<bool>::get(&settings, Erc::Private::AppSettings::Application::singleInstance, Erc::Private::AppSettings::Application::singleInstanceDefault);
 
-    Er::Log::LogBase log(logLevel, 65536);
+    Er::Log::LogBase log(Er::Log::LogBase::AsyncLog, logLevel, 65536);
     g_log = &log;
     ::qInstallMessageHandler(qtMessageHandler);
     

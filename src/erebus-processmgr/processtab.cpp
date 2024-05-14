@@ -110,7 +110,7 @@ void ProcessTab::setRefreshInterval(unsigned interval)
     Q_ASSERT(interval >= 500);
     m_refreshRate = interval;
 
-    LogDebug(m_params.log, LogInstance("ProcessTab"), "Set refresh interval to %d msec", m_refreshRate);
+    ErLogDebug(m_params.log, ErLogInstance("ProcessTab"), "Set refresh interval to %d msec", m_refreshRate);
 }
 
 void ProcessTab::requireAdditionalProps(Er::ProcessProps::PropMask& required) noexcept
@@ -161,7 +161,7 @@ void ProcessTab::refresh(bool manual)
 {
     if (m_worker)
     {
-        LogDebug(m_params.log, LogInstance("ProcessTab"), "Refreshing...");
+        ErLogDebug(m_params.log, ErLogInstance("ProcessTab"), "Refreshing...");
 
         QMetaObject::invokeMethod(m_worker, "refresh", Qt::AutoConnection, Q_ARG(Er::ProcessProps::PropMask, m_required), Q_ARG(int, m_trackDuration), Q_ARG(bool, manual));
     }
@@ -171,7 +171,7 @@ void ProcessTab::dataReady(ProcessChangesetPtr changeset, bool manual)
 {
     Er::protectedCall<void>(
         m_params.log,
-        LogInstance("ProcessTab"),
+        ErLogInstance("ProcessTab"),
         [this, changeset]()
         {
             if (!m_model)
@@ -251,7 +251,7 @@ void ProcessTab::kill(quint64 pid, QLatin1String signal)
 {
     if (m_worker)
     {
-        LogDebug(m_params.log, LogInstance("ProcessTab"), "Kill(%zu, %s)", pid, signal.data());
+        ErLogDebug(m_params.log, ErLogInstance("ProcessTab"), "Kill(%zu, %s)", pid, signal.data());
 
         QMetaObject::invokeMethod(m_worker, "kill", Qt::AutoConnection, Q_ARG(quint64, pid), Q_ARG(QLatin1String, signal));
     }
@@ -263,11 +263,11 @@ void ProcessTab::posixResult(Erp::Private::IProcessList::PosixResult result)
     {
         if (!result.message.empty())
         {
-            LogError(m_params.log, LogInstance("ProcessTab"), "%d %s", result.code, result.message.c_str());
+            ErLogError(m_params.log, ErLogInstance("ProcessTab"), "%d %s", result.code, result.message.c_str());
         }
         else
         {
-            LogError(m_params.log, LogInstance("ProcessTab"), "Unspecified error %d", result.code);
+            ErLogError(m_params.log, ErLogInstance("ProcessTab"), "Unspecified error %d", result.code);
         }
     }
 }

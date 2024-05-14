@@ -33,7 +33,7 @@ IPlugin* PluginManager::load(const QString& path)
 
     m_plugins.insert({path, info});
 
-    m_params.log->write(Er::Log::Level::Info, LogNowhere(), "Loaded plugin [%s]", Erc::toUtf8(path).c_str());
+    m_params.log->write(Er::Log::Level::Info, ErLogNowhere(), "Loaded plugin [%s]", Erc::toUtf8(path).c_str());
 
 
     return info->ref;

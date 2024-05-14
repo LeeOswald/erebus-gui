@@ -126,7 +126,7 @@ MainWindow::MainWindow(
     QObject::connect(this, SIGNAL(disconnected(Er::Client::IClient*)), this, SLOT(onDisconnected(Er::Client::IClient*)));
 
     refreshTitle();
-    LogDebug(log, LogNowhere(), "Client started");
+    ErLogDebug(log, ErLogNowhere(), "Client started");
 
     QTimer::singleShot(0, this, SLOT(start()));
 }
