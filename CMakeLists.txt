@@ -6,22 +6,24 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/submodules/erebus-server/cmake)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/submodules/erebus-server/cmake")
 
 include(version)
-get_version_from_file("version.txt")
+get_version_from_file("${CMAKE_CURRENT_SOURCE_DIR}/version.txt" ERC_VERSION_)
+set(ERC_VERSION ${ERC_VERSION_} CACHE STRING "Erebus client version determined from version file" FORCE)
+message(STATUS "Determined Erebus client version ${ERC_VERSION}")
 
-project(erebus-gui VERSION ${ER_VERSION})
+project(erebus-gui VERSION ${ERC_VERSION})
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/client-version.h.in client-version.h)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/client-version.h.in" client-version.h)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/a)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/a")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 
 if(WIN32)
@@ -83,9 +85,9 @@ add_definitions(${Qt6Widgets_DEFINITIONS} ${Qt6Network_DEFINITIONS})
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(
-    ${PROJECT_BINARY_DIR} 
-    ${CMAKE_CURRENT_SOURCE_DIR}/submodules/erebus-server/include 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    "${PROJECT_BINARY_DIR}" 
+    "${CMAKE_CURRENT_SOURCE_DIR}/submodules/erebus-server/include" 
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
 
