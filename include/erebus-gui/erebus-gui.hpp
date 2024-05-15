@@ -37,7 +37,7 @@ inline QString fromUtf8(const std::string& s)
 namespace Ui
 {
 
-EREBUSGUI_EXPORT void errorBoxLite(const QString& message, QWidget* parent = nullptr);
+EREBUSGUI_EXPORT void errorBoxLite(const QString& title, const QString& message, QWidget* parent = nullptr);
 EREBUSGUI_EXPORT void errorBox(const QString& title, const QString& message, QWidget* parent = nullptr);
 
 
@@ -50,19 +50,23 @@ ResultT protectedCall(Er::Log::ILog* log, const QString& title, ParentT* parent,
     }
     catch (Er::Exception& e)
     {
-        auto msg = Er::Util::formatException(e);
         if (log)
+        {
+            auto msg = Er::Util::formatException(e);
             log->write(Er::Log::Level::Error, ErLogNowhere(), "%s", msg.c_str());
+        }
 
-        Erc::Ui::errorBox(title, QString::fromUtf8(msg), parent);
+        Erc::Ui::errorBoxLite(title, QString::fromUtf8(e.what()), parent);
     }
     catch (std::exception& e)
     {
-        auto msg = Er::Util::formatException(e);
         if (log)
+        {
+            auto msg = Er::Util::formatException(e);
             log->write(Er::Log::Level::Error, ErLogNowhere(), "%s", msg.c_str());
+        }
 
-        Erc::Ui::errorBox(title, QString::fromUtf8(msg), parent);
+        Erc::Ui::errorBoxLite(title, QString::fromUtf8(e.what()), parent);
     }
     catch (...)
     {

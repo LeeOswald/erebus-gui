@@ -42,8 +42,15 @@ struct PluginParams
 
 struct IPlugin
 {
+    struct Info
+    {
+        std::string name;
+        std::string description;
+    };
+
+    virtual Info info() const = 0;
     virtual void addConnection(Er::Client::IClient* client, const std::string& endpoint) = 0;
-    virtual void removeConnection(Er::Client::IClient* client) = 0;
+    virtual void removeConnection(Er::Client::IClient* client) noexcept = 0;
 
 protected:
     virtual ~IPlugin() {}

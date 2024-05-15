@@ -91,6 +91,15 @@ public:
         Er::ProcessProps::Private::registerAll(m_params.log);
     }
 
+    Info info() const override
+    {
+        return Info
+        {
+            "ProcessTree",
+            "Process tree viewer"
+        };
+    }
+
     void addConnection(Er::Client::IClient* client, const std::string& endpoint) override
     {
         auto it = m_tabs.find(client);
@@ -103,7 +112,7 @@ public:
         m_tabs.insert({ client, std::make_unique<Erp::Private::ProcessTab>(m_params, client, endpoint) });
     }
 
-    void removeConnection(Er::Client::IClient* client) override
+    void removeConnection(Er::Client::IClient* client) noexcept override
     {
         auto it = m_tabs.find(client);
         if (it == m_tabs.end())

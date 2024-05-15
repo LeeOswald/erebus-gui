@@ -49,9 +49,9 @@ EREBUSGUI_EXPORT void errorBox(const QString& title, const QString& message, QWi
     box.exec();
 }
 
-EREBUSGUI_EXPORT void errorBoxLite(const QString& message, QWidget* parent)
+EREBUSGUI_EXPORT void errorBoxLite(const QString& title, const QString& message, QWidget* parent)
 {
-    QMessageBox::warning(parent, QString::fromUtf8(EREBUS_APPLICATION_NAME), message, QMessageBox::Ok);
+    QMessageBox::warning(parent, title, message, QMessageBox::Ok);
 }
 
 } // namespace Ui {}

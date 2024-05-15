@@ -359,21 +359,57 @@ std::shared_ptr<Er::Client::IClient> MainWindow::connect(const Er::Client::Param
 
 void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client, std::string endpoint)
 {
-    refreshTitle();
+    size_t connected = 0;
 
-    m_pluginMgr.visitPlugins(
-        [this, client, endpoint](Erc::IPlugin* plugin)
-        {
-            plugin->addConnection(client.get(), endpoint);
-        }
-    );
+    {
+        Erc::Ui::WaitCursorScope w;
+
+        m_pluginMgr.forEachPlugin(
+            [this, client, endpoint, &connected](Erc::IPlugin* plugin)
+            {
+                auto pi = plugin->info();
+                Er::Log::Info(m_log) << "Connecting for plugin " << pi.name;
+
+                auto ok = Er::protectedCall<bool>(
+                    m_log,
+                    ErLogNowhere(),
+                    [this, plugin, client, endpoint]()
+                    {
+                        plugin->addConnection(client.get(), endpoint);
+                        return true;
+                    }
+                );
+
+                if (ok)
+                    ++connected;
+            }
+        );
+
+    }
+    if (connected < m_pluginMgr.count())
+    {
+        // revert even successful connections (we need all or nothing)
+        m_pluginMgr.forEachPlugin(
+            [this, client](Erc::IPlugin* plugin)
+            {
+                plugin->removeConnection(client.get());
+            }
+        );
+
+        Erc::Ui::errorBoxLite(QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("One or more plugins refused to connect to %1").arg(QString::fromUtf8(endpoint)), this);
+        QTimer::singleShot(0, [this]() { promptForConnection(); });
+    }
+    else
+    {
+        refreshTitle();
+    }
 }
 
 void MainWindow::onDisconnected(Er::Client::IClient* client)
 {
     refreshTitle();
 
-    m_pluginMgr.visitPlugins(
+    m_pluginMgr.forEachPlugin(
         [this, client](Erc::IPlugin* plugin)
         {
             plugin->removeConnection(client);

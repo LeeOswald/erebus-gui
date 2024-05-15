@@ -31,7 +31,8 @@ PluginDlg::PluginDlg(const QStringList& pluginList, const QString& lastPluginDir
 
     for (auto& plugin: pluginList)
     {
-        m_ui->listPlugins->addItem(plugin);
+        QFileInfo fi(plugin);
+        m_ui->listPlugins->addItem(fi.fileName());
     }
 
     if (!lastPluginDir.isEmpty())
@@ -65,7 +66,7 @@ void PluginDlg::onAdd()
     QFileInfo fi(fileName);
     if (!fi.exists())
     {
-        return Erc::Ui::errorBoxLite(tr("The file specified does not exist"), this);
+        return Erc::Ui::errorBoxLite(windowTitle(), tr("The file specified does not exist"), this);
     }
 
     auto dir = fi.dir();
@@ -101,7 +102,7 @@ void PluginDlg::onOk()
     auto count = m_ui->listPlugins->count();
     if (!count)
     {
-        return Erc::Ui::errorBoxLite(tr("At least one plugin is required"), this);
+        return Erc::Ui::errorBoxLite(windowTitle(), tr("At least one plugin is required"), this);
     }
 
     for (int i = 0; i < count; ++i)

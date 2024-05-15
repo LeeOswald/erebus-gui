@@ -72,7 +72,7 @@ void ConnectDlg::onOk()
     auto endpoint = m_ui->comboEndpoints->currentText();
     if (endpoint.isEmpty())
     {
-        return Erc::Ui::errorBoxLite(tr("Please specify the enpoint address"), this);
+        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the enpoint address"), this);
     }
 
     m_selected = Erc::toUtf8(endpoint);
@@ -80,7 +80,7 @@ void ConnectDlg::onOk()
     auto user = m_ui->editUser->text();
     if (user.isEmpty())
     {
-        return Erc::Ui::errorBoxLite(tr("Please specify the user name"), this);
+        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the user name"), this);
     }
 
     m_user = Erc::toUtf8(user);
@@ -88,7 +88,7 @@ void ConnectDlg::onOk()
     auto password = m_ui->editPassword->text();
     if (password.isEmpty())
     {
-        return Erc::Ui::errorBoxLite(tr("Please specify the password"), this);
+        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the password"), this);
     }
 
     m_password = Erc::toUtf8(password);
@@ -97,7 +97,7 @@ void ConnectDlg::onOk()
     auto rootCA = m_ui->editRootCA->text();
     if (m_ssl && rootCA.isEmpty())
     {
-        return Erc::Ui::errorBoxLite(tr("Please specify the root CA certificate"), this);
+        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the root CA certificate"), this);
     }
 
     m_rootCA = Erc::toUtf8(rootCA);

@@ -44,7 +44,7 @@ public:
     IPlugin* load(const QString& path);
 
     template <typename Visitor>
-    void visitPlugins(Visitor v)
+    void forEachPlugin(Visitor v)
     {
         for (auto& plugin: m_plugins)
         {
