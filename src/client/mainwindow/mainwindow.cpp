@@ -285,20 +285,21 @@ bool MainWindow::promptForConnection()
     std::shared_ptr<Er::Client::IClient> client;
     do
     {
-        auto recentUser = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastUserName, QString());
         auto ssl = Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::Connections::lastUseSsl, false);
+        auto recentCert = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastCertificate, QString());
+        auto recentKey = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastKey, QString());
         auto rootCA = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, QString());
 
-        Erc::Private::Ui::ConnectDlg dlg(m_recentEndpoints.all(), Erc::toUtf8(recentUser), ssl, Erc::toUtf8(rootCA), this);
+        Erc::Private::Ui::ConnectDlg dlg(m_recentEndpoints.all(), ssl, Erc::toUtf8(rootCA), Erc::toUtf8(recentCert), Erc::toUtf8(recentKey), this);
         if (dlg.exec() != QDialog::Accepted)
             return false;
 
-        std::string certificate;
+        std::string caCertificate;
         if (dlg.ssl() && !dlg.rootCA().empty())
         {
-            certificate = Erc::Ui::protectedCall<std::string>(
+            caCertificate = Erc::Ui::protectedCall<std::string>(
                 m_log,
-                tr("Failed to load the certificate"),
+                tr("Failed to load the CA certificate"),
                 this,
                 [this](const std::string& path)
                 {
@@ -308,10 +309,40 @@ bool MainWindow::promptForConnection()
             );
         }
 
-        Er::Log::Info(m_log) << "Connecting to [" << dlg.selected() << "] as [" << dlg.user() << "]";
+        std::string certificate;
+        if (dlg.ssl() && !dlg.certificate().empty())
+        {
+            certificate = Erc::Ui::protectedCall<std::string>(
+                m_log,
+                tr("Failed to load the certificate"),
+                this,
+                [this](const std::string& path)
+                {
+                    return Er::Util::loadTextFile(path);
+                },
+                dlg.certificate()
+                );
+        }
 
-        Er::Client::Params params(m_log, dlg.selected(), dlg.ssl(), certificate, dlg.user(), dlg.password());
-        client = connect(params);
+        std::string key;
+        if (dlg.ssl() && !dlg.key().empty())
+        {
+            key = Erc::Ui::protectedCall<std::string>(
+                m_log,
+                tr("Failed to load the certificate key"),
+                this,
+                [this](const std::string& path)
+                {
+                    return Er::Util::loadTextFile(path);
+                },
+                dlg.key()
+                );
+        }
+
+        Er::Log::Info(m_log) << "Connecting to [" << dlg.selected() << "]";
+
+        Er::Client::Params params(m_log, dlg.selected(), dlg.ssl(), caCertificate, certificate, key);
+        client = makeClient(params);
 
         if (client)
         {
@@ -320,17 +351,28 @@ bool MainWindow::promptForConnection()
             auto packed = Erc::fromUtf8(m_recentEndpoints.pack());
             Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::recentConnections, packed);
 
-            Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastUserName, Erc::fromUtf8(dlg.user()));
             Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::Connections::lastUseSsl, dlg.ssl());
-            Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, Erc::fromUtf8(dlg.rootCA()));
 
-            if (m_client)
-                emit disconnected(m_client.get());
+            if (!dlg.certificate().empty())
+                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastCertificate, Erc::fromUtf8(dlg.certificate()));
+
+            if (!dlg.key().empty())
+                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastKey, Erc::fromUtf8(dlg.key()));
+
+            if (!dlg.rootCA().empty())
+                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, Erc::fromUtf8(dlg.rootCA()));
+
+            auto oldClient = m_client;
+            m_client.reset();
+
+            // we're temporarily disconnected
+            refreshTitle();
+
+            if (oldClient)
+                emit disconnected(oldClient);
 
             m_client = client;
             m_connectionParams = params;
-
-            Er::Log::Info(m_log) << "Connected to [" << dlg.selected() << "]";
         }
 
     } while (!client);
@@ -340,11 +382,11 @@ bool MainWindow::promptForConnection()
     return true;
 }
 
-std::shared_ptr<Er::Client::IClient> MainWindow::connect(const Er::Client::Params& params)
+std::shared_ptr<Er::Client::IClient> MainWindow::makeClient(const Er::Client::Params& params)
 {
     auto client = Erc::Ui::protectedCall<std::shared_ptr<Er::Client::IClient>>(
         m_log,
-        tr("Connection attempt failed"),
+        tr("Failed to create a client instance"),
         this,
         [this](const Er::Client::Params& params)
         {
@@ -386,17 +428,9 @@ void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client, std::s
         );
 
     }
-    if (connected < m_pluginMgr.count())
+    if (connected == 0)
     {
-        // revert even successful connections (we need all or nothing)
-        m_pluginMgr.forEachPlugin(
-            [this, client](Erc::IPlugin* plugin)
-            {
-                plugin->removeConnection(client.get());
-            }
-        );
-
-        Erc::Ui::errorBoxLite(QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("One or more plugins refused to connect to %1").arg(QString::fromUtf8(endpoint)), this);
+        Erc::Ui::errorBoxLite(QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("Couuld not connect to %1").arg(QString::fromUtf8(endpoint)), this);
         QTimer::singleShot(0, [this]() { promptForConnection(); });
     }
     else
@@ -405,14 +439,12 @@ void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client, std::s
     }
 }
 
-void MainWindow::onDisconnected(Er::Client::IClient* client)
+void MainWindow::onDisconnected(std::shared_ptr<Er::Client::IClient> client)
 {
-    refreshTitle();
-
     m_pluginMgr.forEachPlugin(
         [this, client](Erc::IPlugin* plugin)
         {
-            plugin->removeConnection(client);
+            plugin->removeConnection(client.get());
         }
     );
 }

@@ -1,5 +1,7 @@
 CMakeLists.txt.user
 *.code-workspace
 build/
+_build/
 .vscode/
 pull.cmd
+*.TMP

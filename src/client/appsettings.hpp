@@ -58,10 +58,11 @@ constexpr std::string_view mainPos("mainwindow/main_pos");
 namespace Connections
 {
 
-constexpr std::string_view lastUserName("connections/last_user_name");
 constexpr std::string_view recentConnections("connections/recent_connections");
 constexpr std::string_view lastUseSsl("connections/ssl");
 constexpr std::string_view lastRootCA("connections/rootCA");
+constexpr std::string_view lastCertificate("connections/certificate");
+constexpr std::string_view lastKey("connections/key");
 constexpr size_t kMaxRecentConnections = 16;
 
 } // namespace Connections {}

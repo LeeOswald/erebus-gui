@@ -20,17 +20,16 @@ ConnectDlg::~ConnectDlg()
 
 ConnectDlg::ConnectDlg(
     const std::vector<std::string>& endpoints,
-    const std::string& user,
     bool ssl,
     const std::string& rootCA,
+    const std::string& certificate,
+    const std::string& key,
     QWidget* parent
     )
     : QDialog(parent)
     , m_ui(new Ui_ConnectDlg())
 {
     m_ui->setupUi(this);
-
-    QWidget* whoNeedsFocus = nullptr;
 
     for (auto& ep : endpoints)
     {
@@ -40,18 +39,12 @@ ConnectDlg::ConnectDlg(
 
     if (!endpoints.empty())
         m_ui->comboEndpoints->setCurrentIndex(0);
-    else
-        whoNeedsFocus = m_ui->comboEndpoints;
 
-    if (!user.empty())
-        m_ui->editUser->setText(Erc::fromUtf8(user));
-    else
-        whoNeedsFocus = m_ui->editUser;
-
-    if (!whoNeedsFocus)
-        whoNeedsFocus = m_ui->editPassword;
+    m_ui->comboEndpoints->setFocus();
 
     m_ui->editRootCA->setText(Erc::fromUtf8(rootCA));
+    m_ui->editCertificate->setText(Erc::fromUtf8(certificate));
+    m_ui->editKey->setText(Erc::fromUtf8(key));
     m_ui->checkSsl->setCheckState(ssl ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
 
     enableSsl(ssl);
@@ -62,9 +55,6 @@ ConnectDlg::ConnectDlg(
         if (certPath.has_parent_path())
             m_certDir = certPath.parent_path().string();
     }
-
-    Q_ASSERT(whoNeedsFocus);
-    whoNeedsFocus->setFocus();
 }
 
 void ConnectDlg::onOk()
@@ -76,31 +66,28 @@ void ConnectDlg::onOk()
     }
 
     m_selected = Erc::toUtf8(endpoint);
-
-    auto user = m_ui->editUser->text();
-    if (user.isEmpty())
-    {
-        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the user name"), this);
-    }
-
-    m_user = Erc::toUtf8(user);
-
-    auto password = m_ui->editPassword->text();
-    if (password.isEmpty())
-    {
-        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the password"), this);
-    }
-
-    m_password = Erc::toUtf8(password);
-
     m_ssl = (m_ui->checkSsl->checkState() == Qt::CheckState::Checked);
     auto rootCA = m_ui->editRootCA->text();
     if (m_ssl && rootCA.isEmpty())
     {
-        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the root CA certificate"), this);
+        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the CA certificate"), this);
+    }
+
+    auto certificate = m_ui->editCertificate->text();
+    if (m_ssl && certificate.isEmpty())
+    {
+        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the certificate"), this);
+    }
+
+    auto key = m_ui->editKey->text();
+    if (m_ssl && key.isEmpty())
+    {
+        return Erc::Ui::errorBoxLite(windowTitle(), tr("Please specify the certificate key"), this);
     }
 
     m_rootCA = Erc::toUtf8(rootCA);
+    m_certificate = Erc::toUtf8(certificate);
+    m_key = Erc::toUtf8(key);
 
     accept();
 }
@@ -119,7 +106,7 @@ void ConnectDlg::onBrowseRootCA()
 {
     auto fileName = QFileDialog::getOpenFileName(
         this,
-        tr("Select Root CA Certificate"),
+        tr("Select CA Certificate"),
         Erc::fromUtf8(m_certDir),
         tr("Certificates (*.pem)")
     );
@@ -127,11 +114,43 @@ void ConnectDlg::onBrowseRootCA()
     m_ui->editRootCA->setText(fileName);
 }
 
+void ConnectDlg::onBrowseCertificate()
+{
+    auto fileName = QFileDialog::getOpenFileName(
+        this,
+        tr("Select Certificate"),
+        Erc::fromUtf8(m_certDir),
+        tr("Certificates (*.pem)")
+        );
+
+    m_ui->editCertificate->setText(fileName);
+}
+
+void ConnectDlg::onBrowseKey()
+{
+    auto fileName = QFileDialog::getOpenFileName(
+        this,
+        tr("Select Certificate Key"),
+        Erc::fromUtf8(m_certDir),
+        tr("Certificates (*.pem)")
+        );
+
+    m_ui->editKey->setText(fileName);
+}
+
 void ConnectDlg::enableSsl(bool enable)
 {
     m_ui->labelRootCA->setEnabled(enable);
     m_ui->editRootCA->setEnabled(enable);
     m_ui->btnBrowseRootCA->setEnabled(enable);
+
+    m_ui->labelCertificate->setEnabled(enable);
+    m_ui->editCertificate->setEnabled(enable);
+    m_ui->btnBrowseCertificate->setEnabled(enable);
+
+    m_ui->labelKey->setEnabled(enable);
+    m_ui->editKey->setEnabled(enable);
+    m_ui->btnBrowseKey->setEnabled(enable);
 }
 
 } // namespace Ui {}

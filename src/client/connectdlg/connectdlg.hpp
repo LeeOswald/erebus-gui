@@ -27,25 +27,16 @@ public:
 
     explicit ConnectDlg(
         const std::vector<std::string>& endpoints,
-        const std::string& user,
         bool ssl,
         const std::string& rootCA,
+        const std::string& certificate,
+        const std::string& key,
         QWidget* parent = nullptr
     );
 
     const std::string& selected() const noexcept
     {
         return m_selected;
-    }
-
-    const std::string& user() const noexcept
-    {
-        return m_user;
-    }
-
-    const std::string& password() const noexcept
-    {
-        return m_password;
     }
 
     bool ssl() const noexcept
@@ -58,11 +49,23 @@ public:
         return m_rootCA;
     }
 
+    const std::string& certificate() const noexcept
+    {
+        return m_certificate;
+    }
+
+    const std::string& key() const noexcept
+    {
+        return m_key;
+    }
+
 public slots:
     void onOk();
     void onCancel();
     void onSsl();
     void onBrowseRootCA();
+    void onBrowseCertificate();
+    void onBrowseKey();
 
 private:
     void enableSsl(bool enable);
@@ -70,10 +73,10 @@ private:
     Ui_ConnectDlg* m_ui;
     std::string m_certDir;
     std::string m_selected;
-    std::string m_user;
-    std::string m_password;
     bool m_ssl = false;
     std::string m_rootCA;
+    std::string m_certificate;
+    std::string m_key;
 };
 
 } // namespace Ui {}

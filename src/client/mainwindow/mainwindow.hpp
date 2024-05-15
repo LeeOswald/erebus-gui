@@ -51,7 +51,7 @@ private:
 
 signals:
     void connected(std::shared_ptr<Er::Client::IClient> client, std::string endpoint);
-    void disconnected(Er::Client::IClient* client);
+    void disconnected(std::shared_ptr<Er::Client::IClient> client);
 
 public slots:
     void quit();
@@ -64,7 +64,7 @@ public slots:
 private slots:
     void start();
     void onConnected(std::shared_ptr<Er::Client::IClient> client, std::string endpoint);
-    void onDisconnected(Er::Client::IClient* client);
+    void onDisconnected(std::shared_ptr<Er::Client::IClient> client);
 
 private:
     void saveGeometry();
@@ -74,7 +74,7 @@ private:
     bool checkPlugins();
     size_t loadPlugins(const QStringList& paths);
 
-    std::shared_ptr<Er::Client::IClient> connect(const Er::Client::Params& params);
+    std::shared_ptr<Er::Client::IClient> makeClient(const Er::Client::Params& params);
 
     enum class SplitterPane
     {
