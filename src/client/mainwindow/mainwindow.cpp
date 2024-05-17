@@ -123,7 +123,7 @@ MainWindow::MainWindow(
     setStatusBar(m_statusbar);
 
     QObject::connect(this, SIGNAL(connected(std::shared_ptr<Er::Client::IClient>,std::string)), this, SLOT(onConnected(std::shared_ptr<Er::Client::IClient>,std::string)));
-    QObject::connect(this, SIGNAL(disconnected(Er::Client::IClient*)), this, SLOT(onDisconnected(Er::Client::IClient*)));
+    QObject::connect(this, SIGNAL(disconnected(std::shared_ptr<Er::Client::IClient>)), this, SLOT(onDisconnected(std::shared_ptr<Er::Client::IClient>)));
 
     refreshTitle();
     ErLogDebug(log, ErLogNowhere(), "Client started");
