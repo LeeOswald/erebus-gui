@@ -48,7 +48,7 @@ public:
     {
         for (auto& plugin: m_plugins)
         {
-            v(plugin.second->ref);
+            v(plugin.second->ref.get());
         }
     }
 
@@ -58,14 +58,10 @@ private:
         QString path;
         Er::Log::ILog* log = nullptr;
         QLibrary dll;
-        Erc::IPlugin* ref = nullptr;
-        Erc::disposeUiPlugin* disposeFn = nullptr;
+        std::unique_ptr<Erc::IPlugin> ref;
 
         ~PluginInfo()
         {
-            if (disposeFn)
-                disposeFn(ref);
-
             if (dll.isLoaded())
             {
                 log->write(Er::Log::Level::Info, ErLogNowhere(), "Unloading plugin [%s]", Erc::toUtf8(path).c_str());

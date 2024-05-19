@@ -15,5 +15,5 @@
 #define EREBUS_ORGANIZATION_NAME "Lee Oswald"
 #define EREBUS_APPLICATION_NAME "Erebus Client"
 
-#define EREBUS_COPYRIGHT "Copyright © 2023 Lee Oswald"
+#define EREBUS_COPYRIGHT "Copyright © 2023-2024 Lee Oswald"
 

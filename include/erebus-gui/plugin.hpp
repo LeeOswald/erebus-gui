@@ -44,22 +44,38 @@ struct IPlugin
 {
     struct Info
     {
+        struct Version
+        {
+            unsigned major;
+            unsigned minor;
+            unsigned patch;
+
+            Version(unsigned major, unsigned minor, unsigned patch)
+                : major(major)
+                , minor(minor)
+                , patch(patch)
+            {}
+        };
+
         std::string name;
         std::string description;
+        Version version;
+
+        Info(std::string_view name, std::string_view description, const Version& version)
+            : name(name)
+            , description(description)
+            , version(version)
+        {}
     };
 
+    virtual ~IPlugin() {}
     virtual Info info() const = 0;
     virtual void addConnection(Er::Client::IClient* client, const std::string& endpoint) = 0;
     virtual void removeConnection(Er::Client::IClient* client) noexcept = 0;
-
-protected:
-    virtual ~IPlugin() {}
 };
 
 
-// the only symbols any plugin must export
 typedef IPlugin* (createUiPlugin)(const PluginParams&);
-typedef void (disposeUiPlugin)(IPlugin*);
 
 
 } // namespace Erc {}

@@ -4,6 +4,8 @@
 #include "processtab.hpp"
 #include "settings.hpp"
 
+#include "client-version.h"
+
 #include <erebus-processmgr/processprops.hxx>
 
 #include <unordered_map>
@@ -93,11 +95,7 @@ public:
 
     Info info() const override
     {
-        return Info
-        {
-            "ProcessTree",
-            "Process tree viewer"
-        };
+        return Info("Process Tree", "Process tree & properties", Info::Version(EREBUS_VERSION_MAJOR, EREBUS_VERSION_MINOR, EREBUS_VERSION_PATCH));
     }
 
     void addConnection(Er::Client::IClient* client, const std::string& endpoint) override

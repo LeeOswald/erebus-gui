@@ -25,21 +25,26 @@ IPlugin* PluginManager::load(const QString& path)
     if (!createUiPluginFn)
         throw Er::Exception(ER_HERE(), Er::Util::format("Plugin [%s] contains no createUiPlugin symbol", Erc::toUtf8(path).c_str()));
 
-    info->disposeFn = reinterpret_cast<Erc::disposeUiPlugin*>(info->dll.resolve("disposeUiPlugin"));
-    if (!info->disposeFn)
-        throw Er::Exception(ER_HERE(), Er::Util::format("Plugin [%s] contains no disposeUiPlugin symbol", Erc::toUtf8(path).c_str()));
-
-    info->ref = createUiPluginFn(m_params);
+    info->ref.reset(createUiPluginFn(m_params));
     if (!info->ref)
         throw Er::Exception(ER_HERE(), Er::Util::format("Plugin [%s] returned no interface", Erc::toUtf8(path).c_str()));
 
     m_plugins.insert({path, info});
 
     auto pi = info->ref->info();
-    m_params.log->write(Er::Log::Level::Info, ErLogNowhere(), "Loaded plugin [%s] [%s] from [%s]", pi.name.c_str(), pi.description.c_str(), Erc::toUtf8(path).c_str());
+    m_params.log->write(
+        Er::Log::Level::Info,
+        ErLogNowhere(),
+        "Loaded plugin %s ver %u.%u.%u [%s] from [%s]",
+        pi.name.c_str(),
+        pi.version.major,
+        pi.version.minor,
+        pi.version.patch,
+        pi.description.c_str(),
+        Erc::toUtf8(path).c_str()
+    );
 
-
-    return info->ref;
+    return info->ref.get();
 }
 
 
