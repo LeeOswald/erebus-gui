@@ -189,7 +189,7 @@ bool cacheIcon(const std::string& dir, const std::string& name, unsigned size)
 } // namespace {}
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     // let the icon cache be accessible
     ::umask(0);
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
         po::options_description options("Command line options");
         options.add_options()
             ("help,?", "display this message")
-            ("theme", po::value<std::string>(&themeName)->default_value("hicolor"), "theme name")
+            ("theme", po::value<std::string>(&themeName), "theme name")
             ("clear", "clear cache")
             ("cache", po::value<std::string>(&cacheDir), "icon cache directory path")
             ("source", po::value<std::string>(&sourceFile), "icon list file path")
@@ -230,13 +230,13 @@ int main(int argc, char *argv[])
         if (!iconList.empty())
             requestedIcons = Er::Util::split(iconList, std::string_view(":"), Er::Util::SplitSkipEmptyParts);
 
-        QIcon::setThemeName(QString::fromUtf8(themeName));
+        if (!themeName.empty())
+            QIcon::setThemeName(QString::fromUtf8(themeName));
 
         auto theme = QIcon::themeName();
         std::cout << "Theme name: " << theme.toUtf8().constData() << "\n";
         theme = QIcon::fallbackThemeName();
         std::cout << "Fallback theme name: " << theme.toUtf8().constData() << "\n";
-
 
         auto paths = QIcon::themeSearchPaths();
         for (auto& path: paths)
