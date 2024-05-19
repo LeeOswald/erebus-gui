@@ -141,6 +141,15 @@ void ProcessInformation::updateFromDiff(const ProcessInformation& diff)
             break;
         }
     }
+
+    // show process as 'running' if it has... well... run for a while since the last cycle
+    if (this->processState == QLatin1String("S"))
+    {
+        if ((this->uTimeDiff > 0) || (this->sTimeDiff > 0))
+        {
+            this->processState = QLatin1String("R");
+        }
+    }
 }
 
 namespace
