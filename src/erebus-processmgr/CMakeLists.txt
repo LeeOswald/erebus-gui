@@ -1,4 +1,4 @@
-set(PROCESSMGR_PLUGIN erebus-processmgr)
+set(PROCESSMGR_PLUGIN erebus-processmgr-ui)
 
 set(RESOURCE_FILES
     processmgr.qrc
@@ -35,5 +35,7 @@ add_library(${PROCESSMGR_PLUGIN} SHARED
 
 
 add_compile_definitions(EREBUSPROCMGR_EXPORTS=1)
+
+set_property(TARGET ${PROCESSMGR_PLUGIN} PROPERTY PREFIX "")
 
 target_link_libraries(${PROCESSMGR_PLUGIN} PUBLIC ${Qt6Widgets_LIBRARIES} ${EREBUS_RTLLIB} ${EREBUS_GUILIB})

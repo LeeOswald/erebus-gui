@@ -25,4 +25,6 @@ add_library(${EREBUS_GUILIB} SHARED
 
 add_compile_definitions(EREBUSGUI_EXPORTS=1)
 
+set_property(TARGET ${EREBUS_GUILIB} PROPERTY PREFIX "")
+
 target_link_libraries(${EREBUS_GUILIB} PUBLIC ${Qt6Widgets_LIBRARIES} ${EREBUS_RTLLIB})

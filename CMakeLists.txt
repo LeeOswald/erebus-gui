@@ -93,6 +93,7 @@ include_directories(
 
 set(EREBUS_RTLLIB erebus-rtl)
 set(EREBUS_CLTLIB erebus-clt)
+set(EREBUS_DESKTOPLIB erebus-desktop)
 
 
 # component names
