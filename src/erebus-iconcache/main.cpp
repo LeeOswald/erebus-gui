@@ -1,6 +1,9 @@
 #include "iconcache.hpp"
 #include "log.hpp"
+#include "server.hpp"
 
+#include <erebus/condition.hxx>
+#include <erebus/util/signalhandler.hxx>
 #include <erebus/util/stringutil.hxx>
 
 #include <QGuiApplication>
@@ -13,11 +16,13 @@
 namespace
 {
 
+Er::Event g_exitCondition(false);
 std::optional<int> g_signalReceived;
 
 void signalHandler(int signo)
 {
     g_signalReceived = signo;
+    g_exitCondition.setAndNotifyAll(true);
 }
 
 
@@ -39,6 +44,17 @@ int main(int argc, char* argv[])
     // let the icon cache be accessible
     ::umask(0);
 
+    Er::Util::SignalHandler sh({SIGINT, SIGTERM, SIGPIPE, SIGHUP});
+    std::future<int> futureSigHandler =
+        // spawn a thread that handles signals
+        sh.asyncWaitHandler(
+            [](int signo)
+            {
+                signalHandler(signo);
+                return true;
+            }
+        );
+
 
     try
     {
@@ -49,6 +65,7 @@ int main(int argc, char* argv[])
         std::string iconList;
         std::vector<std::string> requestedIcons;
         unsigned iconSize = 0;
+        std::string mqName;
 
         namespace po = boost::program_options;
         po::options_description options("Command line options");
@@ -59,6 +76,7 @@ int main(int argc, char* argv[])
             ("cache", po::value<std::string>(&cacheDir), "icon cache directory path")
             ("size", po::value<unsigned>(&iconSize)->default_value(16), "icon size")
             ("icons", po::value<std::string>(&iconList), "requested icon names (colon-separated)")
+            ("queue", po::value<std::string>(&mqName), "message queue name")
         ;
 
         po::variables_map vm;
@@ -101,16 +119,39 @@ int main(int argc, char* argv[])
             return 0;
         }
 
+        if (mqName.empty())
+        {
+            std::cerr << "Expected a message queue name\n";
+            std::cerr << options << "\n";
+            return -1;
+        }
 
-        return 0;
+        std::string mqIn(mqName);
+        mqIn.append("_req");
+        std::string mqOut(mqName);
+        mqIn.append("_resp");
+
+        auto ipc = Er::Desktop::createIconCacheIpc(mqIn.c_str(), mqOut.c_str(), 128);
+
+        ErIc::IconCache cache(&console, themeName, cacheDir, ".png");
+
+        ErIc::IconServer server(&console, &g_exitCondition, ipc, cache, 2);
+
+        g_exitCondition.waitValue(true);
+
+        if (g_signalReceived)
+        {
+            console.write(Er::Log::Level::Warning, ErLogNowhere(), "Exiting due to signal %d", *g_signalReceived);
+        }
 
     }
     catch (std::exception& e)
     {
         std::cerr << "Unexpected error: " << e.what() << "\n";
+        return -1;
     }
 
-    return -1;
+    return 0;
 }
 
 

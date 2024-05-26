@@ -5,6 +5,8 @@ set(SOURCE_FILES
     log.cpp
     log.hpp
     main.cpp
+    server.cpp
+    server.hpp
 )
 
     
