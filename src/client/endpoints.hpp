@@ -1,9 +1,9 @@
 #pragma once
 
-#include <erebus/util/stringutil.hxx>
-
 #include <sstream>
 #include <vector>
+
+#include <boost/algorithm/string.hpp>
 
 
 namespace Erc
@@ -16,9 +16,9 @@ class RecentEndpoints final
 {
 public:
     explicit RecentEndpoints(const std::string& packed, size_t limit)
-        : m_endpoints(Er::Util::split(packed, std::string_view(";"), Er::Util::SplitSkipEmptyParts))
-        , m_limit(limit)
+        : m_limit(limit)
     {
+        boost::split(m_endpoints, packed, [](char c) { return (c == ';'); });
     }
 
     std::string pack() const

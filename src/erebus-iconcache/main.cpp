@@ -4,12 +4,13 @@
 
 #include <erebus/condition.hxx>
 #include <erebus/util/signalhandler.hxx>
-#include <erebus/util/stringutil.hxx>
 
 #include <QGuiApplication>
 
 #include <iostream>
+#include <vector>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 
 
@@ -41,7 +42,7 @@ void cacheIconsFromList(Er::Log::ILog* log, const std::string& cacheDir, const s
 
 int main(int argc, char* argv[])
 {
-    // let the icon cache be accessible
+    // let the icon cache be accessible for all users
     ::umask(0);
 
     Er::Util::SignalHandler sh({SIGINT, SIGTERM, SIGPIPE, SIGHUP});
@@ -76,7 +77,7 @@ int main(int argc, char* argv[])
             ("cache", po::value<std::string>(&cacheDir), "icon cache directory path")
             ("size", po::value<unsigned>(&iconSize)->default_value(16), "icon size")
             ("icons", po::value<std::string>(&iconList), "requested icon names (colon-separated)")
-            ("queue", po::value<std::string>(&mqName), "message queue name")
+            ("queue", po::value<std::string>(&mqName)->default_value("erebus"), "message queue name")
         ;
 
         po::variables_map vm;
@@ -86,7 +87,7 @@ int main(int argc, char* argv[])
         if (vm.count("help"))
         {
             std::cout << options << "\n";
-            return 0;
+            return EXIT_SUCCESS;
         }
 
         bool verbose = (vm.count("verbose") > 0);
@@ -96,14 +97,14 @@ int main(int argc, char* argv[])
 
 
         if (!iconList.empty())
-            requestedIcons = Er::Util::split(iconList, std::string_view(":"), Er::Util::SplitSkipEmptyParts);
+            boost::split(requestedIcons, iconList, [](char c) { return (c == ':'); });
 
 
         if (cacheDir.empty())
         {
             std::cerr << "Cache directory not specified\n";
             std::cerr << options << "\n";
-            return -1;
+            return EXIT_FAILURE;
         }
 
         if (!requestedIcons.empty())
@@ -112,26 +113,28 @@ int main(int argc, char* argv[])
             {
                 std::cerr << "Expected a valid icon size\n";
                 std::cerr << options << "\n";
-                return -1;
+                return EXIT_FAILURE;
             }
 
             cacheIconsFromList(&console, cacheDir, themeName, requestedIcons, iconSize);
-            return 0;
+            return EXIT_SUCCESS;
         }
 
         if (mqName.empty())
         {
             std::cerr << "Expected a message queue name\n";
             std::cerr << options << "\n";
-            return -1;
+            return EXIT_FAILURE;
         }
 
         std::string mqIn(mqName);
         mqIn.append("_req");
         std::string mqOut(mqName);
-        mqIn.append("_resp");
+        mqOut.append("_resp");
 
-        auto ipc = Er::Desktop::createIconCacheIpc(mqIn.c_str(), mqOut.c_str(), 128);
+        auto ipc = Er::Desktop::createIconCacheIpc(mqIn.c_str(), mqOut.c_str(), 256);
+        console.write(Er::Log::Level::Info, ErLogNowhere(), "Created message queue %s", mqIn.c_str());
+        console.write(Er::Log::Level::Info, ErLogNowhere(), "Created message queue %s", mqOut.c_str());
 
         ErIc::IconCache cache(&console, themeName, cacheDir, ".png");
 
@@ -148,10 +151,10 @@ int main(int argc, char* argv[])
     catch (std::exception& e)
     {
         std::cerr << "Unexpected error: " << e.what() << "\n";
-        return -1;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 

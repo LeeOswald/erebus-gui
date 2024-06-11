@@ -482,7 +482,7 @@ QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
             {
                 return QVariant(*ico);
             }
-
+#if 0
             auto it = item->data()->properties.find(Er::ProcessProps::Icon::Id::value);
             if (it == item->data()->properties.end())
                 return QVariant();
@@ -502,6 +502,9 @@ QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
             m_iconCache.put(key, icon);
 
             return QVariant(icon);
+#endif
+
+            return QVariant();
         }
     );
 }

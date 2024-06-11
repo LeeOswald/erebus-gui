@@ -1,6 +1,6 @@
 #include "server.hpp"
 
-
+#include <erebus/system/thread.hxx>
 
 namespace ErIc
 {
@@ -26,6 +26,7 @@ IconServer::IconServer(Er::Log::ILog* log, Er::Event* crashEvent, std::shared_pt
 void IconServer::worker(std::stop_token stop) noexcept
 {
     Er::Log::Debug(m_log) << "Icon cache server started";
+    Er::System::CurrentThread::setName("iconcache_worker");
 
     try
     {
@@ -49,15 +50,15 @@ bool IconServer::heartbeat(std::stop_token stop) noexcept
 {
     try
     {
-        auto request = m_ipc->pullIconRequest(std::chrono::milliseconds(1000));
+        auto request = m_ipc->pullIconRequest(Timeout);
         if (request && !stop.stop_requested())
         {
             auto icon = m_cache.cacheIcon(request->name, request->size);
 
             if (icon.type == IconCache::IconInfo::Type::Invalid)
-                m_ipc->sendIcon(Er::Desktop::IIconCacheIpc::IconResponse(request->name, request->size, Er::Desktop::IIconCacheIpc::IconResponse::Result::NotFound), std::chrono::milliseconds(1000));
+                m_ipc->sendIcon(Er::Desktop::IIconCacheIpc::IconResponse(request->name, request->size, Er::Desktop::IIconCacheIpc::IconResponse::Result::NotFound), Timeout);
             else
-                m_ipc->sendIcon(Er::Desktop::IIconCacheIpc::IconResponse(request->name, request->size, Er::Desktop::IIconCacheIpc::IconResponse::Result::Ok, icon.path), std::chrono::milliseconds(1000));
+                m_ipc->sendIcon(Er::Desktop::IIconCacheIpc::IconResponse(request->name, request->size, Er::Desktop::IIconCacheIpc::IconResponse::Result::Ok, icon.path), Timeout);
         }
     }
     catch (std::exception& e)

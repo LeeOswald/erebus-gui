@@ -25,6 +25,8 @@ private:
     void worker(std::stop_token stop) noexcept;
     bool heartbeat(std::stop_token stop) noexcept;
 
+    static constexpr std::chrono::milliseconds Timeout = std::chrono::milliseconds(1000);
+
     Er::Log::ILog* m_log;
     Er::Event* m_crashEvent;
     std::shared_ptr<Er::Desktop::IIconCacheIpc> m_ipc;
