@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
         std::string mqOut(mqName);
         mqOut.append("_resp");
 
-        auto ipc = Er::Desktop::createIconCacheIpc(mqIn.c_str(), mqOut.c_str(), 256);
+        auto ipc = Er::Desktop::openIconCacheIpc(mqIn.c_str(), mqOut.c_str());
         console.write(Er::Log::Level::Info, ErLogNowhere(), "Created message queue %s", mqIn.c_str());
         console.write(Er::Log::Level::Info, ErLogNowhere(), "Created message queue %s", mqOut.c_str());
 

@@ -5,7 +5,7 @@
 
 #include <erebus/condition.hxx>
 #include <erebus/log.hxx>
-#include <erebus-desktop/erebus-desktop.hxx>
+#include <erebus-desktop/ic.hxx>
 
 #include <thread>
 #include <vector>

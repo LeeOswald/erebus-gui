@@ -3,7 +3,7 @@
 #include <erebus/exception.hxx>
 #include <erebus/util/format.hxx>
 #include <erebus/util/posixerror.hxx>
-#include <erebus-desktop/erebus-desktop.hxx>
+#include <erebus-desktop/ic.hxx>
 
 #include <sys/stat.h>
 
