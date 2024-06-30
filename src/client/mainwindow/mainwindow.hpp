@@ -50,8 +50,8 @@ private:
     void closeEvent(QCloseEvent* event) override;
 
 signals:
-    void connected(std::shared_ptr<Er::Client::IClient> client, std::string endpoint);
-    void disconnected(std::shared_ptr<Er::Client::IClient> client);
+    void connected(std::shared_ptr<void> channel, std::string endpoint);
+    void disconnected(std::shared_ptr<void> channel);
 
 public slots:
     void quit();
@@ -63,8 +63,8 @@ public slots:
 
 private slots:
     void start();
-    void onConnected(std::shared_ptr<Er::Client::IClient> client, std::string endpoint);
-    void onDisconnected(std::shared_ptr<Er::Client::IClient> client);
+    void onConnected(std::shared_ptr<void> channel, std::string endpoint);
+    void onDisconnected(std::shared_ptr<void> channel);
 
 private:
     void saveGeometry();
@@ -75,7 +75,6 @@ private:
     size_t loadPlugins(const QStringList& paths);
 
     std::shared_ptr<void> makeChannel(const Er::Client::ChannelParams& params);
-    std::shared_ptr<Er::Client::IClient> makeClient(std::shared_ptr<void> channel);
 
     enum class SplitterPane
     {
@@ -96,7 +95,6 @@ private:
     QTabWidget* m_tabWidget;
     QStatusBar* m_statusbar;
     std::shared_ptr<void> m_channel;
-    std::shared_ptr<Er::Client::IClient> m_client;
     std::optional<Er::Client::ChannelParams> m_connectionParams;
     Erc::Private::PluginManager m_pluginMgr;
 };

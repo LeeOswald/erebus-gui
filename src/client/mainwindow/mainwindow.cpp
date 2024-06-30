@@ -282,7 +282,7 @@ void MainWindow::start()
 bool MainWindow::promptForConnection()
 {
     std::shared_ptr<void> channel;
-    std::shared_ptr<Er::Client::IClient> client;
+
     do
     {
         auto ssl = Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::Connections::lastUseSsl, false);
@@ -362,27 +362,22 @@ bool MainWindow::promptForConnection()
             if (!dlg.rootCA().empty())
                 Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, Erc::fromUtf8(dlg.rootCA()));
 
-            client = makeClient(channel);
-            if (client)
-            {
-                auto oldClient = m_client;
-                m_client.reset();
+            auto oldChannel = m_channel;
+            m_channel.reset();
 
-                // we're temporarily disconnected
-                refreshTitle();
+            // we're temporarily disconnected
+            refreshTitle();
 
-                if (oldClient)
-                    emit disconnected(oldClient);
+            if (oldChannel)
+                emit disconnected(oldChannel);
 
-                m_channel = channel;
-                m_client = client;
-                m_connectionParams = params;
-            }
+            m_channel = channel;
+            m_connectionParams = params;
         }
 
-    } while (!client);
+    } while (!channel);
 
-    emit connected(client, m_connectionParams->endpoint);
+    emit connected(channel, m_connectionParams->endpoint);
 
     return true;
 }
@@ -404,25 +399,7 @@ std::shared_ptr<void> MainWindow::makeChannel(const Er::Client::ChannelParams& p
     return channel;
 }
 
-std::shared_ptr<Er::Client::IClient> MainWindow::makeClient(std::shared_ptr<void> channel)
-{
-    auto client = Erc::Ui::protectedCall<std::shared_ptr<Er::Client::IClient>>(
-        m_log,
-        tr("Failed to create a client instance"),
-        this,
-        [this](std::shared_ptr<void> channel, Er::Log::ILog* log)
-        {
-            Erc::Ui::WaitCursorScope w;
-            return Er::Client::createClient(channel, log);
-        },
-        channel,
-        m_log
-    );
-
-    return client;
-}
-
-void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client, std::string endpoint)
+void MainWindow::onConnected(std::shared_ptr<void> channel, std::string endpoint)
 {
     size_t connected = 0;
 
@@ -430,7 +407,7 @@ void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client, std::s
         Erc::Ui::WaitCursorScope w;
 
         m_pluginMgr.forEachPlugin(
-            [this, client, endpoint, &connected](Erc::IPlugin* plugin)
+            [this, channel, endpoint, &connected](Erc::IPlugin* plugin)
             {
                 auto pi = plugin->info();
                 Er::Log::Info(m_log) << "Connecting for plugin " << pi.name;
@@ -438,9 +415,9 @@ void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client, std::s
                 auto ok = Er::protectedCall<bool>(
                     m_log,
                     ErLogNowhere(),
-                    [this, plugin, client, endpoint]()
+                    [this, plugin, channel, endpoint]()
                     {
-                        plugin->addConnection(client.get(), endpoint);
+                        plugin->addConnection(channel, endpoint);
                         return true;
                     }
                 );
@@ -462,19 +439,19 @@ void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client, std::s
     }
 }
 
-void MainWindow::onDisconnected(std::shared_ptr<Er::Client::IClient> client)
+void MainWindow::onDisconnected(std::shared_ptr<void> channel)
 {
     m_pluginMgr.forEachPlugin(
-        [this, client](Erc::IPlugin* plugin)
+        [this, channel](Erc::IPlugin* plugin)
         {
-            plugin->removeConnection(client.get());
+            plugin->removeConnection(channel);
         }
     );
 }
 
 void MainWindow::refreshTitle()
 {
-    if (!m_client)
+    if (!m_channel)
     {
         setWindowTitle(QLatin1String(EREBUS_APPLICATION_NAME));
         m_trayIcon.setToolTip(QLatin1String(EREBUS_APPLICATION_NAME));

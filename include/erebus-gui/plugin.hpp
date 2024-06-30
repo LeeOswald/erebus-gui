@@ -70,8 +70,8 @@ struct IPlugin
 
     virtual ~IPlugin() {}
     virtual Info info() const = 0;
-    virtual void addConnection(Er::Client::IClient* client, const std::string& endpoint) = 0;
-    virtual void removeConnection(Er::Client::IClient* client) noexcept = 0;
+    virtual void addConnection(std::shared_ptr<void> channel, const std::string& endpoint) = 0;
+    virtual void removeConnection(std::shared_ptr<void> channel) noexcept = 0;
 };
 
 

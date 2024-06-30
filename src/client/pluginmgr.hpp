@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include <erebus/noncopyable.hxx>
+#include <erebus/erebus.hxx>
 #include <erebus-gui/plugin.hpp>
 
 

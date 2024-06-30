@@ -98,24 +98,24 @@ public:
         return Info("Process Tree", "Process tree & properties", Info::Version(EREBUS_VERSION_MAJOR, EREBUS_VERSION_MINOR, EREBUS_VERSION_PATCH));
     }
 
-    void addConnection(Er::Client::IClient* client, const std::string& endpoint) override
+    void addConnection(std::shared_ptr<void> channel, const std::string& endpoint) override
     {
-        auto it = m_tabs.find(client);
+        auto it = m_tabs.find(channel.get());
         if (it != m_tabs.end())
         {
-            m_params.log->write(Er::Log::Level::Error, ErLogInstance("ProcessMgrPlugin"), "Connection %p to %s already has a tab", client, endpoint.c_str());
+            m_params.log->write(Er::Log::Level::Error, ErLogInstance("ProcessMgrPlugin"), "Connection %s already has a tab", endpoint.c_str());
             return;
         }
 
-        m_tabs.insert({ client, std::make_unique<Erp::Private::ProcessTab>(m_params, client, endpoint) });
+        m_tabs.insert({ channel.get(), std::make_unique<Erp::Private::ProcessTab>(m_params, channel, endpoint) });
     }
 
-    void removeConnection(Er::Client::IClient* client) noexcept override
+    void removeConnection(std::shared_ptr<void> channel) noexcept override
     {
-        auto it = m_tabs.find(client);
+        auto it = m_tabs.find(channel.get());
         if (it == m_tabs.end())
         {
-            m_params.log->write(Er::Log::Level::Error, ErLogInstance("ProcessMgrPlugin"), "No tab found for connection %p", client);
+            m_params.log->write(Er::Log::Level::Error, ErLogInstance("ProcessMgrPlugin"), "No tab found for connection %p", channel.get());
             return;
         }
 
@@ -205,7 +205,7 @@ private:
     QAction* m_refresh2Action;
     QAction* m_refresh5Action;
     QAction* m_refresh10Action;
-    std::unordered_map<Er::Client::IClient*, std::unique_ptr<Erp::Private::ProcessTab>> m_tabs;
+    std::unordered_map<void*, std::unique_ptr<Erp::Private::ProcessTab>> m_tabs; // connection -> tab
 };
 
 } // namespace {}
@@ -218,19 +218,5 @@ EREBUSPROCMGR_EXPORT Erc::IPlugin* createUiPlugin(const Erc::PluginParams& param
 {
     return new ProcessMgrPlugin(params);
 }
-
-EREBUSPROCMGR_EXPORT void disposeUiPlugin(Erc::IPlugin* plugin)
-{
-    assert(plugin);
-    if (!plugin)
-        return;
-
-    auto realPlugin = dynamic_cast<ProcessMgrPlugin*>(plugin);
-    assert(realPlugin);
-
-    delete realPlugin;
-}
-
-
 
 } // extern "C" {}
