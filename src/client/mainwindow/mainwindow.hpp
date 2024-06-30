@@ -74,7 +74,8 @@ private:
     bool checkPlugins();
     size_t loadPlugins(const QStringList& paths);
 
-    std::shared_ptr<Er::Client::IClient> makeClient(const Er::Client::Params& params);
+    std::shared_ptr<void> makeChannel(const Er::Client::ChannelParams& params);
+    std::shared_ptr<Er::Client::IClient> makeClient(std::shared_ptr<void> channel);
 
     enum class SplitterPane
     {
@@ -94,8 +95,9 @@ private:
     LogView* m_logView;
     QTabWidget* m_tabWidget;
     QStatusBar* m_statusbar;
+    std::shared_ptr<void> m_channel;
     std::shared_ptr<Er::Client::IClient> m_client;
-    std::optional<Er::Client::Params> m_connectionParams;
+    std::optional<Er::Client::ChannelParams> m_connectionParams;
     Erc::Private::PluginManager m_pluginMgr;
 };
 

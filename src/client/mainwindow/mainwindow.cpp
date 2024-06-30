@@ -281,7 +281,7 @@ void MainWindow::start()
 
 bool MainWindow::promptForConnection()
 {
-
+    std::shared_ptr<void> channel;
     std::shared_ptr<Er::Client::IClient> client;
     do
     {
@@ -341,10 +341,10 @@ bool MainWindow::promptForConnection()
 
         Er::Log::Info(m_log) << "Connecting to [" << dlg.selected() << "]";
 
-        Er::Client::Params params(m_log, dlg.selected(), dlg.ssl(), caCertificate, certificate, key);
-        client = makeClient(params);
+        Er::Client::ChannelParams params(dlg.selected(), dlg.ssl(), caCertificate, certificate, key);
+        channel = makeChannel(params);
 
-        if (client)
+        if (channel)
         {
             // save the successful connection params
             m_recentEndpoints.promote(dlg.selected());
@@ -362,17 +362,22 @@ bool MainWindow::promptForConnection()
             if (!dlg.rootCA().empty())
                 Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, Erc::fromUtf8(dlg.rootCA()));
 
-            auto oldClient = m_client;
-            m_client.reset();
+            client = makeClient(channel);
+            if (client)
+            {
+                auto oldClient = m_client;
+                m_client.reset();
 
-            // we're temporarily disconnected
-            refreshTitle();
+                // we're temporarily disconnected
+                refreshTitle();
 
-            if (oldClient)
-                emit disconnected(oldClient);
+                if (oldClient)
+                    emit disconnected(oldClient);
 
-            m_client = client;
-            m_connectionParams = params;
+                m_channel = channel;
+                m_client = client;
+                m_connectionParams = params;
+            }
         }
 
     } while (!client);
@@ -382,18 +387,36 @@ bool MainWindow::promptForConnection()
     return true;
 }
 
-std::shared_ptr<Er::Client::IClient> MainWindow::makeClient(const Er::Client::Params& params)
+std::shared_ptr<void> MainWindow::makeChannel(const Er::Client::ChannelParams& params)
+{
+    auto channel = Erc::Ui::protectedCall<std::shared_ptr<void>>(
+        m_log,
+        tr("Failed to create an RPC channel"),
+        this,
+        [this](const Er::Client::ChannelParams& params)
+        {
+            Erc::Ui::WaitCursorScope w;
+            return Er::Client::createChannel(params);
+        },
+        params
+    );
+
+    return channel;
+}
+
+std::shared_ptr<Er::Client::IClient> MainWindow::makeClient(std::shared_ptr<void> channel)
 {
     auto client = Erc::Ui::protectedCall<std::shared_ptr<Er::Client::IClient>>(
         m_log,
         tr("Failed to create a client instance"),
         this,
-        [this](const Er::Client::Params& params)
+        [this](std::shared_ptr<void> channel, Er::Log::ILog* log)
         {
             Erc::Ui::WaitCursorScope w;
-            return Er::Client::create(params);
+            return Er::Client::createClient(channel, log);
         },
-        params
+        channel,
+        m_log
     );
 
     return client;
@@ -430,8 +453,8 @@ void MainWindow::onConnected(std::shared_ptr<Er::Client::IClient> client, std::s
     }
     if (connected == 0)
     {
-        Erc::Ui::errorBoxLite(QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("Couuld not connect to %1").arg(QString::fromUtf8(endpoint)), this);
-        QTimer::singleShot(0, [this]() { promptForConnection(); });
+        Erc::Ui::errorBoxLite(QString::fromUtf8(EREBUS_APPLICATION_NAME), tr("Could not connect to %1").arg(QString::fromUtf8(endpoint)), this);
+        QTimer::singleShot(0, this, SLOT(promptForConnection()));
     }
     else
     {
