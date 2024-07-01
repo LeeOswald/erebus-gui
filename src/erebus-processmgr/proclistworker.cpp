@@ -7,20 +7,6 @@ namespace Erp
 namespace Private
 {
 
-namespace
-{
-
-bool registerMetatypes()
-{
-    ::qRegisterMetaType<Er::ProcessProps::PropMask>();
-    ::qRegisterMetaType<ProcessChangesetPtr>();
-    ::qRegisterMetaType<Erp::Private::IProcessList::PosixResult>();
-
-    return true;
-}
-
-} // namespace {}
-
 
 ProcessListWorker::~ProcessListWorker()
 {
@@ -31,7 +17,6 @@ ProcessListWorker::ProcessListWorker(Er::Client::IClient* client, Er::Log::ILog*
     , m_log(log)
     , m_processList(createProcessList(client, log))
 {
-    static bool s_metatypesRegistered = registerMetatypes();
 }
 
 void ProcessListWorker::refresh(Er::ProcessProps::PropMask required, int trackDuration, bool manual)

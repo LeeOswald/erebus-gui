@@ -4,17 +4,14 @@
 
 #include <QObject>
 
-Q_DECLARE_METATYPE(Er::ProcessProps::PropMask);
-
-using ProcessChangesetPtr = std::shared_ptr<Erp::Private::IProcessList::Changeset>;
-Q_DECLARE_METATYPE(ProcessChangesetPtr);
-
 
 namespace Erp
 {
 
 namespace Private
 {
+
+using ProcessChangesetPtr = std::shared_ptr<Erp::Private::IProcessList::Changeset>;
 
 
 class ProcessListWorker final

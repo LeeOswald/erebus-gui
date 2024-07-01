@@ -17,6 +17,7 @@ ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset
     , m_columns(&columns)
     , m_iconCache(IconCacheSize)
 {
+    // some fixed columns
     Q_ASSERT(columns.size() >= 3);
     Q_ASSERT(columns[0].id == Er::ProcessProps::PropIndices::Comm);
     Q_ASSERT(columns[1].id == Er::ProcessProps::PropIndices::Pid);
@@ -27,6 +28,7 @@ ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset
 
 void ProcessTreeModel::setColumns(const ProcessColumns& columns)
 {
+    // some fixed columns
     Q_ASSERT(columns.size() >= 3);
     Q_ASSERT(columns[0].id == Er::ProcessProps::PropIndices::Comm);
     Q_ASSERT(columns[1].id == Er::ProcessProps::PropIndices::Pid);
