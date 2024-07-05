@@ -1,7 +1,5 @@
 #pragma once
 
-#include <erebus-clt/erebus-clt.hxx>
-
 #include "itemmenu.hpp"
 #include "processcolumns.hpp"
 #include "processmgr.hpp"
@@ -58,7 +56,6 @@ private:
     bool m_columnsChanged = false;
     Er::ProcessProps::PropMask m_required;
     std::shared_ptr<void> m_channel;
-    std::shared_ptr<Er::Client::IClient> m_client;
     std::string m_endpoint;
     QWidget* m_widget;
     QTreeView* m_treeView;

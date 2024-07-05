@@ -4,7 +4,7 @@
 #include <erebus/mutexpool.hxx>
 #include <erebus/system/time.hxx>
 #include <erebus/util/exceptionutil.hxx>
-
+#include <erebus-clt/erebus-clt.hxx>
 
 #include <unordered_map>
 
@@ -172,11 +172,11 @@ public:
         );
     }
 
-    explicit ProcessListImpl(Er::Client::IClient* client, Er::Log::ILog* log)
-        : m_client(client)
+    explicit ProcessListImpl(std::shared_ptr<void> channel, Er::Log::ILog* log)
+        : m_client(Er::Client::createClient(channel, log))
         , m_log(log)
         , m_mutexPool(MutexPoolSize)
-        , m_sessionId(client->beginSession(Er::ProcessRequests::ListProcessesDiff))
+        , m_sessionId(m_client->beginSession(Er::ProcessRequests::ListProcessesDiff))
     {
     }
 
@@ -371,7 +371,7 @@ private:
     }
 
 
-    Er::Client::IClient* m_client;
+    std::shared_ptr<Er::Client::IClient> m_client;
     Er::Log::ILog* m_log;
     static constexpr size_t MutexPoolSize = 5;
     Er::MutexPool<std::recursive_mutex> m_mutexPool;
@@ -387,9 +387,9 @@ private:
 } // namespace {}
 
 
-std::unique_ptr<IProcessList> createProcessList(Er::Client::IClient* client, Er::Log::ILog* log)
+std::unique_ptr<IProcessList> createProcessList(std::shared_ptr<void> channel, Er::Log::ILog* log)
 {
-    return std::make_unique<ProcessListImpl>(client, log);
+    return std::make_unique<ProcessListImpl>(channel, log);
 }
 
 } // namespace Private {}

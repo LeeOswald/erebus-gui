@@ -4,7 +4,6 @@
 
 #include <erebus/lockable.hxx>
 #include <erebus/trackable.hxx>
-#include <erebus-clt/erebus-clt.hxx>
 #include <erebus-processmgr/processprops.hxx>
 
 #include <chrono>
@@ -157,7 +156,7 @@ struct IProcessList
 };
 
 
-std::unique_ptr<IProcessList> createProcessList(Er::Client::IClient* client, Er::Log::ILog* log);
+std::unique_ptr<IProcessList> createProcessList(std::shared_ptr<void> channel, Er::Log::ILog* log);
 
 } // namespace Private {}
 

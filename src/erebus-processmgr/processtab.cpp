@@ -51,7 +51,6 @@ ProcessTab::ProcessTab(const Erc::PluginParams& params, std::shared_ptr<void> ch
     , m_columns(loadProcessColumns(m_params.settings))
     , m_required(makePropMask(m_columns))
     , m_channel(channel)
-    , m_client(Er::Client::createClient(channel, params.log))
     , m_endpoint(endpoint)
     , m_widget(new QWidget(params.tabWidget))
     , m_treeView(new QTreeView(m_widget))
@@ -141,7 +140,7 @@ void ProcessTab::reloadColumns()
 void ProcessTab::startWorker()
 {
     m_thread = new QThread(nullptr);
-    m_worker = new ProcessListWorker(m_client.get(), m_params.log, nullptr);
+    m_worker = new ProcessListWorker(m_channel, m_params.log, nullptr);
 
     // auto-delete thread
     connect(m_thread, SIGNAL(finished()), m_thread, SLOT(deleteLater()));

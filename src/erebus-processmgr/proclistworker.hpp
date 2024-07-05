@@ -21,7 +21,7 @@ class ProcessListWorker final
 
 public:
     ~ProcessListWorker();
-    explicit ProcessListWorker(Er::Client::IClient* client, Er::Log::ILog* log, QObject* parent);
+    explicit ProcessListWorker(std::shared_ptr<void> channel, Er::Log::ILog* log, QObject* parent);
 
 public slots:
     void refresh(Er::ProcessProps::PropMask required, int trackDuration, bool manual);
