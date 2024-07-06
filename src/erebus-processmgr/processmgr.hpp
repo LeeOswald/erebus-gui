@@ -14,12 +14,3 @@
 #endif
 
 
-extern "C"
-{
-
-EREBUSPROCMGR_EXPORT Erc::IPlugin* createUiPlugin(const Erc::PluginParams&);
-EREBUSPROCMGR_EXPORT void disposeUiPlugin(Erc::IPlugin*);
-
-
-
-} // extern "C" {}

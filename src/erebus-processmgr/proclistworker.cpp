@@ -1,5 +1,7 @@
 #include "proclistworker.hpp"
 
+#include <erebus/util/exceptionutil.hxx>
+
 
 namespace Erp
 {

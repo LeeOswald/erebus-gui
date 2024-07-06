@@ -1,7 +1,5 @@
 #pragma once
 
-#include "processmgr.hpp"
-
 #include <erebus/lockable.hxx>
 #include <erebus/trackable.hxx>
 #include <erebus-processmgr/processprops.hxx>

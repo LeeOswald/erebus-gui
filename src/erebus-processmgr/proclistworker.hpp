@@ -3,6 +3,8 @@
 #include "processlist.hpp"
 
 #include <QObject>
+#include <QPointer>
+#include <QThread>
 
 
 namespace Erp
@@ -34,6 +36,60 @@ signals:
 private:
     Er::Log::ILog* m_log;
     std::unique_ptr<IProcessList> m_processList;
+};
+
+
+struct ProcessListThread final
+    : public Er::NonCopyable
+{
+    QPointer<QThread> thread;
+    QPointer<ProcessListWorker> worker;
+
+    void destroy()
+    {
+        worker.clear();
+
+        if (thread)
+        {
+            thread->quit();
+            thread->wait();
+            thread.clear();
+        }
+    }
+
+    void make(std::shared_ptr<void> channel, Er::Log::ILog* log)
+    {
+        thread = new QThread(nullptr);
+        worker = new ProcessListWorker(channel, log, nullptr);
+
+        // auto-delete thread
+        QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+
+        // auto-delete worker
+        QObject::connect(thread, SIGNAL(finished()), worker, SLOT(deleteLater()));
+        worker->moveToThread(thread);
+    }
+
+    void start()
+    {
+        thread->start();
+    }
+
+    void refresh(bool manual, Er::ProcessProps::PropMask required, int trackDuration)
+    {
+        if (worker)
+        {
+            QMetaObject::invokeMethod(worker, "refresh", Qt::AutoConnection, Q_ARG(Er::ProcessProps::PropMask, required), Q_ARG(int, trackDuration), Q_ARG(bool, manual));
+        }
+    }
+
+    void kill(quint64 pid, QLatin1String signal)
+    {
+        if (worker)
+        {
+            QMetaObject::invokeMethod(worker, "kill", Qt::AutoConnection, Q_ARG(quint64, pid), Q_ARG(QLatin1String, signal));
+        }
+    }
 };
 
 } // namespace Private {}

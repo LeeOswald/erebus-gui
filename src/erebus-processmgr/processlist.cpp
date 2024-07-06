@@ -5,6 +5,7 @@
 #include <erebus/system/time.hxx>
 #include <erebus/util/exceptionutil.hxx>
 #include <erebus-clt/erebus-clt.hxx>
+#include <erebus-gui/erebus-gui.hpp>
 
 #include <unordered_map>
 

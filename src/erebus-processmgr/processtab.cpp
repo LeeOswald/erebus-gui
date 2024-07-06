@@ -16,14 +16,7 @@ ProcessTab::~ProcessTab()
     
     saveColumns();
 
-    m_worker.clear();
-
-    if (m_thread)
-    {
-        m_thread->quit();
-        m_thread->wait();
-        m_thread.clear();
-    }
+    m_processListWorker.destroy();
 
     delete m_contextMenu;
 
@@ -139,31 +132,20 @@ void ProcessTab::reloadColumns()
 
 void ProcessTab::startWorker()
 {
-    m_thread = new QThread(nullptr);
-    m_worker = new ProcessListWorker(m_channel, m_params.log, nullptr);
-
-    // auto-delete thread
-    connect(m_thread, SIGNAL(finished()), m_thread, SLOT(deleteLater()));
-
-    // auto-delete worker
-    connect(m_thread, SIGNAL(finished()), m_worker, SLOT(deleteLater()));
-    m_worker->moveToThread(m_thread);
+    m_processListWorker.make(m_channel, m_params.log);
 
     // know when worker has data
-    connect(m_worker, SIGNAL(dataReady(ProcessChangesetPtr,bool)), this, SLOT(dataReady(ProcessChangesetPtr,bool)));
-    connect(m_worker, SIGNAL(posixResult(Erp::Private::IProcessList::PosixResult)), this, SLOT(posixResult(Erp::Private::IProcessList::PosixResult)));
+    connect(m_processListWorker.worker, SIGNAL(dataReady(ProcessChangesetPtr,bool)), this, SLOT(dataReady(ProcessChangesetPtr,bool)));
+    connect(m_processListWorker.worker, SIGNAL(posixResult(Erp::Private::IProcessList::PosixResult)), this, SLOT(posixResult(Erp::Private::IProcessList::PosixResult)));
 
-    m_thread->start();
+    m_processListWorker.start();
 }
 
 void ProcessTab::refresh(bool manual)
 {
-    if (m_worker)
-    {
-        ErLogDebug(m_params.log, ErLogInstance("ProcessTab"), "Refreshing...");
+    ErLogDebug(m_params.log, ErLogInstance("ProcessTab"), "Refreshing...");
 
-        QMetaObject::invokeMethod(m_worker, "refresh", Qt::AutoConnection, Q_ARG(Er::ProcessProps::PropMask, m_required), Q_ARG(int, m_trackDuration), Q_ARG(bool, manual));
-    }
+    m_processListWorker.refresh(manual, m_required, m_trackDuration);
 }
 
 void ProcessTab::dataReady(ProcessChangesetPtr changeset, bool manual)
@@ -248,12 +230,9 @@ void ProcessTab::captureColumnWidths()
 
 void ProcessTab::kill(quint64 pid, QLatin1String signal)
 {
-    if (m_worker)
-    {
-        ErLogDebug(m_params.log, ErLogInstance("ProcessTab"), "Kill(%zu, %s)", pid, signal.data());
+    ErLogDebug(m_params.log, ErLogInstance("ProcessTab"), "Kill(%zu, %s)", pid, signal.data());
 
-        QMetaObject::invokeMethod(m_worker, "kill", Qt::AutoConnection, Q_ARG(quint64, pid), Q_ARG(QLatin1String, signal));
-    }
+    m_processListWorker.kill(pid, signal);
 }
 
 void ProcessTab::posixResult(Erp::Private::IProcessList::PosixResult result)

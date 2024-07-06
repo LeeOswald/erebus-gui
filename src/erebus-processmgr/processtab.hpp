@@ -59,8 +59,7 @@ private:
     std::string m_endpoint;
     QWidget* m_widget;
     QTreeView* m_treeView;
-    QPointer<QThread> m_thread;
-    QPointer<ProcessListWorker> m_worker;
+    ProcessListThread m_processListWorker;
     ProcessTreeModel* m_model = nullptr;
     QLabel* m_labelTotalProcesses;
     QLabel* m_labelCpuUsage;
