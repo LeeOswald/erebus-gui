@@ -6,6 +6,7 @@
 
 #include "client-version.h"
 
+#include <erebus-desktop/protocol.hxx>
 #include <erebus-processmgr/processprops.hxx>
 
 #include <unordered_map>
@@ -26,6 +27,7 @@ public:
     ~ProcessMgrPlugin()
     {
         delete m_menuProcess;
+        Er::Desktop::Props::Private::unregisterAll(m_params.log);
         Er::ProcessProps::Private::unregisterAll(m_params.log);
         Er::ProcessesGlobal::Private::unregisterAll(m_params.log);
     }
@@ -91,6 +93,7 @@ public:
 
         Er::ProcessesGlobal::Private::registerAll(m_params.log);
         Er::ProcessProps::Private::registerAll(m_params.log);
+        Er::Desktop::Props::Private::registerAll(m_params.log);
     }
 
     Info info() const override

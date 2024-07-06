@@ -73,6 +73,7 @@ struct ProcessListThread final
     void start()
     {
         thread->start();
+        thread->setObjectName("ProcessList");
     }
 
     void refresh(bool manual, Er::ProcessProps::PropMask required, int trackDuration)

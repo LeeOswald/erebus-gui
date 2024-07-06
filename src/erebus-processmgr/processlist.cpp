@@ -1,3 +1,4 @@
+#include "iconcache.hpp"
 #include "processlist.hpp"
 
 #include <erebus/exception.hxx>
@@ -7,151 +8,12 @@
 #include <erebus-clt/erebus-clt.hxx>
 #include <erebus-gui/erebus-gui.hpp>
 
-#include <unordered_map>
 
 namespace Erp
 {
 
 namespace Private
 {
-
-ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
-    : properties(std::move(bag))
-{
-    // find PID (must always be present)
-    this->pid = Er::getPropertyOr<Er::ProcessProps::Pid>(properties, Er::ProcessProps::Pid::ValueType(-1));
-    if (this->pid == Er::ProcessProps::Pid::ValueType(-1))
-        throw Er::Exception(ER_HERE(), "No PID in process properties");
-
-    if (Er::propertyPresent<Er::ProcessProps::IsDeleted>(properties))
-    {
-        this->deleted = 1;
-        return;
-    }
-
-    // find 'Valid' property
-    this->valid = Er::getPropertyOr<Er::ProcessProps::Valid>(properties, false);
-    if (!this->valid)
-    {
-        // maybe we've got an error message
-        auto msg = Er::getProperty<Er::ProcessProps::Error>(properties);
-        if (msg)
-            this->error = Erc::fromUtf8(*msg);
-
-        return;
-    }
-
-    // cache certain props
-    for (auto it = properties.begin(); it != properties.end(); ++it)
-    {
-        switch (it->second.id)
-        {
-        case Er::ProcessProps::IsNew::Id::value:
-            this->added = std::get<bool>(it->second.value);
-            break;
-
-        case Er::ProcessProps::PPid::Id::value:
-            this->ppid = std::get<uint64_t>(it->second.value);
-            break;
-
-        case Er::ProcessProps::StartTime::Id::value:
-        {
-            this->startTime = std::get<uint64_t>(it->second.value);
-            Er::TimeFormatter<"%H:%M:%S %d %b %y", Er::TimeZone::Utc> fmt;
-            std::ostringstream ss;
-            fmt(this->startTime, ss);
-            this->startTimeUtc = Erc::fromUtf8(ss.str());
-            break;
-        }
-
-        case Er::ProcessProps::State::Id::value:
-            this->processState = Erc::fromUtf8(std::get<std::string>(it->second.value));
-            break;
-
-        case Er::ProcessProps::Comm::Id::value:
-            this->comm = Erc::fromUtf8(std::get<std::string>(it->second.value));
-            break;
-
-        case Er::ProcessProps::UTime::Id::value:
-            this->uTime = std::get<double>(it->second.value);
-            break;
-
-        case Er::ProcessProps::STime::Id::value:
-            this->sTime = std::get<double>(it->second.value);
-            break;
-        }
-    }
-
-    if (this->ppid == InvalidKey)
-        this->ppid = this->pid;
-}
-
-void ProcessInformation::updateFromDiff(const ProcessInformation& diff)
-{
-    this->uTimePrev = this->uTime;
-    this->sTimePrev = this->sTime;
-    this->uTime = 0.0;
-    this->sTime = 0.0;
-    this->uTimeDiff = std::nullopt;
-    this->sTimeDiff = std::nullopt;
-
-    for (auto it = diff.properties.begin(); it != diff.properties.end(); ++it)
-    {
-        auto& diffProp = it->second;
-        auto myPropIt = this->properties.find(diffProp.id);
-        if (myPropIt == this->properties.end())
-            this->properties.insert({ diffProp.id, diffProp });
-        else
-            myPropIt->second = diffProp;
-
-        // update cached props if modified
-        switch (diffProp.id)
-        {
-        case Er::ProcessProps::PPid::Id::value:
-            assert(diff.pid != InvalidKey);
-            this->ppid = diff.pid;
-            break;
-
-        case Er::ProcessProps::StartTime::Id::value:
-        {
-            assert(diff.startTime > 0);
-            this->startTime = diff.startTime;
-            assert(!diff.startTimeUtc.isEmpty());
-            this->startTimeUtc = diff.startTimeUtc;
-            break;
-        }
-
-        case Er::ProcessProps::State::Id::value:
-            this->processState = diff.processState;
-            break;
-
-        case Er::ProcessProps::Comm::Id::value:
-            this->comm = diff.comm;
-            break;
-
-        case Er::ProcessProps::UTime::Id::value:
-            this->uTime = diff.uTime;
-            if (this->uTimePrev > 0.0)
-                this->uTimeDiff = this->uTime - this->uTimePrev;
-            break;
-
-        case Er::ProcessProps::STime::Id::value:
-            this->sTime = diff.sTime;
-            if (this->sTimePrev > 0.0)
-                this->sTimeDiff = this->sTime - this->sTimePrev;
-            break;
-        }
-    }
-
-    // show process as 'running' if it has... well... run for a while since the last cycle
-    if (this->processState == QLatin1String("S"))
-    {
-        if ((this->uTimeDiff > 0) || (this->sTimeDiff > 0))
-        {
-            this->processState = QLatin1String("R");
-        }
-    }
-}
 
 namespace
 {
@@ -178,6 +40,7 @@ public:
         , m_log(log)
         , m_mutexPool(MutexPoolSize)
         , m_sessionId(m_client->beginSession(Er::ProcessRequests::ListProcessesDiff))
+        , m_iconCache(channel, log)
     {
     }
 
@@ -190,6 +53,7 @@ public:
         
         enumerateProcesses(firstRun, now, required, trackThreshold, diff.get());
         trackNewOrDeletedProcesses(now, trackThreshold, diff.get());
+        updateIcons(diff.get());
 
         return diff;
     }
@@ -294,7 +158,7 @@ private:
                 {
                     // the process has exited; place it into the 'deleted' list unless it's already there
                     Er::ObjectLock<Item> item(existing->second.get());
-                    assert(!item->deleted);
+                    Q_ASSERT(!item->deleted);
                     item->markDeleted(now);
                     m_tracked.insert({ item->pid, existing->second });
                     diff->tracked.insert(existing->second);
@@ -316,7 +180,7 @@ private:
                 if (!firstRun)
                 {
                     // also track this process as 'new'
-                    assert(parsedProcess->state() == Item::State::New);
+                    Q_ASSERT(parsedProcess->state() == Item::State::New);
                     m_tracked.insert({ parsedProcess->pid, parsedProcess });
                     diff->tracked.insert(parsedProcess);
                 }
@@ -329,7 +193,7 @@ private:
             }
             
             // this is an existing process and we've just got a few fields updated
-            assert(!firstRun);
+            Q_ASSERT(!firstRun);
             Er::ObjectLock<Item> locked(existing->second.get());
             locked->updateFromDiff(*parsedProcess.get());
 
@@ -346,7 +210,7 @@ private:
 
             if (item->maybeUntrackDeleted(now, trackThreshold))
             {
-                // item has been being marked 'deleted' for quite a long; time to purge it
+                // item has been being marked 'deleted' for quite a long time to purge it
                 auto next = std::next(it);
                 
                 diff->purged.insert(ref);
@@ -371,6 +235,41 @@ private:
         }
     }
 
+    void updateIcons(Changeset* diff)
+    {
+        for (auto& process: m_collection)
+        {
+            bool needIcon = false;
+            bool iconed = false;
+            {
+                Er::ObjectLock<Item> locked(process.second.get());
+
+                if (locked->icon.state == ProcessInformation::IconData::State::Undefined)
+                {
+                    needIcon = true;
+                }
+                else if (locked->icon.state == ProcessInformation::IconData::State::Valid)
+                {
+                    if (locked->icon.timestamp > locked->iconTimestamp)
+                    {
+                        iconed = true;
+                        locked->iconTimestamp = locked->icon.timestamp;
+                    }
+                }
+            }
+
+            if (needIcon)
+            {
+                m_iconCache.requestIcon(process.second);
+            }
+
+            if (iconed)
+            {
+                diff->iconed.insert(process.second);
+            }
+        }
+    }
+
 
     std::shared_ptr<Er::Client::IClient> m_client;
     Er::Log::ILog* m_log;
@@ -383,6 +282,7 @@ private:
     double m_realTimePrev = 0;
     double m_cpuTime = 0;
     double m_cpuTimePrev = 0;
+    IconCache m_iconCache;
 };
 
 } // namespace {}

@@ -1,10 +1,9 @@
 #pragma once
 
-#include <erebus/lrucache.hxx>
 #include <erebus/tree.hxx>
 
 #include "processcolumns.hpp"
-#include "proclistworker.hpp"
+#include "processlist.hpp"
 
 #include <QAbstractItemModel>
 
@@ -63,8 +62,6 @@ private:
     Er::Log::ILog* m_log;
     std::unique_ptr<ItemTree> m_tree;
     const ProcessColumns* m_columns;
-    static constexpr size_t IconCacheSize = 1024;
-    mutable Er::LruCache<QString, QIcon> m_iconCache; // comm -> icon
     bool m_firstRun = false;
     double m_rTime = 0.0;
 };

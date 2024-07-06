@@ -14,10 +14,14 @@ qt6_wrap_ui(UI_SOURCES ${UIS})
 add_library(${PROCESSMGR_PLUGIN} SHARED
     columnsdlg.cpp
     columnsdlg.hpp
+    iconcache.cpp
+    iconcache.hpp
     itemmenu.cpp
     itemmenu.hpp
     processcolumns.cpp
     processcolumns.hpp
+    processinfo.cpp
+    processinfo.hpp
     processlist.cpp
     processlist.hpp
     processmgr.cpp

@@ -15,7 +15,6 @@ ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset
     : QAbstractItemModel(parent)
     , m_log(log)
     , m_columns(&columns)
-    , m_iconCache(IconCacheSize)
 {
     // some fixed columns
     Q_ASSERT(columns.size() >= 3);
@@ -124,6 +123,21 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
                 // existing item
                 QVector<int> roles;
                 roles.push_back(Qt::DisplayRole);
+                emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns->size(), index(node->parent())), roles);
+            }
+        }
+
+        // handle modified processes
+        for (auto& iconed : changeset->iconed)
+        {
+            Er::ObjectLock<Item> locked(iconed.get());
+
+            auto node = static_cast<ItemTree::Node*>(locked->context());
+            if (node)
+            {
+                // existing item
+                QVector<int> roles;
+                roles.push_back(Qt::DecorationRole);
                 emit dataChanged(index(0, 0, index(node->parent())), index(0, m_columns->size(), index(node->parent())), roles);
             }
         }
@@ -477,34 +491,11 @@ QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
         [this, item]()
         {
             // look in cache
-            auto& key = item->data()->comm;
-
-            auto ico = m_iconCache.get(key);
-            if (ico)
+            auto& iconData = item->data()->icon;
+            if (iconData.state == ProcessInformation::IconData::State::Valid)
             {
-                return QVariant(*ico);
+                return QVariant(iconData.icon);
             }
-#if 0
-            auto it = item->data()->properties.find(Er::ProcessProps::Icon::Id::value);
-            if (it == item->data()->properties.end())
-                return QVariant();
-
-            auto& property = it->second;
-            auto rawIcon = std::get<Er::Bytes>(property.value);
-            
-            QPixmap pixmap;
-            if (!pixmap.loadFromData(reinterpret_cast<const uchar*>(rawIcon.data()), rawIcon.size()))
-            {
-                m_log->write(Er::Log::Level::Warning, ErLogNowhere(), "Failed to load icon for %s", key.toUtf8().constData());
-                return QVariant();
-            }
-
-            QIcon icon(pixmap);
-
-            m_iconCache.put(key, icon);
-
-            return QVariant(icon);
-#endif
 
             return QVariant();
         }
