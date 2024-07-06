@@ -25,6 +25,8 @@ public:
     ~ProcessListWorker();
     explicit ProcessListWorker(std::shared_ptr<void> channel, Er::Log::ILog* log, QObject* parent);
 
+    void shutdown();
+
 public slots:
     void refresh(Er::ProcessProps::PropMask required, int trackDuration, bool manual);
     void kill(quint64 pid, QLatin1String signame);
@@ -47,7 +49,11 @@ struct ProcessListThread final
 
     void destroy()
     {
-        worker.clear();
+        if (worker)
+        {
+            worker->shutdown();
+            worker.clear();
+        }
 
         if (thread)
         {
@@ -72,8 +78,11 @@ struct ProcessListThread final
 
     void start()
     {
-        thread->start();
-        thread->setObjectName("ProcessList");
+        if (thread)
+        {
+            thread->start();
+            thread->setObjectName("ProcessList");
+        }
     }
 
     void refresh(bool manual, Er::ProcessProps::PropMask required, int trackDuration)

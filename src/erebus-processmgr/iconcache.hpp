@@ -36,9 +36,9 @@ private:
 
     std::shared_ptr<Er::Client::IClient> m_client;
     Er::Log::ILog* const m_log;
-    std::jthread m_worker;
     std::mutex m_mutex;
     std::condition_variable_any m_pendingCv;
+    std::jthread m_worker;
     std::queue<ProcessInfoPtr> m_pending;
 };
 

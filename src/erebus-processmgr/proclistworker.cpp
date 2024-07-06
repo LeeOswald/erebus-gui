@@ -21,6 +21,11 @@ ProcessListWorker::ProcessListWorker(std::shared_ptr<void> channel, Er::Log::ILo
 {
 }
 
+void ProcessListWorker::shutdown()
+{
+    m_processList.reset();
+}
+
 void ProcessListWorker::refresh(Er::ProcessProps::PropMask required, int trackDuration, bool manual)
 {
     Er::protectedCall<void>(
