@@ -305,11 +305,11 @@ QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id)
         ErLogInstance("ProcessTreeModel"),
         [this, item, id]()
         {
-            auto it = item->data()->properties.find(id);
-            if (it == item->data()->properties.end())
+            auto it = Er::findProperty(item->data()->properties, id);
+            if (!it)
                 return QVariant();
 
-            auto& property = it->second;
+            auto& property = *it;
             auto info = Er::cachePropertyInfo(property);
             Q_ASSERT(info);
             if (!info)

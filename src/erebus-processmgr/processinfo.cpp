@@ -37,21 +37,21 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
     }
 
     // cache certain props
-    for (auto it = properties.begin(); it != properties.end(); ++it)
+    Er::enumerateProperties(properties, [this](const Er::Property& it)
     {
-        switch (it->second.id)
+        switch (it.id)
         {
         case Er::ProcessProps::IsNew::Id::value:
-            this->added = std::get<bool>(it->second.value);
+            this->added = std::get<bool>(it.value);
             break;
 
         case Er::ProcessProps::PPid::Id::value:
-            this->ppid = std::get<uint64_t>(it->second.value);
+            this->ppid = std::get<uint64_t>(it.value);
             break;
 
         case Er::ProcessProps::StartTime::Id::value:
         {
-            this->startTime = std::get<uint64_t>(it->second.value);
+            this->startTime = std::get<uint64_t>(it.value);
             Er::TimeFormatter<"%H:%M:%S %d %b %y", Er::TimeZone::Utc> fmt;
             std::ostringstream ss;
             fmt(this->startTime, ss);
@@ -60,22 +60,22 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         }
 
         case Er::ProcessProps::State::Id::value:
-            this->processState = Erc::fromUtf8(std::get<std::string>(it->second.value));
+            this->processState = Erc::fromUtf8(std::get<std::string>(it.value));
             break;
 
         case Er::ProcessProps::Comm::Id::value:
-            this->comm = Erc::fromUtf8(std::get<std::string>(it->second.value));
+            this->comm = Erc::fromUtf8(std::get<std::string>(it.value));
             break;
 
         case Er::ProcessProps::UTime::Id::value:
-            this->uTime = std::get<double>(it->second.value);
+            this->uTime = std::get<double>(it.value);
             break;
 
         case Er::ProcessProps::STime::Id::value:
-            this->sTime = std::get<double>(it->second.value);
+            this->sTime = std::get<double>(it.value);
             break;
         }
-    }
+    });
 
     if (this->ppid == InvalidKey)
         this->ppid = this->pid;
@@ -90,14 +90,13 @@ void ProcessInformation::updateFromDiff(const ProcessInformation& diff)
     this->uTimeDiff = std::nullopt;
     this->sTimeDiff = std::nullopt;
 
-    for (auto it = diff.properties.begin(); it != diff.properties.end(); ++it)
+    Er::enumerateProperties(diff.properties, [this, &diff](const Er::Property& diffProp)
     {
-        auto& diffProp = it->second;
-        auto myPropIt = this->properties.find(diffProp.id);
-        if (myPropIt == this->properties.end())
-            this->properties.insert({ diffProp.id, diffProp });
+        auto myProp = Er::findProperty(this->properties, diffProp.id);
+        if (!myProp)
+            Er::insertProperty(this->properties, diffProp);
         else
-            myPropIt->second = diffProp;
+            *myProp = diffProp;
 
         // update cached props if modified
         switch (diffProp.id)
@@ -136,7 +135,7 @@ void ProcessInformation::updateFromDiff(const ProcessInformation& diff)
                 this->sTimeDiff = this->sTime - this->sTimePrev;
             break;
         }
-    }
+    });
 
     // show process as 'running' if it has... well... run for a while since the last cycle
     if (this->processState == QLatin1String("S"))
