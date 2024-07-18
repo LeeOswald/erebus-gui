@@ -308,16 +308,24 @@ QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id)
             if (!it)
                 return QVariant();
 
-            auto& property = *it;
-            auto info = Er::cachePropertyInfo(property);
-            Q_ASSERT(info);
-            if (!info)
-                return QVariant();
-
             std::ostringstream ss;
-            info->format(property, ss);
 
-            return QVariant(Erc::fromUtf8(ss.str()));
+            auto& property = *it;
+            auto info = Er::lookupProperty(id);
+            if (!info)
+            {
+                property.format(ss);
+                auto formatted = ss.str();
+
+                m_log->writef(Er::Log::Level::Warning, "Unknown property %08x [%s]", id, formatted.c_str());
+
+                return QVariant(Erc::fromUtf8(formatted));
+            }
+            else
+            {
+                info->format(property, ss);
+                return QVariant(Erc::fromUtf8(ss.str()));
+            }
         }
     );
 }
@@ -488,7 +496,6 @@ QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
         m_log,
         [this, item]()
         {
-            // look in cache
             auto& iconData = item->data()->icon;
             if (iconData.state == ProcessInformation::IconData::State::Valid)
             {
