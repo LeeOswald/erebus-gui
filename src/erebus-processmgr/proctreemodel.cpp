@@ -302,7 +302,6 @@ QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id)
 {
     return Er::protectedCall<QVariant>(
         m_log,
-        ErLogInstance("ProcessTreeModel"),
         [this, item, id]()
         {
             auto it = Er::findProperty(item->data()->properties, id);
@@ -487,7 +486,6 @@ QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
 {
     return Er::protectedCall<QVariant>(
         m_log,
-        ErLogInstance("ProcessTreeModel"),
         [this, item]()
         {
             // look in cache

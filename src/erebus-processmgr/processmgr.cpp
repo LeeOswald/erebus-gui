@@ -106,7 +106,7 @@ public:
         auto it = m_tabs.find(channel.get());
         if (it != m_tabs.end())
         {
-            m_params.log->write(Er::Log::Level::Error, ErLogInstance("ProcessMgrPlugin"), "Connection %s already has a tab", endpoint.c_str());
+            m_params.log->writef(Er::Log::Level::Error, "Connection %s already has a tab", endpoint.c_str());
             return;
         }
 
@@ -118,7 +118,7 @@ public:
         auto it = m_tabs.find(channel.get());
         if (it == m_tabs.end())
         {
-            m_params.log->write(Er::Log::Level::Error, ErLogInstance("ProcessMgrPlugin"), "No tab found for connection %p", channel.get());
+            m_params.log->writef(Er::Log::Level::Error, "No tab found for connection %p", channel.get());
             return;
         }
 

@@ -133,8 +133,8 @@ int main(int argc, char* argv[])
         mqOut.append("_resp");
 
         auto ipc = Er::Desktop::openIconCacheIpc(mqIn.c_str(), mqOut.c_str());
-        console.write(Er::Log::Level::Info, ErLogNowhere(), "Opened message queue %s", mqIn.c_str());
-        console.write(Er::Log::Level::Info, ErLogNowhere(), "Opened message queue %s", mqOut.c_str());
+        console.writef(Er::Log::Level::Info, "Opened message queue %s", mqIn.c_str());
+        console.writef(Er::Log::Level::Info, "Opened message queue %s", mqOut.c_str());
 
         ErIc::IconCache cache(&console, themeName, cacheDir, ".png");
 
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
 
         if (g_signalReceived)
         {
-            console.write(Er::Log::Level::Warning, ErLogNowhere(), "Exiting due to signal %d", *g_signalReceived);
+            console.writef(Er::Log::Level::Warning, "Exiting due to signal %d", *g_signalReceived);
         }
 
     }

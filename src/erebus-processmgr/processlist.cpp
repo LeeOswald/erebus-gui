@@ -27,7 +27,6 @@ public:
     {
         Er::protectedCall<void>(
             m_log,
-            ErLogInstance("ProcessListImpl"),
             [this]()
             {
                 m_client->endSession(Er::ProcessRequests::ListProcessesDiff, m_sessionId);
@@ -62,7 +61,6 @@ public:
     {
         return Er::protectedCall<PosixResult>(
             m_log,
-            ErLogInstance("ProcessListImpl"),
             [this, pid, signame]()
             {
                 Er::PropertyBag request;
@@ -86,7 +84,6 @@ private:
     {
         return Er::protectedCall<std::shared_ptr<Item>>(
             m_log,
-            ErLogInstance("ProcessListImpl"),
             [this](Er::PropertyBag&& bag, Item::TimePoint now, bool firstRun)
             {
                 ProcessInformation parsed(std::move(bag));
@@ -118,7 +115,6 @@ private:
     {
         Er::protectedCall<void>(
             m_log,
-            ErLogInstance("ProcessListImpl"),
             [this](bool firstRun, Item::TimePoint now, Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff)
             {
                 return enumerateProcessesImpl(firstRun, now, required, trackThreshold, diff);
@@ -165,7 +161,7 @@ private:
                 }
                 else
                 {
-                    ErLogWarning(m_log, ErLogNowhere(), "Unknown exited process %zu", parsedProcess->pid);
+                    ErLogWarning(m_log, "Unknown exited process %zu", parsedProcess->pid);
                 }
 
                 continue;

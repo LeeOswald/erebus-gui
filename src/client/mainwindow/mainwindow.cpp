@@ -126,7 +126,7 @@ MainWindow::MainWindow(
     QObject::connect(this, SIGNAL(disconnected(std::shared_ptr<void>)), this, SLOT(onDisconnected(std::shared_ptr<void>)));
 
     refreshTitle();
-    ErLogDebug(log, ErLogNowhere(), "Client started");
+    ErLogDebug(log, "Client started");
 
     QTimer::singleShot(0, this, SLOT(start()));
 }
@@ -414,7 +414,6 @@ void MainWindow::onConnected(std::shared_ptr<void> channel, std::string endpoint
 
                 auto ok = Er::protectedCall<bool>(
                     m_log,
-                    ErLogNowhere(),
                     [this, plugin, channel, endpoint]()
                     {
                         plugin->addConnection(channel, endpoint);

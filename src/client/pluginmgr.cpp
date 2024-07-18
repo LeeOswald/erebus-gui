@@ -32,9 +32,8 @@ IPlugin* PluginManager::load(const QString& path)
     m_plugins.insert({path, info});
 
     auto pi = info->ref->info();
-    m_params.log->write(
+    m_params.log->writef(
         Er::Log::Level::Info,
-        ErLogNowhere(),
         "Loaded plugin %s ver %u.%u.%u [%s] from [%s]",
         pi.name.c_str(),
         pi.version.major,

@@ -52,8 +52,7 @@ ResultT protectedCall(Er::Log::ILog* log, const QString& title, ParentT* parent,
     {
         if (log)
         {
-            auto msg = Er::Util::formatException(e);
-            log->write(Er::Log::Level::Error, ErLogNowhere(), "%s", msg.c_str());
+            log->write(Er::Log::Level::Error, Er::Util::formatException(e));
         }
 
         Erc::Ui::errorBoxLite(title, QString::fromUtf8(e.what()), parent);
@@ -62,8 +61,7 @@ ResultT protectedCall(Er::Log::ILog* log, const QString& title, ParentT* parent,
     {
         if (log)
         {
-            auto msg = Er::Util::formatException(e);
-            log->write(Er::Log::Level::Error, ErLogNowhere(), "%s", msg.c_str());
+            log->write(Er::Log::Level::Error, Er::Util::formatException(e));
         }
 
         Erc::Ui::errorBoxLite(title, QString::fromUtf8(e.what()), parent);
@@ -71,7 +69,7 @@ ResultT protectedCall(Er::Log::ILog* log, const QString& title, ParentT* parent,
     catch (...)
     {
         if (log)
-            log->write(Er::Log::Level::Error, ErLogNowhere(), "Unexpected exception");
+            log->write(Er::Log::Level::Error, "Unexpected exception");
 
         QMessageBox::critical(parent, title, QObject::tr("Unexpected exception"));
     }

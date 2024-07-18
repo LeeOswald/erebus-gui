@@ -29,19 +29,19 @@ void qtMessageHandler(QtMsgType type, const QMessageLogContext& context, const Q
     switch (type)
     {
     case QtDebugMsg:
-        ErLogDebug(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogDebug(g_log, "[Qt] %s", localMsg.c_str());
         break;
     case QtInfoMsg:
-        ErLogInfo(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogInfo(g_log, "[Qt] %s", localMsg.c_str());
         break;
     case QtWarningMsg:
-        ErLogWarning(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogWarning(g_log, "[Qt] %s", localMsg.c_str());
         break;
     case QtCriticalMsg:
-        ErLogError(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogError(g_log, "[Qt] %s", localMsg.c_str());
         break;
     case QtFatalMsg:
-        ErLogFatal(g_log, ErLogComponent("Qt"), "%s", localMsg.c_str());
+        ErLogFatal(g_log, "[Qt] %s", localMsg.c_str());
         break;
     }
 }

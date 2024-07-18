@@ -28,7 +28,7 @@ void IconCache::worker(std::stop_token stop) noexcept
 {
     Er::System::CurrentThread::setName("IconCache");
 
-    ErLogDebug(m_log, ErLogComponent("IconCache"), "IconCache worker started");
+    ErLogDebug(m_log, "IconCache worker started");
 
     try
     {
@@ -65,7 +65,7 @@ void IconCache::worker(std::stop_token stop) noexcept
         Er::Util::logException(m_log, Er::Log::Level::Warning, e);
     }
 
-    ErLogDebug(m_log, ErLogComponent("IconCache"), "IconCache worker exited");
+    ErLogDebug(m_log, "IconCache worker exited");
 }
 
 ProcessInformation::IconData IconCache::requestIcon(uint64_t pid) noexcept
@@ -83,14 +83,14 @@ ProcessInformation::IconData IconCache::requestIcon(uint64_t pid) noexcept
         auto status = Er::getProperty<Er::Desktop::Props::IconState>(reply);
         if (!status)
         {
-            ErLogError(m_log, ErLogComponent("IconCache"), "No icon status returned for PID %zu", pid);
+            ErLogError(m_log, "No icon status returned for PID %zu", pid);
             result.state = ProcessInformation::IconData::State::Invalid;
             return result;
         }
 
         if (*status == static_cast<uint32_t>(Er::Desktop::IconState::Pending))
         {
-            ErLogDebug(m_log, ErLogComponent("IconCache"), "Pending icon for PID %zu", pid);
+            ErLogDebug(m_log, "Pending icon for PID %zu", pid);
             result.state = ProcessInformation::IconData::State::Pending;
             return result;
         }
@@ -103,20 +103,20 @@ ProcessInformation::IconData IconCache::requestIcon(uint64_t pid) noexcept
                 QPixmap pixmap;
                 if (!pixmap.loadFromData(reinterpret_cast<const uchar*>(rawIcon->data()), rawIcon->size()))
                 {
-                    ErLogWarning(m_log, ErLogComponent("IconCache"), "Failed to load icon for PID %zu", pid);
+                    ErLogWarning(m_log, "Failed to load icon for PID %zu", pid);
                     result.state = ProcessInformation::IconData::State::Invalid;
                     return result;
                 }
 
                 result.icon = QIcon(pixmap);
 
-                ErLogDebug(m_log, ErLogComponent("IconCache"), "Found an icon for PID %zu", pid);
+                ErLogDebug(m_log, "Found an icon for PID %zu", pid);
                 result.state = ProcessInformation::IconData::State::Valid;
                 return result;
             }
         }
 
-        ErLogWarning(m_log, ErLogComponent("IconCache"), "No icon found for PID %zu", pid);
+        ErLogWarning(m_log, "No icon found for PID %zu", pid);
     }
     catch (Er::Exception& e)
     {
