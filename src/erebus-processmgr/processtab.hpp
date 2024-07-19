@@ -45,7 +45,7 @@ private:
     void captureColumnWidths();
     void restoreColumnWidths();
     void startWorker();
-    static void requireAdditionalProps(Er::ProcessProps::PropMask& required) noexcept;
+    static void requireAdditionalProps(Er::ProcessMgr::ProcessProps::PropMask& required) noexcept;
 
     Erc::PluginParams m_params;
     bool m_autoRefresh;
@@ -54,7 +54,7 @@ private:
     QTimer* m_refreshTimer;
     ProcessColumns m_columns;
     bool m_columnsChanged = false;
-    Er::ProcessProps::PropMask m_required;
+    Er::ProcessMgr::ProcessProps::PropMask m_required;
     std::shared_ptr<void> m_channel;
     std::string m_endpoint;
     QWidget* m_widget;

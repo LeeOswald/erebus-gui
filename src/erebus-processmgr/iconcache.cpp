@@ -80,7 +80,7 @@ ProcessInformation::IconData IconCache::requestIcon(uint64_t pid) noexcept
 
         auto reply = m_client->request(Er::Desktop::Requests::QueryIcon, req);
 
-        auto status = Er::getProperty<Er::Desktop::Props::IconState>(reply);
+        auto status = Er::getPropertyValue<Er::Desktop::Props::IconState>(reply);
         if (!status)
         {
             ErLogError(m_log, "No icon status returned for PID %zu", pid);
@@ -97,7 +97,7 @@ ProcessInformation::IconData IconCache::requestIcon(uint64_t pid) noexcept
 
         if (*status == static_cast<uint32_t>(Er::Desktop::IconState::Found))
         {
-            auto rawIcon = Er::getProperty<Er::Desktop::Props::Icon>(reply);
+            auto rawIcon = Er::getPropertyValue<Er::Desktop::Props::Icon>(reply);
             if (rawIcon)
             {
                 QPixmap pixmap;

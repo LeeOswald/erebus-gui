@@ -106,13 +106,13 @@ void ProcessTab::setRefreshInterval(unsigned interval)
     ErLogDebug(m_params.log, "Set refresh interval to %d msec", m_refreshRate);
 }
 
-void ProcessTab::requireAdditionalProps(Er::ProcessProps::PropMask& required) noexcept
+void ProcessTab::requireAdditionalProps(Er::ProcessMgr::ProcessProps::PropMask& required) noexcept
 {
     // what we need even if there's no corresponding visible column
-    required.set(Er::ProcessProps::PropIndices::CmdLine);
-    required.set(Er::ProcessProps::PropIndices::Exe);
-    required.set(Er::ProcessProps::PropIndices::UTime);
-    required.set(Er::ProcessProps::PropIndices::STime);
+    required.set(Er::ProcessMgr::ProcessProps::PropIndices::CmdLine);
+    required.set(Er::ProcessMgr::ProcessProps::PropIndices::Exe);
+    required.set(Er::ProcessMgr::ProcessProps::PropIndices::UTime);
+    required.set(Er::ProcessMgr::ProcessProps::PropIndices::STime);
 }
 
 void ProcessTab::saveColumns()

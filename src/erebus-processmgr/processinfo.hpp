@@ -2,7 +2,7 @@
 
 #include <erebus/lockable.hxx>
 #include <erebus/trackable.hxx>
-#include <erebus-processmgr/processprops.hxx>
+#include <erebus-processmgr/erebus-processmgr.hxx>
 
 #include <chrono>
 #include <mutex>
@@ -19,7 +19,7 @@ namespace Private
 
 struct ProcessInformation
 {
-    using Key = Er::ProcessProps::Pid::ValueType;
+    using Key = Er::ProcessMgr::ProcessProps::Pid::ValueType;
     static constexpr Key InvalidKey = Key(-1);
 
     Er::PropertyBag properties;

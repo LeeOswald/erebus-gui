@@ -26,7 +26,7 @@ void ProcessListWorker::shutdown()
     m_processList.reset();
 }
 
-void ProcessListWorker::refresh(Er::ProcessProps::PropMask required, int trackDuration, bool manual)
+void ProcessListWorker::refresh(Er::ProcessMgr::ProcessProps::PropMask required, int trackDuration, bool manual)
 {
     Er::protectedCall<void>(
         m_log,

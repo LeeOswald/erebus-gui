@@ -7,7 +7,7 @@
 #include "client-version.h"
 
 #include <erebus-desktop/protocol.hxx>
-#include <erebus-processmgr/processprops.hxx>
+#include <erebus-processmgr/erebus-processmgr.hxx>
 
 #include <unordered_map>
 
@@ -28,8 +28,8 @@ public:
     {
         delete m_menuProcess;
         Er::Desktop::Props::Private::unregisterAll(m_params.log);
-        Er::ProcessProps::Private::unregisterAll(m_params.log);
-        Er::ProcessesGlobal::Private::unregisterAll(m_params.log);
+        Er::ProcessMgr::ProcessProps::Private::unregisterAll(m_params.log);
+        Er::ProcessMgr::ProcessesGlobal::Private::unregisterAll(m_params.log);
     }
 
     explicit ProcessMgrPlugin(const Erc::PluginParams& params)
@@ -91,8 +91,8 @@ public:
         QObject::connect(m_actionRefreshNow, &QAction::triggered, this, &ProcessMgrPlugin::refreshNow);
         QObject::connect(m_actionSelectColumns, &QAction::triggered, this, &ProcessMgrPlugin::selectColumns);
 
-        Er::ProcessesGlobal::Private::registerAll(m_params.log);
-        Er::ProcessProps::Private::registerAll(m_params.log);
+        Er::ProcessMgr::ProcessesGlobal::Private::registerAll(m_params.log);
+        Er::ProcessMgr::ProcessProps::Private::registerAll(m_params.log);
         Er::Desktop::Props::Private::registerAll(m_params.log);
     }
 

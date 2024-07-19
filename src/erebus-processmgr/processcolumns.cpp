@@ -82,7 +82,7 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
         qint32 _id;
         quint32 width = 0;
         s >> _id >> width;
-        if (_id >= qint32(Er::ProcessProps::PropIndices::FlagsCount))
+        if (_id >= qint32(Er::ProcessMgr::ProcessProps::PropIndices::FlagsCount))
             continue;
 
         auto id = unsigned(_id);
@@ -118,17 +118,17 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
     // [Comm], [PID] & [%CPU] are hardcoded and must precede any other columns
     for (qsizetype index = 0; index < columns.size(); ++index)
     {
-        if (columns[index].id == Er::ProcessProps::PropIndices::Comm)
+        if (columns[index].id == Er::ProcessMgr::ProcessProps::PropIndices::Comm)
         {
             if (index != 0)
                 std::swap(columns[index], columns[0]);
         }
-        else if (columns[index].id == Er::ProcessProps::PropIndices::Pid)
+        else if (columns[index].id == Er::ProcessMgr::ProcessProps::PropIndices::Pid)
         {
             if (index != 1)
                 std::swap(columns[index], columns[1]);
         }
-        else if (columns[index].id == Er::ProcessProps::PropIndices::CpuUsage)
+        else if (columns[index].id == Er::ProcessMgr::ProcessProps::PropIndices::CpuUsage)
         {
             if (index != 2)
                 std::swap(columns[index], columns[2]);
@@ -138,9 +138,9 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
     return columns;
 }
 
-Er::ProcessProps::PropMask makePropMask(const ProcessColumns& columns) noexcept
+Er::ProcessMgr::ProcessProps::PropMask makePropMask(const ProcessColumns& columns) noexcept
 {
-    Er::ProcessProps::PropMask mask;
+    Er::ProcessMgr::ProcessProps::PropMask mask;
 
     for (auto& col: columns)
     {

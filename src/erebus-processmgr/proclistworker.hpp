@@ -28,7 +28,7 @@ public:
     void shutdown();
 
 public slots:
-    void refresh(Er::ProcessProps::PropMask required, int trackDuration, bool manual);
+    void refresh(Er::ProcessMgr::ProcessProps::PropMask required, int trackDuration, bool manual);
     void kill(quint64 pid, QLatin1String signame);
 
 signals:
@@ -85,11 +85,11 @@ struct ProcessListThread final
         }
     }
 
-    void refresh(bool manual, Er::ProcessProps::PropMask required, int trackDuration)
+    void refresh(bool manual, Er::ProcessMgr::ProcessProps::PropMask required, int trackDuration)
     {
         if (worker)
         {
-            QMetaObject::invokeMethod(worker, "refresh", Qt::AutoConnection, Q_ARG(Er::ProcessProps::PropMask, required), Q_ARG(int, trackDuration), Q_ARG(bool, manual));
+            QMetaObject::invokeMethod(worker, "refresh", Qt::AutoConnection, Q_ARG(Er::ProcessMgr::ProcessProps::PropMask, required), Q_ARG(int, trackDuration), Q_ARG(bool, manual));
         }
     }
 

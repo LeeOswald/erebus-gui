@@ -1,6 +1,6 @@
 #pragma once
 
-#include <erebus-processmgr/processprops.hxx>
+#include <erebus-processmgr/erebus-processmgr.hxx>
 
 #include "settings.hpp"
 
@@ -49,23 +49,23 @@ struct ProcessColumnDef
 
 constexpr ProcessColumnDef ProcessColumnDefs[] =
 {
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Comm, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("Name"), 200),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Pid, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("PID"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::CpuUsage, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("CPU"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::PPid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("PPID"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::PGrp, ProcessColumnDef::Type::Regular, QT_TR_NOOP("PGRP"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Tpgid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("TPGID"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Tty, ProcessColumnDef::Type::Regular, QT_TR_NOOP("TTY"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Session, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Session"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Ruid, ProcessColumnDef::Type::Default, QT_TR_NOOP("UID"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::User, ProcessColumnDef::Type::Default, QT_TR_NOOP("User"), 100),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::CmdLine, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Command Line"), 300),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::Exe, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Executable"), 300),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::StartTime, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Start Time"), 100),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::State, ProcessColumnDef::Type::Default, QT_TR_NOOP("State"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::UTime, ProcessColumnDef::Type::Default, QT_TR_NOOP("UTime"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::STime, ProcessColumnDef::Type::Default, QT_TR_NOOP("STime"), 30),
-    ProcessColumnDef(Er::ProcessProps::PropIndices::ThreadCount, ProcessColumnDef::Type::Default, QT_TR_NOOP("Threads"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::Comm, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("Name"), 200),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::Pid, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("PID"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::CpuUsage, ProcessColumnDef::Type::Mandatory, QT_TR_NOOP("CPU"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::PPid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("PPID"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::PGrp, ProcessColumnDef::Type::Regular, QT_TR_NOOP("PGRP"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::Tpgid, ProcessColumnDef::Type::Regular, QT_TR_NOOP("TPGID"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::Tty, ProcessColumnDef::Type::Regular, QT_TR_NOOP("TTY"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::Session, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Session"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::Ruid, ProcessColumnDef::Type::Default, QT_TR_NOOP("UID"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::User, ProcessColumnDef::Type::Default, QT_TR_NOOP("User"), 100),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::CmdLine, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Command Line"), 300),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::Exe, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Executable"), 300),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::StartTime, ProcessColumnDef::Type::Regular, QT_TR_NOOP("Start Time"), 100),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::State, ProcessColumnDef::Type::Default, QT_TR_NOOP("State"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::UTime, ProcessColumnDef::Type::Default, QT_TR_NOOP("UTime"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::STime, ProcessColumnDef::Type::Default, QT_TR_NOOP("STime"), 30),
+    ProcessColumnDef(Er::ProcessMgr::ProcessProps::PropIndices::ThreadCount, ProcessColumnDef::Type::Default, QT_TR_NOOP("Threads"), 30),
 };
 
 
@@ -105,7 +105,7 @@ using ProcessColumns = QVector<ProcessColumn>;
 void saveProcessColumns(Erc::ISettingsStorage* settings, const ProcessColumns& columns);
 ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings);
 
-Er::ProcessProps::PropMask makePropMask(const ProcessColumns& columns) noexcept;
+Er::ProcessMgr::ProcessProps::PropMask makePropMask(const ProcessColumns& columns) noexcept;
 
 bool isProcessColumnsOrderSame(const ProcessColumns& prev, const ProcessColumns& current);
 

@@ -18,9 +18,9 @@ ProcessTreeModel::ProcessTreeModel(Er::Log::ILog* log, std::shared_ptr<Changeset
 {
     // some fixed columns
     Q_ASSERT(columns.size() >= 3);
-    Q_ASSERT(columns[0].id == Er::ProcessProps::PropIndices::Comm);
-    Q_ASSERT(columns[1].id == Er::ProcessProps::PropIndices::Pid);
-    Q_ASSERT(columns[2].id == Er::ProcessProps::PropIndices::CpuUsage);
+    Q_ASSERT(columns[0].id == Er::ProcessMgr::ProcessProps::PropIndices::Comm);
+    Q_ASSERT(columns[1].id == Er::ProcessMgr::ProcessProps::PropIndices::Pid);
+    Q_ASSERT(columns[2].id == Er::ProcessMgr::ProcessProps::PropIndices::CpuUsage);
 
     update(changeset);
 }
@@ -29,9 +29,9 @@ void ProcessTreeModel::setColumns(const ProcessColumns& columns)
 {
     // some fixed columns
     Q_ASSERT(columns.size() >= 3);
-    Q_ASSERT(columns[0].id == Er::ProcessProps::PropIndices::Comm);
-    Q_ASSERT(columns[1].id == Er::ProcessProps::PropIndices::Pid);
-    Q_ASSERT(columns[2].id == Er::ProcessProps::PropIndices::CpuUsage);
+    Q_ASSERT(columns[0].id == Er::ProcessMgr::ProcessProps::PropIndices::Comm);
+    Q_ASSERT(columns[1].id == Er::ProcessMgr::ProcessProps::PropIndices::Pid);
+    Q_ASSERT(columns[2].id == Er::ProcessMgr::ProcessProps::PropIndices::CpuUsage);
 
     // remove everything except [Comm], [Pid] & [%CPU] which are mandatory
     auto toRemove = (m_columns->size() > 3) ? (m_columns->size() - 3) : 0;
@@ -304,13 +304,13 @@ QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id)
         m_log,
         [this, item, id]()
         {
-            auto it = Er::findProperty(item->data()->properties, id);
-            if (!it)
+            auto p = Er::getProperty(item->data()->properties, id);
+            if (!p)
                 return QVariant();
 
             std::ostringstream ss;
 
-            auto& property = *it;
+            auto& property = *p;
             auto info = Er::lookupProperty(id);
             if (!info)
             {
@@ -343,10 +343,10 @@ QVariant ProcessTreeModel::textForCell(ItemTreeNode* item, int column) const
         // still show its PID and error message
         switch (id)
         {
-        case Er::ProcessProps::PropIndices::Comm:
+        case Er::ProcessMgr::ProcessProps::PropIndices::Comm:
             return QVariant(item->data()->error);
 
-        case Er::ProcessProps::PropIndices::Pid:
+        case Er::ProcessMgr::ProcessProps::PropIndices::Pid:
             return QVariant(QString::number(item->data()->pid));
         }
 
@@ -355,55 +355,55 @@ QVariant ProcessTreeModel::textForCell(ItemTreeNode* item, int column) const
 
     switch (id)
     {
-    case Er::ProcessProps::PropIndices::Comm:
+    case Er::ProcessMgr::ProcessProps::PropIndices::Comm:
         return QVariant(item->data()->comm);
 
-    case Er::ProcessProps::PropIndices::Pid:
+    case Er::ProcessMgr::ProcessProps::PropIndices::Pid:
         return QVariant(QString::number(item->data()->pid));
 
-    case Er::ProcessProps::PropIndices::PPid:
+    case Er::ProcessMgr::ProcessProps::PropIndices::PPid:
         return QVariant(QString::number(item->data()->ppid));
 
-    case Er::ProcessProps::PropIndices::PGrp:
-        return formatItemProperty(item, Er::ProcessProps::PGrp::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::PGrp:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::PGrp::Id::value);
 
-    case Er::ProcessProps::PropIndices::Tpgid:
-        return formatItemProperty(item, Er::ProcessProps::Tpgid::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::Tpgid:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::Tpgid::Id::value);
 
-    case Er::ProcessProps::PropIndices::Session:
-        return formatItemProperty(item, Er::ProcessProps::Session::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::Session:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::Session::Id::value);
 
-    case Er::ProcessProps::PropIndices::Ruid:
-        return formatItemProperty(item, Er::ProcessProps::Ruid::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::Ruid:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::Ruid::Id::value);
 
-    case Er::ProcessProps::PropIndices::User:
-        return formatItemProperty(item, Er::ProcessProps::User::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::User:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::User::Id::value);
 
-    case Er::ProcessProps::PropIndices::CmdLine:
-        return formatItemProperty(item, Er::ProcessProps::CmdLine::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::CmdLine:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::CmdLine::Id::value);
 
-    case Er::ProcessProps::PropIndices::Exe:
-        return formatItemProperty(item, Er::ProcessProps::Exe::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::Exe:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::Exe::Id::value);
 
-    case Er::ProcessProps::PropIndices::ThreadCount:
-        return formatItemProperty(item, Er::ProcessProps::ThreadCount::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::ThreadCount:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::ThreadCount::Id::value);
 
-    case Er::ProcessProps::PropIndices::Tty:
-        return formatItemProperty(item, Er::ProcessProps::Tty::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::Tty:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::Tty::Id::value);
 
-    case Er::ProcessProps::PropIndices::STime:
-        return formatItemProperty(item, Er::ProcessProps::STime::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::STime:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::STime::Id::value);
 
-    case Er::ProcessProps::PropIndices::UTime:
-        return formatItemProperty(item, Er::ProcessProps::UTime::Id::value);
+    case Er::ProcessMgr::ProcessProps::PropIndices::UTime:
+        return formatItemProperty(item, Er::ProcessMgr::ProcessProps::UTime::Id::value);
 
-    case Er::ProcessProps::PropIndices::StartTime:
+    case Er::ProcessMgr::ProcessProps::PropIndices::StartTime:
         return QVariant(item->data()->startTimeUtc);
 
-    case Er::ProcessProps::PropIndices::State:
+    case Er::ProcessMgr::ProcessProps::PropIndices::State:
         return QVariant(item->data()->processState);
 
-    case Er::ProcessProps::PropIndices::CpuUsage:
+    case Er::ProcessMgr::ProcessProps::PropIndices::CpuUsage:
     {
         if (m_firstRun || (m_rTime < 0.000001))
             return QVariant();
@@ -446,17 +446,17 @@ QVariant ProcessTreeModel::tooltipForCell(ItemTreeNode* item, int column) const
 
     switch (id)
     {
-    case Er::ProcessProps::PropIndices::Comm:
+    case Er::ProcessMgr::ProcessProps::PropIndices::Comm:
     {
         QString tooltip;
 
-        auto cmdLine = formatItemProperty(item, Er::ProcessProps::CmdLine::Id::value).toString();
+        auto cmdLine = formatItemProperty(item, Er::ProcessMgr::ProcessProps::CmdLine::Id::value).toString();
         if (!cmdLine.isEmpty())
         {
             tooltip.append(cmdLine);
         }
 
-        auto imagePath = formatItemProperty(item, Er::ProcessProps::Exe::Id::value).toString();
+        auto imagePath = formatItemProperty(item, Er::ProcessMgr::ProcessProps::Exe::Id::value).toString();
         if (!imagePath.isEmpty())
         {
             if (!tooltip.isEmpty())

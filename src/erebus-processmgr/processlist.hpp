@@ -71,7 +71,7 @@ struct IProcessList
     };
 
     virtual ~IProcessList() {}
-    virtual std::shared_ptr<Changeset> collect(Er::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold) = 0;
+    virtual std::shared_ptr<Changeset> collect(Er::ProcessMgr::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold) = 0;
     virtual PosixResult kill(uint64_t pid, std::string_view signame) = 0;
 };
 
