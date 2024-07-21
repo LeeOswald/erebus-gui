@@ -67,7 +67,7 @@ public:
                 Er::addProperty<Er::ProcessMgr::ProcessesGlobal::Pid>(request, pid);
                 Er::addProperty<Er::ProcessMgr::ProcessesGlobal::Signal>(request, std::string(signame));
 
-                auto response = m_client->request(Er::ProcessMgr::ProcessRequests::KillProcess, request);
+                auto response = m_client->request(Er::ProcessMgr::ProcessRequests::KillProcess, request, m_sessionId);
 
                 auto code = Er::getPropertyValue<Er::ProcessMgr::ProcessesGlobal::PosixResult>(response);
                 auto message = Er::getPropertyValue<Er::ProcessMgr::ProcessesGlobal::ErrorText>(response);
