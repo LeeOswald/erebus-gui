@@ -3,6 +3,7 @@
 #include <erebus-clt/erebus-clt.hxx>
 #include <erebus-gui/erebus-gui.hpp>
 #include <erebus-gui/settings.hpp>
+#include <erebus/idisposable.hxx>
 #include <erebus/log.hxx>
 
 #include <QMenuBar>
@@ -41,6 +42,7 @@ struct PluginParams
 
 
 struct IPlugin
+    : public Er::IDisposable
 {
     struct Info
     {
@@ -68,10 +70,12 @@ struct IPlugin
         {}
     };
 
-    virtual ~IPlugin() {}
     virtual Info info() const = 0;
     virtual void addConnection(std::shared_ptr<void> channel, const std::string& endpoint) = 0;
     virtual void removeConnection(std::shared_ptr<void> channel) noexcept = 0;
+
+protected:
+    virtual ~IPlugin() {}
 };
 
 

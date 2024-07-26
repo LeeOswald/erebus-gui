@@ -32,6 +32,11 @@ public:
         Er::ProcessMgr::ProcessesGlobal::Private::unregisterAll(m_params.log);
     }
 
+    void dispose() noexcept override
+    {
+        delete this;
+    }
+
     explicit ProcessMgrPlugin(const Erc::PluginParams& params)
         : QObject()
         , m_params(params)

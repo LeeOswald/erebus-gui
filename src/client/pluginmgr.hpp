@@ -58,7 +58,7 @@ private:
         QString path;
         Er::Log::ILog* log = nullptr;
         QLibrary dll;
-        std::unique_ptr<Erc::IPlugin> ref;
+        Er::DisposablePtr<Erc::IPlugin> ref;
 
         ~PluginInfo()
         {
