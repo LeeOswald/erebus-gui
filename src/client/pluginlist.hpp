@@ -7,10 +7,10 @@
 #include <QTextStream>
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 class PluginList final
@@ -74,6 +74,6 @@ private:
 };
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

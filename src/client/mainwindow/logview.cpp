@@ -5,10 +5,10 @@
 
 #include <QCoreApplication>
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 namespace Ui
@@ -116,7 +116,7 @@ void LogView::setLogLevel(QAction* action)
 
     action->setChecked(true);
 
-    Erc::Option<int>::set(m_settings, Erc::Private::AppSettings::Log::level, int(m_log->level()));
+    Erc::Option<int>::set(m_settings, Erp::Client::AppSettings::Log::level, int(m_log->level()));
 
     m_view->setVisible(m_log->level() < Er::Log::Level::Off);
 
@@ -161,6 +161,6 @@ void LogView::logDelegate(std::shared_ptr<Er::Log::Record> r)
 
 } // namespace Ui {}
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

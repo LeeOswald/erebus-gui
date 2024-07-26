@@ -7,10 +7,10 @@
 #include "applicationbase.hpp"
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 const QString ApplicationBase::kAppKey = QStringLiteral("48B54B65FC794FFF8159C31C1943F252");
@@ -127,6 +127,6 @@ uint64_t ApplicationBase::primaryPid()
 
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

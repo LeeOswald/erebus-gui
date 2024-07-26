@@ -6,10 +6,10 @@
 #include "messageserver.hpp"
 #include "sharedsection.hpp"
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 
@@ -68,6 +68,6 @@ private:
 
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

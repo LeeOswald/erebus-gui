@@ -7,10 +7,10 @@
 #include <QMainWindow>
 #include <QMenuBar>
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 namespace Ui
@@ -52,6 +52,6 @@ struct MainMenu final
 
 } // namespace Ui {}
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

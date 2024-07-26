@@ -5,10 +5,10 @@
 #include <QFileInfo>
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 namespace Ui
@@ -125,6 +125,6 @@ void PluginDlg::onCancel()
 
 } // namespace Ui {}
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

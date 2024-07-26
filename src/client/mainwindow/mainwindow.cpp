@@ -14,10 +14,10 @@
 #include <QMessageBox>
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 namespace Ui
@@ -35,7 +35,7 @@ MainWindow::MainWindow(
     QWidget* parent
     )
     : Base(parent)
-    , m_recentEndpoints(Erc::toUtf8(Erc::Option<QString>::get(settings, Erc::Private::AppSettings::Connections::recentConnections, QString())), Erc::Private::AppSettings::Connections::kMaxRecentConnections)
+    , m_recentEndpoints(Erc::toUtf8(Erc::Option<QString>::get(settings, Erp::Client::AppSettings::Connections::recentConnections, QString())), Erp::Client::AppSettings::Connections::kMaxRecentConnections)
     , m_log(log)
     , m_settings(settings)
     , m_mainMenu(this)
@@ -88,18 +88,18 @@ MainWindow::MainWindow(
 
     restoreGeometry();
 
-    if (Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::MainWindow::alwaysOnTop, false))
+    if (Erc::Option<bool>::get(m_settings, Erp::Client::AppSettings::MainWindow::alwaysOnTop, false))
     {
         setWindowFlag(Qt::WindowStaysOnTopHint, true);
         m_mainMenu.actionAlwaysOnTop->setChecked(true);
     }
 
-    if (Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::MainWindow::hideOnClose, Erc::Private::AppSettings::MainWindow::hideOnCloseDefault))
+    if (Erc::Option<bool>::get(m_settings, Erp::Client::AppSettings::MainWindow::hideOnClose, Erp::Client::AppSettings::MainWindow::hideOnCloseDefault))
     {
         m_mainMenu.actionHideOnClose->setChecked(true);
     }
 
-    auto startHidden = Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::MainWindow::startHidden, Erc::Private::AppSettings::MainWindow::startHiddenDefault);
+    auto startHidden = Erc::Option<bool>::get(m_settings, Erp::Client::AppSettings::MainWindow::startHidden, Erp::Client::AppSettings::MainWindow::startHiddenDefault);
     if (!startHidden)
         show();
 
@@ -145,13 +145,13 @@ void MainWindow::toggleAlwaysOnTop()
     {
         setWindowFlag(Qt::WindowStaysOnTopHint, false);
         m_mainMenu.actionAlwaysOnTop->setChecked(false);
-        Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::MainWindow::alwaysOnTop, false);
+        Erc::Option<bool>::set(m_settings, Erp::Client::AppSettings::MainWindow::alwaysOnTop, false);
     }
     else
     {
         setWindowFlag(Qt::WindowStaysOnTopHint, true);
         m_mainMenu.actionAlwaysOnTop->setChecked(true);
-        Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::MainWindow::alwaysOnTop, true);
+        Erc::Option<bool>::set(m_settings, Erp::Client::AppSettings::MainWindow::alwaysOnTop, true);
     }
 
     show();
@@ -159,16 +159,16 @@ void MainWindow::toggleAlwaysOnTop()
 
 void MainWindow::toggleHideOnClose()
 {
-    auto hide = Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::MainWindow::hideOnClose, Erc::Private::AppSettings::MainWindow::hideOnCloseDefault);
+    auto hide = Erc::Option<bool>::get(m_settings, Erp::Client::AppSettings::MainWindow::hideOnClose, Erp::Client::AppSettings::MainWindow::hideOnCloseDefault);
     if (hide)
     {
         m_mainMenu.actionHideOnClose->setChecked(false);
-        Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::MainWindow::hideOnClose, false);
+        Erc::Option<bool>::set(m_settings, Erp::Client::AppSettings::MainWindow::hideOnClose, false);
     }
     else
     {
         m_mainMenu.actionHideOnClose->setChecked(true);
-        Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::MainWindow::hideOnClose, true);
+        Erc::Option<bool>::set(m_settings, Erp::Client::AppSettings::MainWindow::hideOnClose, true);
     }
 }
 
@@ -192,7 +192,7 @@ void MainWindow::changeEvent(QEvent* event)
     {
         if (isMinimized())
         {
-            if (Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::MainWindow::hideOnClose, Erc::Private::AppSettings::MainWindow::hideOnCloseDefault))
+            if (Erc::Option<bool>::get(m_settings, Erp::Client::AppSettings::MainWindow::hideOnClose, Erp::Client::AppSettings::MainWindow::hideOnCloseDefault))
             {
                 hide();
                 event->ignore();
@@ -211,7 +211,7 @@ void MainWindow::changeEvent(QEvent* event)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    if (Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::MainWindow::hideOnClose, Erc::Private::AppSettings::MainWindow::hideOnCloseDefault) && !m_exiting)
+    if (Erc::Option<bool>::get(m_settings, Erp::Client::AppSettings::MainWindow::hideOnClose, Erp::Client::AppSettings::MainWindow::hideOnCloseDefault) && !m_exiting)
     {
         hide();
         event->ignore();
@@ -232,26 +232,26 @@ void MainWindow::restore()
 
 void MainWindow::saveGeometry()
 {
-    Erc::Option<QByteArray>::set(m_settings, Erc::Private::AppSettings::MainWindow::geometry, Base::saveGeometry());
-    Erc::Option<QByteArray>::set(m_settings, Erc::Private::AppSettings::MainWindow::state, Base::saveState());
-    Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::MainWindow::startHidden, isHidden());
+    Erc::Option<QByteArray>::set(m_settings, Erp::Client::AppSettings::MainWindow::geometry, Base::saveGeometry());
+    Erc::Option<QByteArray>::set(m_settings, Erp::Client::AppSettings::MainWindow::state, Base::saveState());
+    Erc::Option<bool>::set(m_settings, Erp::Client::AppSettings::MainWindow::startHidden, isHidden());
 
     auto splitterSizes = m_mainSplitter->sizes();
-    Erc::Option<int>::set(m_settings, Erc::Private::AppSettings::MainWindow::mainPos, splitterSizes[int(SplitterPane::Main)]);
-    Erc::Option<int>::set(m_settings, Erc::Private::AppSettings::MainWindow::logPos, splitterSizes[int(SplitterPane::Log)]);
+    Erc::Option<int>::set(m_settings, Erp::Client::AppSettings::MainWindow::mainPos, splitterSizes[int(SplitterPane::Main)]);
+    Erc::Option<int>::set(m_settings, Erp::Client::AppSettings::MainWindow::logPos, splitterSizes[int(SplitterPane::Log)]);
 }
 
 void MainWindow::restoreGeometry()
 {
-    Base::restoreGeometry(Erc::Option<QByteArray>::get(m_settings, Erc::Private::AppSettings::MainWindow::geometry, QByteArray()));
-    restoreState(Erc::Option<QByteArray>::get(m_settings, Erc::Private::AppSettings::MainWindow::state, QByteArray()));
+    Base::restoreGeometry(Erc::Option<QByteArray>::get(m_settings, Erp::Client::AppSettings::MainWindow::geometry, QByteArray()));
+    restoreState(Erc::Option<QByteArray>::get(m_settings, Erp::Client::AppSettings::MainWindow::state, QByteArray()));
 
     static_assert(int(SplitterPane::Main) == 0);
     static_assert(int(SplitterPane::Log) == 1);
 
     QList<int> splitterSizes;
-    splitterSizes.push_back(Erc::Option<int>::get(m_settings, Erc::Private::AppSettings::MainWindow::mainPos, 100));
-    splitterSizes.push_back(Erc::Option<int>::get(m_settings, Erc::Private::AppSettings::MainWindow::logPos, Erc::Private::AppSettings::MainWindow::kMinLogViewHeight));
+    splitterSizes.push_back(Erc::Option<int>::get(m_settings, Erp::Client::AppSettings::MainWindow::mainPos, 100));
+    splitterSizes.push_back(Erc::Option<int>::get(m_settings, Erp::Client::AppSettings::MainWindow::logPos, Erp::Client::AppSettings::MainWindow::kMinLogViewHeight));
 
     if (splitterSizes[int(SplitterPane::Main)] + splitterSizes[int(SplitterPane::Log)] > 0)
         m_mainSplitter->setSizes(splitterSizes);
@@ -262,8 +262,8 @@ void MainWindow::adjustLogViewHeight()
     auto splitterSizes = m_mainSplitter->sizes();
     if (splitterSizes[int(SplitterPane::Log)] <= 1)
     {
-        splitterSizes[int(SplitterPane::Main)] -= Erc::Private::AppSettings::MainWindow::kMinLogViewHeight;
-        splitterSizes[int(SplitterPane::Log)] += Erc::Private::AppSettings::MainWindow::kMinLogViewHeight;
+        splitterSizes[int(SplitterPane::Main)] -= Erp::Client::AppSettings::MainWindow::kMinLogViewHeight;
+        splitterSizes[int(SplitterPane::Log)] += Erp::Client::AppSettings::MainWindow::kMinLogViewHeight;
     }
 
     m_mainSplitter->setSizes(splitterSizes);
@@ -285,12 +285,12 @@ bool MainWindow::promptForConnection()
 
     do
     {
-        auto ssl = Erc::Option<bool>::get(m_settings, Erc::Private::AppSettings::Connections::lastUseSsl, false);
-        auto recentCert = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastCertificate, QString());
-        auto recentKey = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastKey, QString());
-        auto rootCA = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, QString());
+        auto ssl = Erc::Option<bool>::get(m_settings, Erp::Client::AppSettings::Connections::lastUseSsl, false);
+        auto recentCert = Erc::Option<QString>::get(m_settings, Erp::Client::AppSettings::Connections::lastCertificate, QString());
+        auto recentKey = Erc::Option<QString>::get(m_settings, Erp::Client::AppSettings::Connections::lastKey, QString());
+        auto rootCA = Erc::Option<QString>::get(m_settings, Erp::Client::AppSettings::Connections::lastRootCA, QString());
 
-        Erc::Private::Ui::ConnectDlg dlg(m_recentEndpoints.all(), ssl, Erc::toUtf8(rootCA), Erc::toUtf8(recentCert), Erc::toUtf8(recentKey), this);
+        Erp::Client::Ui::ConnectDlg dlg(m_recentEndpoints.all(), ssl, Erc::toUtf8(rootCA), Erc::toUtf8(recentCert), Erc::toUtf8(recentKey), this);
         if (dlg.exec() != QDialog::Accepted)
             return false;
 
@@ -349,18 +349,18 @@ bool MainWindow::promptForConnection()
             // save the successful connection params
             m_recentEndpoints.promote(dlg.selected());
             auto packed = Erc::fromUtf8(m_recentEndpoints.pack());
-            Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::recentConnections, packed);
+            Erc::Option<QString>::set(m_settings, Erp::Client::AppSettings::Connections::recentConnections, packed);
 
-            Erc::Option<bool>::set(m_settings, Erc::Private::AppSettings::Connections::lastUseSsl, dlg.ssl());
+            Erc::Option<bool>::set(m_settings, Erp::Client::AppSettings::Connections::lastUseSsl, dlg.ssl());
 
             if (!dlg.certificate().empty())
-                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastCertificate, Erc::fromUtf8(dlg.certificate()));
+                Erc::Option<QString>::set(m_settings, Erp::Client::AppSettings::Connections::lastCertificate, Erc::fromUtf8(dlg.certificate()));
 
             if (!dlg.key().empty())
-                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastKey, Erc::fromUtf8(dlg.key()));
+                Erc::Option<QString>::set(m_settings, Erp::Client::AppSettings::Connections::lastKey, Erc::fromUtf8(dlg.key()));
 
             if (!dlg.rootCA().empty())
-                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Connections::lastRootCA, Erc::fromUtf8(dlg.rootCA()));
+                Erc::Option<QString>::set(m_settings, Erp::Client::AppSettings::Connections::lastRootCA, Erc::fromUtf8(dlg.rootCA()));
 
             auto oldChannel = m_channel;
             m_channel.reset();
@@ -474,7 +474,7 @@ size_t MainWindow::loadPlugins(const QStringList& paths)
         if (!m_pluginMgr.exists(path))
         {
             auto plugin =
-                Erc::Ui::protectedCall<IPlugin*>(
+                Erc::Ui::protectedCall<Erc::IPlugin*>(
                     m_log,
                     tr("Failed to load plugin"),
                     this,
@@ -495,8 +495,8 @@ bool MainWindow::checkPlugins()
 {
     while (!m_pluginMgr.count())
     {
-        auto pluginPathsPacked = Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Application::pluginList, QString());
-        Erc::Private::PluginList pl(pluginPathsPacked);
+        auto pluginPathsPacked = Erc::Option<QString>::get(m_settings, Erp::Client::AppSettings::Application::pluginList, QString());
+        Erp::Client::PluginList pl(pluginPathsPacked);
 
         loadPlugins(pl.all());
 
@@ -505,16 +505,16 @@ bool MainWindow::checkPlugins()
             auto exeDir = qApp->applicationDirPath();
 
             // ask for plugins
-            PluginDlg d(pl.all(), Erc::Option<QString>::get(m_settings, Erc::Private::AppSettings::Application::lastPluginDir, exeDir), this);
+            PluginDlg d(pl.all(), Erc::Option<QString>::get(m_settings, Erp::Client::AppSettings::Application::lastPluginDir, exeDir), this);
             if (d.exec() != QDialog::Accepted)
                 break;
 
             if (!d.plugins().isEmpty())
             {
-                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Application::lastPluginDir, d.pluginDir());
+                Erc::Option<QString>::set(m_settings, Erp::Client::AppSettings::Application::lastPluginDir, d.pluginDir());
 
-                pl = Erc::Private::PluginList(d.plugins());
-                Erc::Option<QString>::set(m_settings, Erc::Private::AppSettings::Application::pluginList, pl.pack());
+                pl = Erp::Client::PluginList(d.plugins());
+                Erc::Option<QString>::set(m_settings, Erp::Client::AppSettings::Application::pluginList, pl.pack());
             }
         }
     }
@@ -524,6 +524,6 @@ bool MainWindow::checkPlugins()
 
 } // namespace Ui {}
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

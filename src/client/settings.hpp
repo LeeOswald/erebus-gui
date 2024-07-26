@@ -4,10 +4,10 @@
 
 #include <QSettings>
 
-namespace Erc
+namespace Erp
 {
     
-namespace Private
+namespace Client
 {
 
 class Settings final
@@ -42,6 +42,6 @@ private:
     }
 };
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

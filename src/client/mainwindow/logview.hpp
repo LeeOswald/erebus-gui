@@ -12,10 +12,10 @@
 
 
 
-namespace Erc
+namespace Erp
 {
     
-namespace Private
+namespace Client
 {
 
 namespace Ui
@@ -72,6 +72,6 @@ private:
 
 } // namespace Ui {}
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

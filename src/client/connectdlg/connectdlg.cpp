@@ -4,10 +4,10 @@
 
 #include <QFileDialog>
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 namespace Ui
@@ -155,6 +155,6 @@ void ConnectDlg::enableSsl(bool enable)
 
 } // namespace Ui {}
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

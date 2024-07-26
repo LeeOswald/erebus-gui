@@ -6,10 +6,10 @@
 #include "applicationbase.hpp"
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 class Application final
@@ -19,14 +19,14 @@ class Application final
 
 public:
     ~Application();
-    explicit Application(Er::Log::ILog* log, ISettingsStorage* settings, int& argc, char** argv);
+    explicit Application(Er::Log::ILog* log, Erc::ISettingsStorage* settings, int& argc, char** argv);
 
 private:
     Er::Log::ILog* m_log;
-    ISettingsStorage* m_settings;
+    Erc::ISettingsStorage* m_settings;
 
 };
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

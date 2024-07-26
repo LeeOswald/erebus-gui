@@ -1,10 +1,10 @@
 #include "messageserver.hpp"
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 
@@ -87,6 +87,6 @@ void MessageServer::dataAvailable(QLocalSocket* s)
 }
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

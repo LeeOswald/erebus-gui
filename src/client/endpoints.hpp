@@ -6,10 +6,10 @@
 #include <boost/algorithm/string.hpp>
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 class RecentEndpoints final
@@ -82,6 +82,6 @@ private:
 
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

@@ -6,13 +6,13 @@
 #include <QDir>
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
-IPlugin* PluginManager::load(const QString& path)
+Erc::IPlugin* PluginManager::load(const QString& path)
 {
     auto info = std::make_shared<PluginInfo>(path, m_params.log);
     if (!info->dll.load())
@@ -47,6 +47,6 @@ IPlugin* PluginManager::load(const QString& path)
 }
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

@@ -57,13 +57,13 @@ int main(int argc, char *argv[])
     _CrtSetDbgFlag(tmpFlag);
 #endif
 
-    Erc::Private::Application::setApplicationName(EREBUS_APPLICATION_NAME);
-    Erc::Private::Application::setApplicationVersion(QString("%1.%2.%3").arg(EREBUS_VERSION_MAJOR).arg(EREBUS_VERSION_MINOR).arg(EREBUS_VERSION_PATCH));
-    Erc::Private::Application::setOrganizationName(EREBUS_ORGANIZATION_NAME);
+    Erp::Client::Application::setApplicationName(EREBUS_APPLICATION_NAME);
+    Erp::Client::Application::setApplicationVersion(QString("%1.%2.%3").arg(EREBUS_VERSION_MAJOR).arg(EREBUS_VERSION_MINOR).arg(EREBUS_VERSION_PATCH));
+    Erp::Client::Application::setOrganizationName(EREBUS_ORGANIZATION_NAME);
 
-    Erc::Private::Settings settings;
-    auto logLevel = static_cast<Er::Log::Level>(Erc::Option<int>::get(&settings, Erc::Private::AppSettings::Log::level, int(Erc::Private::AppSettings::Log::defaultLevel)));
-    auto singleInstance = Erc::Option<bool>::get(&settings, Erc::Private::AppSettings::Application::singleInstance, Erc::Private::AppSettings::Application::singleInstanceDefault);
+    Erp::Client::Settings settings;
+    auto logLevel = static_cast<Er::Log::Level>(Erc::Option<int>::get(&settings, Erp::Client::AppSettings::Log::level, int(Erp::Client::AppSettings::Log::defaultLevel)));
+    auto singleInstance = Erc::Option<bool>::get(&settings, Erp::Client::AppSettings::Application::singleInstance, Erp::Client::AppSettings::Application::singleInstanceDefault);
 
     Er::Log::LogBase log(Er::Log::LogBase::AsyncLog, logLevel, 65536);
     g_log = &log;
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     
     try
     {
-        Erc::Private::Application a(&log, &settings, argc, argv);
+        Erp::Client::Application a(&log, &settings, argc, argv);
 
         if (singleInstance && a.secondary())
         {
@@ -88,13 +88,13 @@ int main(int argc, char *argv[])
 
         try
         {
-            Erc::Private::Ui::MainWindow w(&log, &log, &settings);
+            Erp::Client::Ui::MainWindow w(&log, &log, &settings);
 
             if (a.primary())
             {
                 QObject::connect(
                     &a,
-                    &Erc::Private::Application::receivedMessage,
+                    &Erp::Client::Application::receivedMessage,
                     &w,
                     [&w](QByteArray message) { w.restore(); }
                 );

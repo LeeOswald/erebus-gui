@@ -19,10 +19,10 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 namespace Ui
@@ -83,7 +83,7 @@ private:
     };
 
     bool m_exiting = false;
-    Erc::Private::RecentEndpoints m_recentEndpoints;
+    Erp::Client::RecentEndpoints m_recentEndpoints;
     Er::Log::ILog* m_log;
     Erc::ISettingsStorage* m_settings;
     MainMenu m_mainMenu;
@@ -96,11 +96,11 @@ private:
     QStatusBar* m_statusbar;
     std::shared_ptr<void> m_channel;
     std::optional<Er::Client::ChannelParams> m_connectionParams;
-    Erc::Private::PluginManager m_pluginMgr;
+    Erp::Client::PluginManager m_pluginMgr;
 };
 
 } // namespace Ui {}
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

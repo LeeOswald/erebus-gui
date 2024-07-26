@@ -2,17 +2,17 @@
 
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 Application::~Application()
 {
 }
 
-Application::Application(Er::Log::ILog* log, ISettingsStorage* settings, int& argc, char** argv)
+Application::Application(Er::Log::ILog* log, Erc::ISettingsStorage* settings, int& argc, char** argv)
     : ApplicationBase(argc, argv)
     , m_log(log)
     , m_settings(settings)
@@ -20,6 +20,6 @@ Application::Application(Er::Log::ILog* log, ISettingsStorage* settings, int& ar
 }
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

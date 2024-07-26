@@ -4,10 +4,10 @@
 #include "messageclient.hpp"
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 MessageClient::~MessageClient()
@@ -84,6 +84,6 @@ bool MessageClient::writeMessage(int msecTimeout, const QByteArray& msg)
 }
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

@@ -11,10 +11,10 @@
 #include <QLibrary>
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 
@@ -26,7 +26,7 @@ public:
     {
     }
 
-    explicit PluginManager(const PluginParams& params)
+    explicit PluginManager(const Erc::PluginParams& params)
         : m_params(params)
     {
     }
@@ -41,7 +41,7 @@ public:
         return m_plugins.size();
     }
 
-    IPlugin* load(const QString& path);
+    Erc::IPlugin* load(const QString& path);
 
     template <typename Visitor>
     void forEachPlugin(Visitor v)
@@ -79,11 +79,11 @@ private:
         }
     };
 
-    PluginParams m_params;
+    Erc::PluginParams m_params;
     std::unordered_map<QString, std::shared_ptr<PluginInfo>> m_plugins;
 };
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}

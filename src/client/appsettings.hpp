@@ -4,10 +4,10 @@
 
 #include <erebus/log.hxx>
 
-namespace Erc
+namespace Erp
 {
     
-namespace Private
+namespace Client
 {
     
 namespace AppSettings
@@ -70,6 +70,6 @@ constexpr size_t kMaxRecentConnections = 16;
     
 } // namespace AppSettings {}
     
-} // namespace Private {}
+} // namespace Client {}
     
-} // namespace Erc {}
+} // namespace Erp {}

@@ -6,10 +6,10 @@
 #include <QString>
 
 
-namespace Erc
+namespace Erp
 {
 
-namespace Private
+namespace Client
 {
 
 
@@ -42,6 +42,6 @@ private:
 };
 
 
-} // namespace Private {}
+} // namespace Client {}
 
-} // namespace Erc {}
+} // namespace Erp {}
