@@ -11,7 +11,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 
@@ -110,6 +110,6 @@ Er::ProcessMgr::ProcessProps::PropMask makePropMask(const ProcessColumns& column
 bool isProcessColumnsOrderSame(const ProcessColumns& prev, const ProcessColumns& current);
 
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

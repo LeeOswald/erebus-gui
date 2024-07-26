@@ -13,7 +13,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 class ColumnsDlg final
@@ -72,6 +72,6 @@ private:
     std::vector<Item*> m_inactive;
 };
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

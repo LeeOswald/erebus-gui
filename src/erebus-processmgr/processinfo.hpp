@@ -13,7 +13,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 
@@ -111,7 +111,7 @@ using LockableTrackableProcessInformation = Er::ExternallyLockableObject<Trackab
 using LockableTrackableProcessInformationPtr = std::shared_ptr<LockableTrackableProcessInformation>;
 
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}
 

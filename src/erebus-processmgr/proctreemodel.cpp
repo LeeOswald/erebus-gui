@@ -4,7 +4,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 ProcessTreeModel::~ProcessTreeModel()
@@ -508,6 +508,6 @@ QVariant ProcessTreeModel::iconForItem(const ItemTreeNode* item) const
 }
 
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

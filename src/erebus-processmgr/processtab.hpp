@@ -16,7 +16,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 class ProcessTab final
@@ -39,7 +39,7 @@ public slots:
 private slots:
     void dataReady(ProcessChangesetPtr changeset, bool manual);
     void kill(quint64 pid, QLatin1String signal);
-    void posixResult(Erp::Private::IProcessList::PosixResult);
+    void posixResult(Erp::ProcessMgr::IProcessList::PosixResult);
         
 private:
     void captureColumnWidths();
@@ -66,6 +66,6 @@ private:
     ItemMenu* m_contextMenu = nullptr;
 };
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

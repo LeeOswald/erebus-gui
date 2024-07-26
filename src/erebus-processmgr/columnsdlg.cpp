@@ -4,7 +4,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 
@@ -322,6 +322,6 @@ void ColumnsDlg::onInactiveSelectionChanged()
 }
 
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

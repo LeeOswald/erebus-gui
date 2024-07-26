@@ -13,7 +13,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 class ProcessTreeModel final
@@ -68,6 +68,6 @@ private:
 
 
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

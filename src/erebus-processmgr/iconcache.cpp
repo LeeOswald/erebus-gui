@@ -10,7 +10,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 IconCache::~IconCache()
@@ -162,6 +162,6 @@ void IconCache::requestIcon(ProcessInfoPtr process) noexcept
     }
 }
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

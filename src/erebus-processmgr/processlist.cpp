@@ -12,7 +12,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 namespace
@@ -289,6 +289,6 @@ std::unique_ptr<IProcessList> createProcessList(std::shared_ptr<void> channel, E
     return std::make_unique<ProcessListImpl>(channel, log);
 }
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

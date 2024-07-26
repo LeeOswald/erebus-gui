@@ -5,6 +5,9 @@
 namespace Erp
 {
 
+namespace ProcessMgr
+{
+
 namespace Settings
 {
 
@@ -20,5 +23,7 @@ constexpr unsigned TrackDurationDefault = 5000; // 5 sec
 
 
 } // namespace Settings {}
+
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

@@ -6,7 +6,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 
@@ -37,9 +37,9 @@ ProcessTab::~ProcessTab()
 ProcessTab::ProcessTab(const Erc::PluginParams& params, std::shared_ptr<void> channel, const std::string& endpoint)
     : QObject(params.tabWidget)
     , m_params(params)
-    , m_autoRefresh(Erc::Option<bool>::get(params.settings, Erp::Settings::autoRefresh, true))
-    , m_refreshRate(Erc::Option<unsigned>::get(params.settings, Erp::Settings::refreshRate, Erp::Settings::RefreshRateDefault))
-    , m_trackDuration(Erc::Option<unsigned>::get(params.settings, Erp::Settings::trackDuration, Erp::Settings::TrackDurationDefault))
+    , m_autoRefresh(Erc::Option<bool>::get(params.settings, Erp::ProcessMgr::Settings::autoRefresh, true))
+    , m_refreshRate(Erc::Option<unsigned>::get(params.settings, Erp::ProcessMgr::Settings::refreshRate, Erp::ProcessMgr::Settings::RefreshRateDefault))
+    , m_trackDuration(Erc::Option<unsigned>::get(params.settings, Erp::ProcessMgr::Settings::trackDuration, Erp::ProcessMgr::Settings::TrackDurationDefault))
     , m_refreshTimer(new QTimer(this))
     , m_columns(loadProcessColumns(m_params.settings))
     , m_required(makePropMask(m_columns))
@@ -118,7 +118,7 @@ void ProcessTab::requireAdditionalProps(Er::ProcessMgr::ProcessProps::PropMask& 
 void ProcessTab::saveColumns()
 {
     captureColumnWidths();
-    Erp::Private::saveProcessColumns(m_params.settings, m_columns);
+    Erp::ProcessMgr::saveProcessColumns(m_params.settings, m_columns);
 }
 
 void ProcessTab::reloadColumns()
@@ -136,7 +136,7 @@ void ProcessTab::startWorker()
 
     // know when worker has data
     connect(m_processListWorker.worker, SIGNAL(dataReady(ProcessChangesetPtr,bool)), this, SLOT(dataReady(ProcessChangesetPtr,bool)));
-    connect(m_processListWorker.worker, SIGNAL(posixResult(Erp::Private::IProcessList::PosixResult)), this, SLOT(posixResult(Erp::Private::IProcessList::PosixResult)));
+    connect(m_processListWorker.worker, SIGNAL(posixResult(Erp::ProcessMgr::IProcessList::PosixResult)), this, SLOT(posixResult(Erp::ProcessMgr::IProcessList::PosixResult)));
 
     m_processListWorker.start();
 }
@@ -234,7 +234,7 @@ void ProcessTab::kill(quint64 pid, QLatin1String signal)
     m_processListWorker.kill(pid, signal);
 }
 
-void ProcessTab::posixResult(Erp::Private::IProcessList::PosixResult result)
+void ProcessTab::posixResult(Erp::ProcessMgr::IProcessList::PosixResult result)
 {
     if (result.code != 0)
     {
@@ -249,6 +249,6 @@ void ProcessTab::posixResult(Erp::Private::IProcessList::PosixResult result)
     }
 }
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

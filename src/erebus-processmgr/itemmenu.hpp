@@ -9,7 +9,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 class ProcessTreeModel;
@@ -57,6 +57,6 @@ private:
     uint64_t m_selectedPid = uint64_t(-1);
 };
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

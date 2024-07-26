@@ -35,8 +35,8 @@ public:
     explicit ProcessMgrPlugin(const Erc::PluginParams& params)
         : QObject()
         , m_params(params)
-        , m_autoRefresh(Erc::Option<bool>::get(params.settings, Erp::Settings::autoRefresh, true))
-        , m_refreshInterval(Erc::Option<unsigned>::get(params.settings, Erp::Settings::refreshRate, Erp::Settings::RefreshRateDefault))
+        , m_autoRefresh(Erc::Option<bool>::get(params.settings, Erp::ProcessMgr::Settings::autoRefresh, true))
+        , m_refreshInterval(Erc::Option<unsigned>::get(params.settings, Erp::ProcessMgr::Settings::refreshRate, Erp::ProcessMgr::Settings::RefreshRateDefault))
         , m_menuProcess(params.mainMenu->addMenu(tr("Process")))
         , m_actionAutoRefresh(new QAction(tr("Refresh automatically"), this))
         , m_actionRefreshInterval(new QAction(tr("Refresh interval"), this))
@@ -110,7 +110,7 @@ public:
             return;
         }
 
-        m_tabs.insert({ channel.get(), std::make_unique<Erp::Private::ProcessTab>(m_params, channel, endpoint) });
+        m_tabs.insert({ channel.get(), std::make_unique<Erp::ProcessMgr::ProcessTab>(m_params, channel, endpoint) });
     }
 
     void removeConnection(std::shared_ptr<void> channel) noexcept override
@@ -133,14 +133,14 @@ private slots:
             tab.second->saveColumns();
         }
 
-        auto columns = Erp::Private::loadProcessColumns(m_params.settings);
+        auto columns = Erp::ProcessMgr::loadProcessColumns(m_params.settings);
 
-        Erp::Private::ColumnsDlg dlg(columns, Erp::Private::ProcessColumnDefs, m_params.tabWidget);
+        Erp::ProcessMgr::ColumnsDlg dlg(columns, Erp::ProcessMgr::ProcessColumnDefs, m_params.tabWidget);
         if (dlg.exec() != QDialog::Accepted)
             return;
 
         columns = dlg.columns();
-        Erp::Private::saveProcessColumns(m_params.settings, columns);
+        Erp::ProcessMgr::saveProcessColumns(m_params.settings, columns);
 
         for (auto& tab: m_tabs)
         {
@@ -185,7 +185,7 @@ private slots:
 
         action->setChecked(true);
 
-        Erc::Option<unsigned>::set(m_params.settings, Erp::Settings::refreshRate, m_refreshInterval);
+        Erc::Option<unsigned>::set(m_params.settings, Erp::ProcessMgr::Settings::refreshRate, m_refreshInterval);
         
         for (auto& tab : m_tabs)
         {
@@ -208,7 +208,7 @@ private:
     QAction* m_refresh2Action;
     QAction* m_refresh5Action;
     QAction* m_refresh10Action;
-    std::unordered_map<void*, std::unique_ptr<Erp::Private::ProcessTab>> m_tabs; // connection -> tab
+    std::unordered_map<void*, std::unique_ptr<Erp::ProcessMgr::ProcessTab>> m_tabs; // connection -> tab
 };
 
 } // namespace {}

@@ -10,7 +10,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 void saveProcessColumns(Erc::ISettingsStorage* settings, const ProcessColumns& columns)
@@ -27,7 +27,7 @@ void saveProcessColumns(Erc::ISettingsStorage* settings, const ProcessColumns& c
         }
     }
 
-    Erc::Option<QByteArray>::set(settings, Erp::Settings::columns, a);
+    Erc::Option<QByteArray>::set(settings, Erp::ProcessMgr::Settings::columns, a);
 }
 
 
@@ -57,7 +57,7 @@ ProcessColumns loadDefaultColumns(std::span<const ProcessColumnDef> columnDefs)
 
 ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
 {
-    auto a = Erc::Option<QByteArray>::get(settings, Erp::Settings::columns, QByteArray());
+    auto a = Erc::Option<QByteArray>::get(settings, Erp::ProcessMgr::Settings::columns, QByteArray());
     if (a.isNull() || a.isEmpty())
     {
         return loadDefaultColumns(ProcessColumnDefs);
@@ -175,6 +175,6 @@ bool isProcessColumnsOrderSame(const ProcessColumns& prev, const ProcessColumns&
 }
 
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

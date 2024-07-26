@@ -14,7 +14,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 
@@ -43,6 +43,6 @@ private:
 };
 
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

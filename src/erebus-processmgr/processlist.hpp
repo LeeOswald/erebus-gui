@@ -8,7 +8,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 
@@ -78,7 +78,7 @@ struct IProcessList
 
 std::unique_ptr<IProcessList> createProcessList(std::shared_ptr<void> channel, Er::Log::ILog* log);
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}
 

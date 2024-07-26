@@ -4,7 +4,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 ItemMenu::ItemMenu(QTreeView* view)
@@ -89,6 +89,6 @@ void ItemMenu::onKill(QAction* action)
     m_selectedPid = uint64_t(-1);
 }
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

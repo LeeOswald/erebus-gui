@@ -6,7 +6,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 
@@ -53,6 +53,6 @@ void ProcessListWorker::kill(quint64 pid, QLatin1String signame)
 }
 
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

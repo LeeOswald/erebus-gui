@@ -10,10 +10,10 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
-using ProcessChangesetPtr = std::shared_ptr<Erp::Private::IProcessList::Changeset>;
+using ProcessChangesetPtr = std::shared_ptr<Erp::ProcessMgr::IProcessList::Changeset>;
 
 
 class ProcessListWorker final
@@ -33,7 +33,7 @@ public slots:
 
 signals:
     void dataReady(ProcessChangesetPtr, bool);
-    void posixResult(Erp::Private::IProcessList::PosixResult);
+    void posixResult(Erp::ProcessMgr::IProcessList::PosixResult);
 
 private:
     Er::Log::ILog* m_log;
@@ -102,6 +102,6 @@ struct ProcessListThread final
     }
 };
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}

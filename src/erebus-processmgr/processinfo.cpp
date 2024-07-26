@@ -7,7 +7,7 @@
 namespace Erp
 {
 
-namespace Private
+namespace ProcessMgr
 {
 
 ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
@@ -148,6 +148,6 @@ void ProcessInformation::updateFromDiff(const ProcessInformation& diff)
 }
 
 
-} // namespace Private {}
+} // namespace ProcessMgr {}
 
 } // namespace Erp {}
