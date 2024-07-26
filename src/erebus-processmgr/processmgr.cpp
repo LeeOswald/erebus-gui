@@ -6,7 +6,7 @@
 
 #include "client-version.h"
 
-#include <erebus-desktop/protocol.hxx>
+#include <erebus-desktop/erebus-desktop.hxx>
 #include <erebus-processmgr/erebus-processmgr.hxx>
 
 #include <unordered_map>

@@ -2,7 +2,7 @@
 
 #include <erebus/util/exceptionutil.hxx>
 #include <erebus/system/thread.hxx>
-#include <erebus-desktop/protocol.hxx>
+#include <erebus-desktop/erebus-desktop.hxx>
 
 #include <QPixmap>
 
