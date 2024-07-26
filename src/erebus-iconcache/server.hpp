@@ -11,8 +11,12 @@
 #include <vector>
 
 
-namespace ErIc
+namespace Erp
 {
+
+namespace IconCache
+{
+
 
 class IconServer final
     : public Er::NonCopyable
@@ -34,4 +38,7 @@ private:
     std::vector<std::unique_ptr<std::jthread>> m_workers;
 };
 
-} // namespace ErIc {}
+
+} // namespace IconCache {}
+
+} // namespace Erp {}

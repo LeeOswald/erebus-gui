@@ -6,7 +6,10 @@
 #include <filesystem>
 
 
-namespace ErIc
+namespace Erp
+{
+
+namespace IconCache
 {
 
 
@@ -44,5 +47,6 @@ private:
 };
 
 
+} // namespace IconCache {}
 
-} // namespace ErIc {}
+} // namespace Erp {}

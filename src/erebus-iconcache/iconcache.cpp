@@ -9,7 +9,10 @@
 
 #include <QIcon>
 
-namespace ErIc
+namespace Erp
+{
+
+namespace IconCache
 {
 
 
@@ -159,4 +162,6 @@ IconCache::IconInfo IconCache::cacheIconFromName(std::string_view name, unsigned
 }
 
 
-} // namespace ErIc {}
+} // namespace IconCache {}
+
+} // namespace Erp {}

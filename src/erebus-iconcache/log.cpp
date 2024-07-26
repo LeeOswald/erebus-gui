@@ -6,8 +6,12 @@
 #include <iostream>
 
 
-namespace ErIc
+namespace Erp
 {
+
+namespace IconCache
+{
+
 
 Log::~Log()
 {
@@ -56,4 +60,7 @@ void Log::delegate(std::shared_ptr<Er::Log::Record> r)
         Er::osyncstream(std::cerr) << message;
 }
 
-} // namespace ErIc {}
+
+} // namespace IconCache {}
+
+} // namespace Erp {}

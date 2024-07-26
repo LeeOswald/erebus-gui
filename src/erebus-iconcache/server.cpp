@@ -2,8 +2,12 @@
 
 #include <erebus/system/thread.hxx>
 
-namespace ErIc
+namespace Erp
 {
+
+namespace IconCache
+{
+
 
 IconServer::~IconServer()
 {
@@ -70,4 +74,6 @@ bool IconServer::heartbeat(std::stop_token stop) noexcept
     return true;
 }
 
-} // namespace ErIc {}
+} // namespace IconCache {}
+
+} // namespace Erp {}

@@ -29,7 +29,7 @@ void signalHandler(int signo)
 
 void cacheIconsFromList(Er::Log::ILog* log, const std::string& cacheDir, const std::string& themeName, const std::vector<std::string>& requested, unsigned iconSize)
 {
-    ErIc::IconCache cache(log, themeName, cacheDir, ".png");
+    Erp::IconCache::IconCache cache(log, themeName, cacheDir, ".png");
 
     for (auto& req: requested)
     {
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
         }
 
         bool verbose = (vm.count("verbose") > 0);
-        ErIc::Log console(verbose ? Er::Log::Level::Debug : Er::Log::Level::Info);
+        Erp::IconCache::Log console(verbose ? Er::Log::Level::Debug : Er::Log::Level::Info);
 
         Er::LibScope er(&console);
 
@@ -136,9 +136,9 @@ int main(int argc, char* argv[])
         console.writef(Er::Log::Level::Info, "Opened message queue %s", mqIn.c_str());
         console.writef(Er::Log::Level::Info, "Opened message queue %s", mqOut.c_str());
 
-        ErIc::IconCache cache(&console, themeName, cacheDir, ".png");
+        Erp::IconCache::IconCache cache(&console, themeName, cacheDir, ".png");
 
-        ErIc::IconServer server(&console, &g_exitCondition, ipc, cache, 2);
+        Erp::IconCache::IconServer server(&console, &g_exitCondition, ipc, cache, 2);
 
         g_exitCondition.waitValue(true);
 

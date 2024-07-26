@@ -2,8 +2,12 @@
 
 #include <erebus/log.hxx>
 
-namespace ErIc
+namespace Erp
 {
+
+namespace IconCache
+{
+
 
 class Log final
     : public Er::Log::LogBase
@@ -17,4 +21,6 @@ private:
 };
 
 
-} // namespace ErIc {}
+} // namespace IconCache {}
+
+} // namespace Erp {}
