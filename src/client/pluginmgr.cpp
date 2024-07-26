@@ -18,16 +18,16 @@ Erc::IPlugin* PluginManager::load(const QString& path)
     if (!info->dll.load())
     {
         auto error = info->dll.errorString();
-        throw Er::Exception(ER_HERE(), Er::Util::format("Plugin [%s] could not be loaded", Erc::toUtf8(path).c_str()), Er::ExceptionProps::DecodedError(Erc::toUtf8(error)));
+        ErThrow(Er::Util::format("Plugin [%s] could not be loaded", Erc::toUtf8(path).c_str()), Er::ExceptionProps::DecodedError(Erc::toUtf8(error)));
     }
 
     auto createUiPluginFn = reinterpret_cast<Erc::createUiPlugin*>(info->dll.resolve("createUiPlugin"));
     if (!createUiPluginFn)
-        throw Er::Exception(ER_HERE(), Er::Util::format("Plugin [%s] contains no createUiPlugin symbol", Erc::toUtf8(path).c_str()));
+        ErThrow(Er::Util::format("Plugin [%s] contains no createUiPlugin symbol", Erc::toUtf8(path).c_str()));
 
     info->ref.reset(createUiPluginFn(m_params));
     if (!info->ref)
-        throw Er::Exception(ER_HERE(), Er::Util::format("Plugin [%s] returned no interface", Erc::toUtf8(path).c_str()));
+        ErThrow(Er::Util::format("Plugin [%s] returned no interface", Erc::toUtf8(path).c_str()));
 
     m_plugins.insert({path, info});
 

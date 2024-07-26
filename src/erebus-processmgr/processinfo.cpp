@@ -16,7 +16,7 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
     // find PID (must always be present)
     this->pid = Er::getPropertyValueOr<Er::ProcessMgr::ProcessProps::Pid>(properties, Er::ProcessMgr::ProcessProps::Pid::ValueType(-1));
     if (this->pid == Er::ProcessMgr::ProcessProps::Pid::ValueType(-1))
-        throw Er::Exception(ER_HERE(), "No PID in process properties");
+        ErThrow("No PID in process properties");
 
     if (Er::propertyPresent<Er::ProcessMgr::ProcessProps::IsDeleted>(properties))
     {

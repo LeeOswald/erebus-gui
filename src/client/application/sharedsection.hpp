@@ -37,7 +37,7 @@ public:
             : s(s)
         {
             if (!s.m_section->lock())
-                throw Er::Exception(ER_HERE(), "Failed to lock the shared memory section", Er::ExceptionProps::DecodedError(Erc::toUtf8(s.m_section->errorString())));
+                ErThrow("Failed to lock the shared memory section", Er::ExceptionProps::DecodedError(Erc::toUtf8(s.m_section->errorString())));
         }
 
         size_t size() const
@@ -85,10 +85,10 @@ public:
             if (m_section->error() == QSharedMemory::AlreadyExists)
             {
                 if (!m_section->attach())
-                    throw Er::Exception(ER_HERE(), "Failed to attach to the shared memory section", Er::ExceptionProps::DecodedError(Erc::toUtf8(m_section->errorString())));
+                    ErThrow("Failed to attach to the shared memory section", Er::ExceptionProps::DecodedError(Erc::toUtf8(m_section->errorString())));
             }
             else
-                throw Er::Exception(ER_HERE(), "Failed to create a shared memory section", Er::ExceptionProps::DecodedError(Erc::toUtf8(m_section->errorString())));
+                ErThrow("Failed to create a shared memory section", Er::ExceptionProps::DecodedError(Erc::toUtf8(m_section->errorString())));
         }
     }
 
