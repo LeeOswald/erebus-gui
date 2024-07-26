@@ -4,21 +4,20 @@
 
 #include <QMessageBox>
 
-namespace Erc
-{
-
-namespace Private
+namespace Erp
 {
 
 namespace Ui
 {
 
-ErrorBox::~ErrorBox()
+
+
+ErrorBoxDlg::~ErrorBoxDlg()
 {
     delete m_ui;
 }
 
-ErrorBox::ErrorBox(const QString& title, const QString& message, QWidget* parent)
+ErrorBoxDlg::ErrorBoxDlg(const QString& title, const QString& message, QWidget* parent)
     : QDialog(parent)
     , m_ui(new Ui_ErrorBox())
 {
@@ -28,7 +27,7 @@ ErrorBox::ErrorBox(const QString& title, const QString& message, QWidget* parent
     m_ui->textDetails->appendPlainText(message);
 }
 
-void ErrorBox::onOk()
+void ErrorBoxDlg::onOk()
 {
     accept();
 }
@@ -36,16 +35,18 @@ void ErrorBox::onOk()
 
 } // namespace Ui {}
 
-} // namespace Private {}
+} // namespace Erp {}
 
 
+namespace Erc
+{
 
 namespace Ui
 {
 
 EREBUSGUI_EXPORT void errorBox(const QString& title, const QString& message, QWidget* parent)
 {
-    Erc::Private::Ui::ErrorBox box(title, message, parent);
+    Erp::Ui::ErrorBoxDlg box(title, message, parent);
     box.exec();
 }
 
