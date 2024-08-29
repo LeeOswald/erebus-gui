@@ -311,7 +311,7 @@ QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id)
             std::ostringstream ss;
 
             auto& property = *p;
-            auto info = Er::lookupProperty(id);
+            auto info = Er::lookupProperty(Er::ProcessMgr::ProcessProps::Domain, id);
             if (!info)
             {
                 property.format(ss);
