@@ -42,16 +42,16 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         switch (it.id)
         {
         case Er::ProcessMgr::ProcessProps::IsNew::Id::value:
-            this->added = std::get<bool>(it.value);
+            this->added = Er::get<bool>(it.value);
             break;
 
         case Er::ProcessMgr::ProcessProps::PPid::Id::value:
-            this->ppid = std::get<uint64_t>(it.value);
+            this->ppid = Er::get<uint64_t>(it.value);
             break;
 
         case Er::ProcessMgr::ProcessProps::StartTime::Id::value:
         {
-            this->startTime = std::get<uint64_t>(it.value);
+            this->startTime = Er::get<uint64_t>(it.value);
             Er::TimeFormatter<"%H:%M:%S %d %b %y", Er::TimeZone::Utc> fmt;
             std::ostringstream ss;
             fmt(this->startTime, ss);
@@ -60,19 +60,19 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         }
 
         case Er::ProcessMgr::ProcessProps::State::Id::value:
-            this->processState = Erc::fromUtf8(std::get<std::string>(it.value));
+            this->processState = Erc::fromUtf8(Er::get<std::string>(it.value));
             break;
 
         case Er::ProcessMgr::ProcessProps::Comm::Id::value:
-            this->comm = Erc::fromUtf8(std::get<std::string>(it.value));
+            this->comm = Erc::fromUtf8(Er::get<std::string>(it.value));
             break;
 
         case Er::ProcessMgr::ProcessProps::UTime::Id::value:
-            this->uTime = std::get<double>(it.value);
+            this->uTime = Er::get<double>(it.value);
             break;
 
         case Er::ProcessMgr::ProcessProps::STime::Id::value:
-            this->sTime = std::get<double>(it.value);
+            this->sTime = Er::get<double>(it.value);
             break;
         }
     });
