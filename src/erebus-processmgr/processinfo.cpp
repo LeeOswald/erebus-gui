@@ -60,8 +60,14 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         }
 
         case Er::ProcessMgr::ProcessProps::State::Id::value:
-            this->processState = Erc::fromUtf8(Er::get<std::string>(it.value));
+        {
+            Er::ProcessMgr::ProcessStateFormatter fmt;
+            std::ostringstream ss;
+            auto state = Er::get<Er::ProcessMgr::ProcessProps::State::ValueType>(it.value);
+            fmt(state, ss);
+            this->processState = Erc::fromUtf8(ss.str());
             break;
+        }
 
         case Er::ProcessMgr::ProcessProps::Comm::Id::value:
             this->comm = Erc::fromUtf8(Er::get<std::string>(it.value));
