@@ -14,22 +14,22 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
     : properties(std::move(bag))
 {
     // find PID (must always be present)
-    this->pid = Er::getPropertyValueOr<Er::ProcessMgr::ProcessProps::Pid>(properties, Er::ProcessMgr::ProcessProps::Pid::ValueType(-1));
-    if (this->pid == Er::ProcessMgr::ProcessProps::Pid::ValueType(-1))
+    this->pid = Er::getPropertyValueOr<Er::ProcessMgr::Props::Pid>(properties, Er::ProcessMgr::Props::Pid::ValueType(-1));
+    if (this->pid == Er::ProcessMgr::Props::Pid::ValueType(-1))
         ErThrow("No PID in process properties");
 
-    if (Er::propertyPresent<Er::ProcessMgr::ProcessProps::IsDeleted>(properties))
+    if (Er::propertyPresent<Er::ProcessMgr::Props::IsDeleted>(properties))
     {
         this->deleted = 1;
         return;
     }
 
     // find 'Valid' property
-    this->valid = Er::getPropertyValueOr<Er::ProcessMgr::ProcessProps::Valid>(properties, false);
+    this->valid = Er::getPropertyValueOr<Er::ProcessMgr::Props::Valid>(properties, false);
     if (!this->valid)
     {
         // maybe we've got an error message
-        auto msg = Er::getPropertyValue<Er::ProcessMgr::ProcessProps::Error>(properties);
+        auto msg = Er::getPropertyValue<Er::ProcessMgr::Props::Error>(properties);
         if (msg)
             this->error = Erc::fromUtf8(*msg);
 
@@ -41,7 +41,7 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
     {
         switch (it.id)
         {
-        case Er::ProcessMgr::ProcessProps::IsNew::Id::value:
+        case Er::ProcessMgr::Props::IsNew::Id::value:
             this->added = Er::get<bool>(it.value);
             break;
 

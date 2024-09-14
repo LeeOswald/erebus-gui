@@ -28,8 +28,7 @@ public:
     {
         delete m_menuProcess;
         Er::Desktop::Props::Private::unregisterAll(m_params.log);
-        Er::ProcessMgr::ProcessProps::Private::unregisterAll(m_params.log);
-        Er::ProcessMgr::ProcessesGlobal::Private::unregisterAll(m_params.log);
+        Er::ProcessMgr::Private::unregisterAll(m_params.log);
     }
 
     void dispose() noexcept override
@@ -96,8 +95,7 @@ public:
         QObject::connect(m_actionRefreshNow, &QAction::triggered, this, &ProcessMgrPlugin::refreshNow);
         QObject::connect(m_actionSelectColumns, &QAction::triggered, this, &ProcessMgrPlugin::selectColumns);
 
-        Er::ProcessMgr::ProcessesGlobal::Private::registerAll(m_params.log);
-        Er::ProcessMgr::ProcessProps::Private::registerAll(m_params.log);
+        Er::ProcessMgr::Private::registerAll(m_params.log);
         Er::Desktop::Props::Private::registerAll(m_params.log);
     }
 

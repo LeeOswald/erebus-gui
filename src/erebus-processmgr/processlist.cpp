@@ -29,7 +29,7 @@ public:
             m_log,
             [this]()
             {
-                m_client->endSession(Er::ProcessMgr::ProcessRequests::ListProcessesDiff, m_sessionId);
+                m_client->endSession(Er::ProcessMgr::Requests::ListProcessesDiff, m_sessionId);
             }
         );
     }
@@ -38,7 +38,7 @@ public:
         : m_client(Er::Client::createClient(channel, log))
         , m_log(log)
         , m_mutexPool(MutexPoolSize)
-        , m_sessionId(m_client->beginSession(Er::ProcessMgr::ProcessRequests::ListProcessesDiff))
+        , m_sessionId(m_client->beginSession(Er::ProcessMgr::Requests::ListProcessesDiff))
         , m_iconCache(channel, log)
     {
     }
@@ -64,13 +64,13 @@ public:
             [this, pid, signame]()
             {
                 Er::PropertyBag request;
-                Er::addProperty<Er::ProcessMgr::ProcessesGlobal::Pid>(request, pid);
-                Er::addProperty<Er::ProcessMgr::ProcessesGlobal::Signal>(request, std::string(signame));
+                Er::addProperty<Er::ProcessMgr::Props::Pid>(request, pid);
+                Er::addProperty<Er::ProcessMgr::Props::SignalName>(request, std::string(signame));
 
-                auto response = m_client->request(Er::ProcessMgr::ProcessRequests::KillProcess, request, m_sessionId);
+                auto response = m_client->request(Er::ProcessMgr::Requests::KillProcess, request, m_sessionId);
 
-                auto code = Er::getPropertyValue<Er::ProcessMgr::ProcessesGlobal::PosixResult>(response);
-                auto message = Er::getPropertyValue<Er::ProcessMgr::ProcessesGlobal::ErrorText>(response);
+                auto code = Er::getPropertyValue<Er::ProcessMgr::Props::PosixResult>(response);
+                auto message = Er::getPropertyValue<Er::ProcessMgr::Props::ErrorText>(response);
 
                 return PosixResult(code ? *code : -1, message ? std::move(*message) : "");
             }
@@ -99,13 +99,13 @@ private:
 
     void parseGlobals(const Er::PropertyBag& bag, Changeset* diff)
     {
-        diff->totalProcesses = Er::getPropertyValueOr<Er::ProcessMgr::ProcessesGlobal::ProcessCount>(bag, std::size_t(0));
+        diff->totalProcesses = Er::getPropertyValueOr<Er::ProcessMgr::GlobalProps::ProcessCount>(bag, std::size_t(0));
 
         m_realTimePrev = m_realTime;
-        m_realTime = Er::getPropertyValueOr<Er::ProcessMgr::ProcessesGlobal::RealTime>(bag, 0.0);
+        m_realTime = Er::getPropertyValueOr<Er::ProcessMgr::GlobalProps::RealTime>(bag, 0.0);
 
         m_cpuTimePrev = m_cpuTime;
-        m_cpuTime = Er::getPropertyValueOr<Er::ProcessMgr::ProcessesGlobal::TotalTime>(bag, 0.0);
+        m_cpuTime = Er::getPropertyValueOr<Er::ProcessMgr::GlobalProps::TotalTime>(bag, 0.0);
 
         diff->realTime = Er::saturatingSub(m_realTime, m_realTimePrev);
         diff->cpuTime = Er::saturatingSub(m_cpuTime, m_cpuTimePrev);
@@ -130,12 +130,12 @@ private:
     void enumerateProcessesImpl(bool firstRun, Item::TimePoint now, Er::ProcessMgr::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff)
     {
         Er::PropertyBag req;
-        Er::addProperty<Er::ProcessMgr::ProcessProps::RequiredFields>(req, required.pack<uint64_t>());
+        Er::addProperty<Er::ProcessMgr::Props::RequiredFields>(req, required.pack<uint64_t>());
 
-        auto list = m_client->requestStream(Er::ProcessMgr::ProcessRequests::ListProcessesDiff, req, m_sessionId);
+        auto list = m_client->requestStream(Er::ProcessMgr::Requests::ListProcessesDiff, req, m_sessionId);
         for (auto& item : list)
         {
-            if (Er::propertyPresent<Er::ProcessMgr::ProcessesGlobal::Global>(item))
+            if (Er::propertyPresent<Er::ProcessMgr::GlobalProps::Global>(item))
             {
                 // this is a global state record
                 parseGlobals(item, diff);

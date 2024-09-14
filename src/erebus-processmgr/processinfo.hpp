@@ -19,7 +19,7 @@ namespace ProcessMgr
 
 struct ProcessInformation
 {
-    using Key = Er::ProcessMgr::ProcessProps::Pid::ValueType;
+    using Key = Er::ProcessMgr::Props::Pid::ValueType;
     static constexpr Key InvalidKey = Key(-1);
 
     Er::PropertyBag properties;
