@@ -130,7 +130,7 @@ private:
     void enumerateProcessesImpl(bool firstRun, Item::TimePoint now, Er::ProcessMgr::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold, Changeset* diff)
     {
         Er::PropertyBag req;
-        Er::addProperty<Er::ProcessMgr::Props::RequiredFields>(req, required.pack<uint64_t>());
+        Er::addProperty<Er::ProcessMgr::ProcessProps::RequiredFields>(req, required.pack<uint64_t>());
 
         auto list = m_client->requestStream(Er::ProcessMgr::Requests::ListProcessesDiff, req, m_sessionId);
         for (auto& item : list)
