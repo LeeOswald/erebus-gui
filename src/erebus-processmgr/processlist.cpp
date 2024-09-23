@@ -1,18 +1,12 @@
 #include "iconcache.hpp"
 #include "processlist.hpp"
 
-#include <erebus/exception.hxx>
 #include <erebus/mutexpool.hxx>
 #include <erebus/system/time.hxx>
 #include <erebus/util/exceptionutil.hxx>
-#include <erebus-clt/erebus-clt.hxx>
-#include <erebus-gui/erebus-gui.hpp>
 
 
-namespace Erp
-{
-
-namespace ProcessMgr
+namespace Erp::ProcessMgr
 {
 
 namespace
@@ -55,26 +49,6 @@ public:
         updateIcons(diff.get());
 
         return diff;
-    }
-
-    PosixResult kill(uint64_t pid, std::string_view signame) override
-    {
-        return Er::protectedCall<PosixResult>(
-            m_log,
-            [this, pid, signame]()
-            {
-                Er::PropertyBag request;
-                Er::addProperty<Er::ProcessMgr::Props::Pid>(request, pid);
-                Er::addProperty<Er::ProcessMgr::Props::SignalName>(request, std::string(signame));
-
-                auto response = m_client->request(Er::ProcessMgr::Requests::KillProcess, request, m_sessionId);
-
-                auto code = Er::getPropertyValue<Er::ProcessMgr::Props::PosixResult>(response);
-                auto message = Er::getPropertyValue<Er::ProcessMgr::Props::ErrorText>(response);
-
-                return PosixResult(code ? *code : -1, message ? std::move(*message) : "");
-            }
-        );
     }
 
 private:
@@ -289,6 +263,4 @@ std::unique_ptr<IProcessList> createProcessList(Er::Client::ChannelPtr channel, 
     return std::make_unique<ProcessListImpl>(channel, log);
 }
 
-} // namespace ProcessMgr {}
-
-} // namespace Erp {}
+} // namespace Erp::ProcessMgr {}

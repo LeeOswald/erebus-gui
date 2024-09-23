@@ -13,10 +13,7 @@
 #include <QThread>
 #include <QWidget>
 
-namespace Erp
-{
-
-namespace ProcessMgr
+namespace Erp::ProcessMgr
 {
 
 class ProcessTab final
@@ -39,7 +36,7 @@ public slots:
 private slots:
     void dataReady(ProcessChangesetPtr changeset, bool manual);
     void kill(quint64 pid, QLatin1String signal);
-    void posixResult(Erp::ProcessMgr::IProcessList::PosixResult);
+    void posixResult(Erp::ProcessMgr::PosixResult);
         
 private:
     void captureColumnWidths();
@@ -66,6 +63,4 @@ private:
     ItemMenu* m_contextMenu = nullptr;
 };
 
-} // namespace ProcessMgr {}
-
-} // namespace Erp {}
+} // namespace Erp::ProcessMgr {}

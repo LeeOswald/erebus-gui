@@ -19,6 +19,7 @@ add_library(${PROCESSMGR_PLUGIN} SHARED
     iconcache.hpp
     itemmenu.cpp
     itemmenu.hpp
+    posixresult.hpp
     processcolumns.cpp
     processcolumns.hpp
     processdlg.cpp
@@ -29,6 +30,8 @@ add_library(${PROCESSMGR_PLUGIN} SHARED
     processlist.hpp
     processmgr.cpp
     processmgr.hpp
+    processstub.cpp
+    processstub.hpp
     processtab.cpp
     processtab.hpp
     proclistworker.cpp

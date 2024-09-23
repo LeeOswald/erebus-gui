@@ -2,17 +2,14 @@
 
 #include <erebus-clt/erebus-clt.hxx>
 
+#include "posixresult.hpp"
 #include "processinfo.hpp"
 
 #include <set>
 
 
-namespace Erp
+namespace Erp::ProcessMgr
 {
-
-namespace ProcessMgr
-{
-
 
 struct IProcessList
 {
@@ -58,31 +55,15 @@ struct IProcessList
         }
     };
 
-    struct PosixResult
-    {
-        int code = -1;
-        std::string message;
-
-        PosixResult() noexcept = default;
-
-        template <typename MessageT>
-        PosixResult(int code, MessageT&& message)
-            : code(code)
-            , message(std::forward<MessageT>(message))
-        {}
-    };
 
     virtual ~IProcessList() {}
     virtual std::shared_ptr<Changeset> collect(Er::ProcessMgr::ProcessProps::PropMask required, std::chrono::milliseconds trackThreshold) = 0;
-    virtual PosixResult kill(uint64_t pid, std::string_view signame) = 0;
 };
 
 
 std::unique_ptr<IProcessList> createProcessList(Er::Client::ChannelPtr channel, Er::Log::ILog* log);
 
-} // namespace ProcessMgr {}
-
-} // namespace Erp {}
+} // namespace Erp::ProcessMgr {}
 
 
 

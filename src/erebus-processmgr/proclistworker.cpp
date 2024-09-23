@@ -3,10 +3,7 @@
 #include <erebus/util/exceptionutil.hxx>
 
 
-namespace Erp
-{
-
-namespace ProcessMgr
+namespace Erp::ProcessMgr
 {
 
 
@@ -18,6 +15,7 @@ ProcessListWorker::ProcessListWorker(Er::Client::ChannelPtr channel, Er::Log::IL
     : QObject(parent)
     , m_log(log)
     , m_processList(createProcessList(channel, log))
+    , m_processStub(createProcessStub(channel, log))
 {
 }
 
@@ -45,7 +43,7 @@ void ProcessListWorker::kill(quint64 pid, QLatin1String signame)
         m_log,
         [this, pid, signame]()
         {
-            auto result = m_processList->kill(pid, std::string_view(signame.data(), signame.length()));
+            auto result = m_processStub->kill(pid, std::string_view(signame.data(), signame.length()));
 
             emit posixResult(result);
         }
@@ -53,6 +51,4 @@ void ProcessListWorker::kill(quint64 pid, QLatin1String signame)
 }
 
 
-} // namespace ProcessMgr {}
-
-} // namespace Erp {}
+} // namespace Erp::ProcessMgr {}

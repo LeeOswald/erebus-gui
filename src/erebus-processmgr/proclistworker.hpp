@@ -1,16 +1,14 @@
 #pragma once
 
 #include "processlist.hpp"
+#include "processstub.hpp"
 
 #include <QObject>
 #include <QPointer>
 #include <QThread>
 
 
-namespace Erp
-{
-
-namespace ProcessMgr
+namespace Erp::ProcessMgr
 {
 
 using ProcessChangesetPtr = std::shared_ptr<Erp::ProcessMgr::IProcessList::Changeset>;
@@ -33,11 +31,12 @@ public slots:
 
 signals:
     void dataReady(ProcessChangesetPtr, bool);
-    void posixResult(Erp::ProcessMgr::IProcessList::PosixResult);
+    void posixResult(Erp::ProcessMgr::PosixResult);
 
 private:
     Er::Log::ILog* m_log;
     std::unique_ptr<IProcessList> m_processList;
+    std::unique_ptr<IProcessStub> m_processStub;
 };
 
 
@@ -102,6 +101,4 @@ struct ProcessListThread final
     }
 };
 
-} // namespace ProcessMgr {}
-
-} // namespace Erp {}
+} // namespace Erp::ProcessMgr {}

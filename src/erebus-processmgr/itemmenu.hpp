@@ -6,10 +6,7 @@
 #include <QMenu>
 #include <QTreeView>
 
-namespace Erp
-{
-
-namespace ProcessMgr
+namespace Erp::ProcessMgr
 {
 
 class ProcessTreeModel;
@@ -60,6 +57,4 @@ private:
     uint64_t m_selectedPid = uint64_t(-1);
 };
 
-} // namespace ProcessMgr {}
-
-} // namespace Erp {}
+} // namespace Erp::ProcessMgr {}

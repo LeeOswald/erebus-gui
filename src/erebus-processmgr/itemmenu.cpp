@@ -1,10 +1,7 @@
 #include "itemmenu.hpp"
 #include "proctreemodel.hpp"
 
-namespace Erp
-{
-
-namespace ProcessMgr
+namespace Erp::ProcessMgr
 {
 
 ItemMenu::ItemMenu(QTreeView* view)
@@ -98,6 +95,4 @@ void ItemMenu::onProcessProps(QAction* action)
     emit processProps(m_selectedPid);
 }
 
-} // namespace ProcessMgr {}
-
-} // namespace Erp {}
+} // namespace Erp::ProcessMgr {}

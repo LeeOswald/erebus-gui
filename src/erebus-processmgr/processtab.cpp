@@ -3,10 +3,7 @@
 #include <QGridLayout>
 #include <QHeaderView>
 
-namespace Erp
-{
-
-namespace ProcessMgr
+namespace Erp::ProcessMgr
 {
 
 
@@ -234,7 +231,7 @@ void ProcessTab::kill(quint64 pid, QLatin1String signal)
     m_processListWorker.kill(pid, signal);
 }
 
-void ProcessTab::posixResult(Erp::ProcessMgr::IProcessList::PosixResult result)
+void ProcessTab::posixResult(Erp::ProcessMgr::PosixResult result)
 {
     if (result.code != 0)
     {
@@ -249,6 +246,4 @@ void ProcessTab::posixResult(Erp::ProcessMgr::IProcessList::PosixResult result)
     }
 }
 
-} // namespace ProcessMgr {}
-
-} // namespace Erp {}
+} // namespace Erp::ProcessMgr {}
