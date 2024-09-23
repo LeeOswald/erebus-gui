@@ -34,7 +34,7 @@ ProcessTab::~ProcessTab()
     delete m_widget;
 }
 
-ProcessTab::ProcessTab(const Erc::PluginParams& params, std::shared_ptr<void> channel, const std::string& endpoint)
+ProcessTab::ProcessTab(const Erc::PluginParams& params, Er::Client::ChannelPtr channel, const std::string& endpoint)
     : QObject(params.tabWidget)
     , m_params(params)
     , m_autoRefresh(Erc::Option<bool>::get(params.settings, Erp::ProcessMgr::Settings::autoRefresh, true))

@@ -23,7 +23,7 @@ class ProcessListWorker final
 
 public:
     ~ProcessListWorker();
-    explicit ProcessListWorker(std::shared_ptr<void> channel, Er::Log::ILog* log, QObject* parent);
+    explicit ProcessListWorker(Er::Client::ChannelPtr channel, Er::Log::ILog* log, QObject* parent);
 
     void shutdown();
 
@@ -63,7 +63,7 @@ struct ProcessListThread final
         }
     }
 
-    void make(std::shared_ptr<void> channel, Er::Log::ILog* log)
+    void make(Er::Client::ChannelPtr channel, Er::Log::ILog* log)
     {
         thread = new QThread(nullptr);
         worker = new ProcessListWorker(channel, log, nullptr);

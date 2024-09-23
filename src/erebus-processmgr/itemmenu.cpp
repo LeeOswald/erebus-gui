@@ -25,8 +25,11 @@ ItemMenu::ItemMenu(QTreeView* view)
     , m_actionSIGUSR1(new QAction(QCoreApplication::translate("ProcessTab", "SIGUSR1", nullptr), m_actionGroupKill))
     , m_actionSIGUSR2(new QAction(QCoreApplication::translate("ProcessTab", "SIGUSR2", nullptr), m_actionGroupKill))
     , m_actionSIGSEGV(new QAction(QCoreApplication::translate("ProcessTab", "SIGSEGV", nullptr), m_actionGroupKill))
+    , m_actionProcessProps(new QAction(QCoreApplication::translate("ProcessTab", "Properties...", nullptr), view))
 {
     m_menu->addAction(m_actionKill);
+    m_menu->addSeparator();
+    m_menu->addAction(m_actionProcessProps);
     
     m_menuKill->addAction(m_actionSIGKILL);
     m_menuKill->addAction(m_actionSIGINT);
@@ -43,6 +46,7 @@ ItemMenu::ItemMenu(QTreeView* view)
     m_actionKill->setMenu(m_menuKill);
 
     connect(m_actionGroupKill, SIGNAL(triggered(QAction*)), this, SLOT(onKill(QAction*)));
+    connect(m_actionProcessProps, SIGNAL(triggered(QAction*)), this, SLOT(onProcessProps(QAction*)));
 
     view->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(view, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onCustomContextMenu(const QPoint&)));
@@ -87,6 +91,11 @@ void ItemMenu::onKill(QAction* action)
         emit kill(m_selectedPid, QLatin1String("SIGSEGV"));
 
     m_selectedPid = uint64_t(-1);
+}
+
+void ItemMenu::onProcessProps(QAction* action)
+{
+    emit processProps(m_selectedPid);
 }
 
 } // namespace ProcessMgr {}

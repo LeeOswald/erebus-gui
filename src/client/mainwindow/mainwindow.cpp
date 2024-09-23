@@ -122,8 +122,8 @@ MainWindow::MainWindow(
     m_statusbar->setObjectName("statusBar");
     setStatusBar(m_statusbar);
 
-    QObject::connect(this, SIGNAL(connected(std::shared_ptr<void>,std::string)), this, SLOT(onConnected(std::shared_ptr<void>,std::string)));
-    QObject::connect(this, SIGNAL(disconnected(std::shared_ptr<void>)), this, SLOT(onDisconnected(std::shared_ptr<void>)));
+    QObject::connect(this, SIGNAL(connected(Er::Client::ChannelPtr,std::string)), this, SLOT(onConnected(Er::Client::ChannelPtr,std::string)));
+    QObject::connect(this, SIGNAL(disconnected(Er::Client::ChannelPtr)), this, SLOT(onDisconnected(Er::Client::ChannelPtr)));
 
     refreshTitle();
     ErLogDebug(log, "Client started");
@@ -281,7 +281,7 @@ void MainWindow::start()
 
 bool MainWindow::promptForConnection()
 {
-    std::shared_ptr<void> channel;
+    Er::Client::ChannelPtr channel;
 
     do
     {
@@ -382,9 +382,9 @@ bool MainWindow::promptForConnection()
     return true;
 }
 
-std::shared_ptr<void> MainWindow::makeChannel(const Er::Client::ChannelParams& params)
+Er::Client::ChannelPtr MainWindow::makeChannel(const Er::Client::ChannelParams& params)
 {
-    auto channel = Erc::Ui::protectedCall<std::shared_ptr<void>>(
+    auto channel = Erc::Ui::protectedCall<Er::Client::ChannelPtr>(
         m_log,
         tr("Failed to create an RPC channel"),
         this,
@@ -399,7 +399,7 @@ std::shared_ptr<void> MainWindow::makeChannel(const Er::Client::ChannelParams& p
     return channel;
 }
 
-void MainWindow::onConnected(std::shared_ptr<void> channel, std::string endpoint)
+void MainWindow::onConnected(Er::Client::ChannelPtr channel, std::string endpoint)
 {
     size_t connected = 0;
 
@@ -438,7 +438,7 @@ void MainWindow::onConnected(std::shared_ptr<void> channel, std::string endpoint
     }
 }
 
-void MainWindow::onDisconnected(std::shared_ptr<void> channel)
+void MainWindow::onDisconnected(Er::Client::ChannelPtr channel)
 {
     m_pluginMgr.forEachPlugin(
         [this, channel](Erc::IPlugin* plugin)

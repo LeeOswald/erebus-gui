@@ -308,23 +308,19 @@ QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id)
             if (!p)
                 return QVariant();
 
-            std::ostringstream ss;
-
             auto& property = *p;
             auto info = Er::lookupProperty(Er::ProcessMgr::Domain, id);
             if (!info)
             {
-                property.format(ss);
-                auto formatted = ss.str();
-
+                auto formatted = property.to_string();
                 m_log->writef(Er::Log::Level::Warning, "Unknown property %08x [%s]", id, formatted.c_str());
 
                 return QVariant(Erc::fromUtf8(formatted));
             }
             else
             {
-                info->format(property, ss);
-                return QVariant(Erc::fromUtf8(ss.str()));
+                auto formatted = info->to_string(property);
+                return QVariant(Erc::fromUtf8(formatted));
             }
         }
     );

@@ -14,7 +14,7 @@ ProcessListWorker::~ProcessListWorker()
 {
 }
 
-ProcessListWorker::ProcessListWorker(std::shared_ptr<void> channel, Er::Log::ILog* log, QObject* parent)
+ProcessListWorker::ProcessListWorker(Er::Client::ChannelPtr channel, Er::Log::ILog* log, QObject* parent)
     : QObject(parent)
     , m_log(log)
     , m_processList(createProcessList(channel, log))

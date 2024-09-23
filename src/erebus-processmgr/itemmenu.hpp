@@ -30,10 +30,12 @@ public:
 
 signals:
     void kill(quint64 pid, QLatin1String signal);
+    void processProps(quint64 pid);
 
 private slots:
-    void onKill(QAction* action);
     void onCustomContextMenu(const QPoint& point);
+    void onKill(QAction* action);
+    void onProcessProps(QAction* action);
 
 private:
     QTreeView* m_view;
@@ -53,6 +55,7 @@ private:
     QAction* m_actionSIGUSR1;
     QAction* m_actionSIGUSR2;
     QAction* m_actionSIGSEGV;
+    QAction* m_actionProcessProps;
     ProcessTreeModel* m_model = nullptr;
     uint64_t m_selectedPid = uint64_t(-1);
 };

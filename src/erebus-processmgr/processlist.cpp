@@ -34,7 +34,7 @@ public:
         );
     }
 
-    explicit ProcessListImpl(std::shared_ptr<void> channel, Er::Log::ILog* log)
+    explicit ProcessListImpl(Er::Client::ChannelPtr channel, Er::Log::ILog* log)
         : m_client(Er::Client::createClient(channel, log))
         , m_log(log)
         , m_mutexPool(MutexPoolSize)
@@ -284,7 +284,7 @@ private:
 } // namespace {}
 
 
-std::unique_ptr<IProcessList> createProcessList(std::shared_ptr<void> channel, Er::Log::ILog* log)
+std::unique_ptr<IProcessList> createProcessList(Er::Client::ChannelPtr channel, Er::Log::ILog* log)
 {
     return std::make_unique<ProcessListImpl>(channel, log);
 }

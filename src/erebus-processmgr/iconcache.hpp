@@ -26,7 +26,7 @@ public:
     using ProcessInfoPtr = LockableTrackableProcessInformationPtr;
 
     ~IconCache();
-    explicit IconCache(std::shared_ptr<void> channel, Er::Log::ILog* log);
+    explicit IconCache(Er::Client::ChannelPtr channel, Er::Log::ILog* log);
 
     void requestIcon(ProcessInfoPtr process) noexcept;
 

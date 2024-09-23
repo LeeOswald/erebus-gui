@@ -6,6 +6,7 @@ set(RESOURCE_FILES
 
 set(UIS
     columnsdlg.ui
+    processdlg.ui
 )
 
 qt6_add_resources(RESOURCE_SOURCES ${RESOURCE_FILES})
@@ -20,6 +21,8 @@ add_library(${PROCESSMGR_PLUGIN} SHARED
     itemmenu.hpp
     processcolumns.cpp
     processcolumns.hpp
+    processdlg.cpp
+    processdlg.hpp
     processinfo.cpp
     processinfo.hpp
     processlist.cpp

@@ -17,7 +17,7 @@ IconCache::~IconCache()
 {
 }
 
-IconCache::IconCache(std::shared_ptr<void> channel, Er::Log::ILog* log)
+IconCache::IconCache(Er::Client::ChannelPtr channel, Er::Log::ILog* log)
     : m_client(Er::Client::createClient(channel, log))
     , m_log(log)
     , m_worker(std::jthread([this](std::stop_token stop) { worker(stop); }))

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <erebus-clt/erebus-clt.hxx>
+
 #include "processinfo.hpp"
 
 #include <set>
@@ -76,7 +78,7 @@ struct IProcessList
 };
 
 
-std::unique_ptr<IProcessList> createProcessList(std::shared_ptr<void> channel, Er::Log::ILog* log);
+std::unique_ptr<IProcessList> createProcessList(Er::Client::ChannelPtr channel, Er::Log::ILog* log);
 
 } // namespace ProcessMgr {}
 

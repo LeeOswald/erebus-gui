@@ -25,7 +25,7 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
     }
 
     // find 'Valid' property
-    this->valid = Er::getPropertyValueOr<Er::ProcessMgr::Props::Valid>(properties, false);
+    this->valid = Er::getPropertyValueOr<Er::ProcessMgr::Props::Valid>(properties, Er::False) == Er::True ? 1 : 0;
     if (!this->valid)
     {
         // maybe we've got an error message
@@ -42,7 +42,7 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         switch (it.id)
         {
         case Er::ProcessMgr::Props::IsNew::Id::value:
-            this->added = Er::get<bool>(it.value);
+            this->added = Er::get<Er::Bool>(it.value) == Er::True ? 1 : 0;
             break;
 
         case Er::ProcessMgr::ProcessProps::PPid::Id::value:
@@ -53,19 +53,17 @@ ProcessInformation::ProcessInformation(Er::PropertyBag&& bag)
         {
             this->startTime = Er::get<uint64_t>(it.value);
             Er::TimeFormatter<"%H:%M:%S %d %b %y", Er::TimeZone::Utc> fmt;
-            std::ostringstream ss;
-            fmt(this->startTime, ss);
-            this->startTimeUtc = Erc::fromUtf8(ss.str());
+            auto str = fmt(&this->startTime);
+            this->startTimeUtc = Erc::fromUtf8(str.c_str());
             break;
         }
 
         case Er::ProcessMgr::ProcessProps::State::Id::value:
         {
             Er::ProcessMgr::ProcessStateFormatter fmt;
-            std::ostringstream ss;
             auto state = Er::get<Er::ProcessMgr::ProcessProps::State::ValueType>(it.value);
-            fmt(state, ss);
-            this->processState = Erc::fromUtf8(ss.str());
+            auto str = fmt(&state);
+            this->processState = Erc::fromUtf8(str.c_str());
             break;
         }
 

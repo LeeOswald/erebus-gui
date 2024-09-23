@@ -26,7 +26,7 @@ class ProcessTab final
 
 public:
     ~ProcessTab();
-    explicit ProcessTab(const Erc::PluginParams& params, std::shared_ptr<void> channel, const std::string& endpoint);
+    explicit ProcessTab(const Erc::PluginParams& params, Er::Client::ChannelPtr channel, const std::string& endpoint);
 
     void saveColumns();
     void reloadColumns();
@@ -55,7 +55,7 @@ private:
     ProcessColumns m_columns;
     bool m_columnsChanged = false;
     Er::ProcessMgr::ProcessProps::PropMask m_required;
-    std::shared_ptr<void> m_channel;
+    Er::Client::ChannelPtr m_channel;
     std::string m_endpoint;
     QWidget* m_widget;
     QTreeView* m_treeView;

@@ -104,7 +104,7 @@ public:
         return Info("Process Tree", "Process tree & properties", Info::Version(EREBUS_VERSION_MAJOR, EREBUS_VERSION_MINOR, EREBUS_VERSION_PATCH));
     }
 
-    void addConnection(std::shared_ptr<void> channel, const std::string& endpoint) override
+    void addConnection(Er::Client::ChannelPtr channel, const std::string& endpoint) override
     {
         auto it = m_tabs.find(channel.get());
         if (it != m_tabs.end())
@@ -116,7 +116,7 @@ public:
         m_tabs.insert({ channel.get(), std::make_unique<Erp::ProcessMgr::ProcessTab>(m_params, channel, endpoint) });
     }
 
-    void removeConnection(std::shared_ptr<void> channel) noexcept override
+    void removeConnection(Er::Client::ChannelPtr channel) noexcept override
     {
         auto it = m_tabs.find(channel.get());
         if (it == m_tabs.end())
