@@ -1,5 +1,5 @@
 #include <erebus/exception.hxx>
-#include <erebus/util/format.hxx>
+#include <erebus/format.hxx>
 
 #include "pluginmgr.hpp"
 
@@ -18,29 +18,28 @@ Erc::IPlugin* PluginManager::load(const QString& path)
     if (!info->dll.load())
     {
         auto error = info->dll.errorString();
-        ErThrow(Er::Util::format("Plugin [%s] could not be loaded", Erc::toUtf8(path).c_str()), Er::ExceptionProps::DecodedError(Erc::toUtf8(error)));
+        ErThrow(Er::format("Plugin [{}] could not be loaded", Erc::toUtf8(path)), Er::ExceptionProps::DecodedError(Erc::toUtf8(error)));
     }
 
     auto createUiPluginFn = reinterpret_cast<Erc::createUiPlugin*>(info->dll.resolve("createUiPlugin"));
     if (!createUiPluginFn)
-        ErThrow(Er::Util::format("Plugin [%s] contains no createUiPlugin symbol", Erc::toUtf8(path).c_str()));
+        ErThrow(Er::format("Plugin [{}] contains no createUiPlugin symbol", Erc::toUtf8(path)));
 
     info->ref.reset(createUiPluginFn(m_params));
     if (!info->ref)
-        ErThrow(Er::Util::format("Plugin [%s] returned no interface", Erc::toUtf8(path).c_str()));
+        ErThrow(Er::format("Plugin [{}] returned no interface", Erc::toUtf8(path)));
 
     m_plugins.insert({path, info});
 
     auto pi = info->ref->info();
-    m_params.log->writef(
-        Er::Log::Level::Info,
-        "Loaded plugin %s ver %u.%u.%u [%s] from [%s]",
-        pi.name.c_str(),
+    Er::Log::info(m_params.log,
+        "Loaded plugin {} ver {}.{}.{} [{}] from [{}]",
+        pi.name,
         pi.version.major,
         pi.version.minor,
         pi.version.patch,
-        pi.description.c_str(),
-        Erc::toUtf8(path).c_str()
+        pi.description,
+        Erc::toUtf8(path)
     );
 
     return info->ref.get();

@@ -313,7 +313,7 @@ QVariant ProcessTreeModel::formatItemProperty(ItemTreeNode* item, Er::PropId id)
             if (!info)
             {
                 auto formatted = property.to_string();
-                m_log->writef(Er::Log::Level::Warning, "Unknown property %08x [%s]", id, formatted.c_str());
+                Er::Log::warning(m_log, "Unknown property {:08x} [{}]", id, formatted);
 
                 return QVariant(Erc::fromUtf8(formatted));
             }

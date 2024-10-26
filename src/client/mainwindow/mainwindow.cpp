@@ -30,7 +30,6 @@ MainWindow::~MainWindow()
 
 MainWindow::MainWindow(
     Er::Log::ILog* log,
-    Er::Log::ILogControl* logCtl,
     Erc::ISettingsStorage* settings,
     QWidget* parent
     )
@@ -43,7 +42,7 @@ MainWindow::MainWindow(
     , m_centralWidget(new QWidget(this))
     , m_mainLayout(new QVBoxLayout(m_centralWidget))
     , m_mainSplitter(new QSplitter(m_centralWidget))
-    , m_logView(new LogView(log, logCtl, settings, this, m_mainSplitter, m_mainMenu.actionLog))
+    , m_logView(new LogView(log, settings, this, m_mainSplitter, m_mainMenu.actionLog))
     , m_tabWidget(new QTabWidget(m_mainSplitter))
     , m_statusbar(new QStatusBar(this))
     , m_pluginMgr(Erc::PluginParams(settings, log, m_tabWidget, m_mainMenu.menuBar, m_statusbar))
@@ -117,8 +116,6 @@ MainWindow::MainWindow(
     m_trayIcon.trayIcon->show();
     QObject::connect(m_trayIcon.trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
 
-    logCtl->unmute();
-
     m_statusbar->setObjectName("statusBar");
     setStatusBar(m_statusbar);
 
@@ -126,7 +123,7 @@ MainWindow::MainWindow(
     QObject::connect(this, SIGNAL(disconnected(Er::Client::ChannelPtr)), this, SLOT(onDisconnected(Er::Client::ChannelPtr)));
 
     refreshTitle();
-    ErLogDebug(log, "Client started");
+    Er::Log::debug(log, "Client started");
 
     QTimer::singleShot(0, this, SLOT(start()));
 }
@@ -339,7 +336,7 @@ bool MainWindow::promptForConnection()
                 );
         }
 
-        Er::Log::Info(m_log) << "Connecting to [" << dlg.selected() << "]";
+        Er::Log::info(m_log, "Connecting to [{}]", dlg.selected());
 
         Er::Client::ChannelParams params(dlg.selected(), dlg.ssl(), caCertificate, certificate, key);
         channel = makeChannel(params);
@@ -410,7 +407,7 @@ void MainWindow::onConnected(Er::Client::ChannelPtr channel, std::string endpoin
             [this, channel, endpoint, &connected](Erc::IPlugin* plugin)
             {
                 auto pi = plugin->info();
-                Er::Log::Info(m_log) << "Connecting for plugin " << pi.name;
+                Er::Log::info(m_log, "Connecting for plugin {}", pi.name);
 
                 auto ok = Er::protectedCall<bool>(
                     m_log,

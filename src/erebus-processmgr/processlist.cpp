@@ -2,7 +2,6 @@
 #include "processlist.hpp"
 
 #include <erebus/mutexpool.hxx>
-#include <erebus/system/time.hxx>
 #include <erebus/util/exceptionutil.hxx>
 
 
@@ -135,7 +134,7 @@ private:
                 }
                 else
                 {
-                    ErLogWarning(m_log, "Unknown exited process %zu", parsedProcess->pid);
+                    Er::Log::warning(m_log, "Unknown exited process {}", parsedProcess->pid);
                 }
 
                 continue;

@@ -31,7 +31,6 @@ public:
 
     explicit LogView(
         Er::Log::ILog* log,
-        Er::Log::ILogControl* logCtl,
         Erc::ISettingsStorage* settings,
         QMainWindow* mainWindow,
         QWidget* parent,
@@ -52,10 +51,23 @@ public slots:
     void clearLog();
 
 private:
-    void logDelegate(std::shared_ptr<Er::Log::Record> r);
+    struct LogSink
+        : public Er::Log::ISink
+    {
+        LogSink(LogView* owner, Er::Log::IFormatter::Ptr formatter)
+            : owner(owner)
+            , formatter(formatter)
+        {}
+
+        void write(Er::Log::Record::Ptr r) override;
+        void flush() override;
+
+    private:
+        LogView* owner;
+        Er::Log::IFormatter::Ptr formatter;
+    };
 
     Er::Log::ILog* m_log;
-    Er::Log::ILogControl* m_logCtl;
     Erc::ISettingsStorage* m_settings;
     QPlainTextEdit* m_view;
     QMenu* m_menu;

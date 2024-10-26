@@ -17,12 +17,11 @@ namespace Ui
 LogView::~LogView()
 {
     m_log->flush();
-    m_logCtl->removeDelegate("view");
+    m_log->removeSink("view");
 }
 
 LogView::LogView(
         Er::Log::ILog* log,
-        Er::Log::ILogControl* logCtl,
         Erc::ISettingsStorage* settings,
         QMainWindow* mainWindow,
         QWidget* parent,
@@ -30,7 +29,6 @@ LogView::LogView(
     )
     : QObject(mainWindow)
     , m_log(log)
-    , m_logCtl(logCtl)
     , m_settings(settings)
     , m_view(new QPlainTextEdit(parent))
     , m_menu(new QMenu(mainWindow))
@@ -88,8 +86,9 @@ LogView::LogView(
     connect(m_actionClear, SIGNAL(triggered()), this, SLOT(clearLog()));
     m_menu->addAction(m_actionClear);
 
-    m_logCtl->addDelegate("view", [this](std::shared_ptr<Er::Log::Record> r) { logDelegate(r); });
-    m_logCtl->unmute();
+    auto formatter = Er::Log::SimpleFormatter::make({ Er::Log::SimpleFormatter::Option::Time, Er::Log::SimpleFormatter::Option::Level, Er::Log::SimpleFormatter::Option::Tid });
+    auto sink = std::make_shared<LogSink>(this, formatter);
+    m_log->addSink("view", sink);
 }
 
 void LogView::clearLog()
@@ -107,12 +106,12 @@ void LogView::log(QString text)
 void LogView::setLogLevel(QAction* action)
 {
     auto prevLevel = m_log->level();
-    if (action == m_actionDebug) m_logCtl->setLevel(Er::Log::Level::Debug);
-    else if (action == m_actionInfo) m_logCtl->setLevel(Er::Log::Level::Info);
-    else if (action == m_actionWarning) m_logCtl->setLevel(Er::Log::Level::Warning);
-    else if (action == m_actionError) m_logCtl->setLevel(Er::Log::Level::Error);
-    else if (action == m_actionFatal) m_logCtl->setLevel(Er::Log::Level::Fatal);
-    else if (action == m_actionOff) m_logCtl->setLevel(Er::Log::Level::Off);
+    if (action == m_actionDebug) m_log->setLevel(Er::Log::Level::Debug);
+    else if (action == m_actionInfo) m_log->setLevel(Er::Log::Level::Info);
+    else if (action == m_actionWarning) m_log->setLevel(Er::Log::Level::Warning);
+    else if (action == m_actionError) m_log->setLevel(Er::Log::Level::Error);
+    else if (action == m_actionFatal) m_log->setLevel(Er::Log::Level::Fatal);
+    else if (action == m_actionOff) m_log->setLevel(Er::Log::Level::Off);
 
     action->setChecked(true);
 
@@ -123,40 +122,16 @@ void LogView::setLogLevel(QAction* action)
     emit logLevelChanged(prevLevel, m_log->level());
 }
 
-void LogView::logDelegate(std::shared_ptr<Er::Log::Record> r)
+void LogView::LogSink::write(Er::Log::Record::Ptr r)
 {
-    const char* strLevel = "?";
-    switch (r->level)
-    {
-    case Er::Log::Level::Debug: strLevel = "D"; break;
-    case Er::Log::Level::Info: strLevel = "I"; break;
-    case Er::Log::Level::Warning: strLevel = "W"; break;
-    case Er::Log::Level::Error: strLevel = "E"; break;
-    case Er::Log::Level::Fatal: strLevel = "!"; break;
-    }
+    auto formatted = formatter->format(r.get());
 
-    char prefix[256];
-    ::snprintf(prefix,
-        _countof(prefix),
-        "[%02d:%02d:%02d.%03d @%zu %s] ",
-        r->time.hour,
-        r->time.minute,
-        r->time.second,
-        r->time.milli,
-        r->tid,
-        strLevel
-    );
+    auto utf16Message = Erc::fromUtf8(formatted);
+    QMetaObject::invokeMethod(owner, "log", Qt::AutoConnection, Q_ARG(QString, utf16Message));
+}
 
-    std::string message = std::string(prefix);
-    message.append(r->message);
-
-    auto utf16Message = Erc::fromUtf8(message);
-    QMetaObject::invokeMethod(this, "log", Qt::AutoConnection, Q_ARG(QString, utf16Message));
-
-#if ER_WINDOWS && ER_DEBUG
-    utf16Message.append(L"\n");
-    ::OutputDebugStringW(reinterpret_cast<const wchar_t*>(utf16Message.utf16()));
-#endif
+void LogView::LogSink::flush()
+{
 }
 
 } // namespace Ui {}

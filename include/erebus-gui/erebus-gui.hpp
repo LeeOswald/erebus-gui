@@ -51,25 +51,21 @@ ResultT protectedCall(Er::Log::ILog* log, const QString& title, ParentT* parent,
     catch (Er::Exception& e)
     {
         if (log)
-        {
-            log->write(Er::Log::Level::Error, Er::Util::formatException(e));
-        }
+            Er::Log::writeln(log, Er::Log::Level::Error, Er::Util::formatException(e));
 
         Erc::Ui::errorBoxLite(title, QString::fromUtf8(e.what()), parent);
     }
     catch (std::exception& e)
     {
         if (log)
-        {
-            log->write(Er::Log::Level::Error, Er::Util::formatException(e));
-        }
+            Er::Log::writeln(log, Er::Log::Level::Error, Er::Util::formatException(e));
 
         Erc::Ui::errorBoxLite(title, QString::fromUtf8(e.what()), parent);
     }
     catch (...)
     {
         if (log)
-            log->write(Er::Log::Level::Error, "Unexpected exception");
+            Er::Log::writeln(log, Er::Log::Level::Error, "Unexpected exception");
 
         QMessageBox::critical(parent, title, QObject::tr("Unexpected exception"));
     }

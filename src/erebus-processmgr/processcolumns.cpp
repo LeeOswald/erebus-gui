@@ -82,8 +82,6 @@ ProcessColumns loadProcessColumns(Erc::ISettingsStorage* settings)
         qint32 _id;
         quint32 width = 0;
         s >> _id >> width;
-        if (_id >= qint32(Er::ProcessMgr::ProcessProps::PropIndices::FlagsCount))
-            continue;
 
         auto id = unsigned(_id);
 
@@ -144,7 +142,6 @@ Er::ProcessMgr::ProcessProps::PropMask makePropMask(const ProcessColumns& column
 
     for (auto& col: columns)
     {
-        Q_ASSERT(col.id < mask.FlagsCount);
         mask.set(col.id);
     }
 

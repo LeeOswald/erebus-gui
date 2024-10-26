@@ -40,7 +40,6 @@ public:
 
     explicit MainWindow(
         Er::Log::ILog* log,
-        Er::Log::ILogControl* logCtl,
         Erc::ISettingsStorage* settings,
         QWidget* parent = nullptr
     );

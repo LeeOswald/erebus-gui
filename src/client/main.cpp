@@ -29,21 +29,43 @@ void qtMessageHandler(QtMsgType type, const QMessageLogContext& context, const Q
     switch (type)
     {
     case QtDebugMsg:
-        ErLogDebug(g_log, "[Qt] %s", localMsg.c_str());
+        Er::Log::debug(g_log, "[Qt] {}", localMsg);
         break;
     case QtInfoMsg:
-        ErLogInfo(g_log, "[Qt] %s", localMsg.c_str());
+        Er::Log::info(g_log, "[Qt] {}", localMsg);
         break;
     case QtWarningMsg:
-        ErLogWarning(g_log, "[Qt] %s", localMsg.c_str());
+        Er::Log::warning(g_log, "[Qt] {}", localMsg);
         break;
     case QtCriticalMsg:
-        ErLogError(g_log, "[Qt] %s", localMsg.c_str());
+        Er::Log::error(g_log, "[Qt] {}", localMsg);
         break;
     case QtFatalMsg:
-        ErLogFatal(g_log, "[Qt] %s", localMsg.c_str());
+        Er::Log::fatal(g_log, "[Qt] {}", localMsg);
         break;
     }
+}
+
+
+Er::Log::ILog::Ptr openLog(Er::Log::Level level)
+{
+    auto logger = Er::Log::makeAsyncLogger();
+
+#if ER_WINDOWS
+    if (::IsDebuggerPresent())
+    {
+        auto debugger = Er::Log::makeDebuggerSink(
+            Er::Log::SimpleFormatter::make({ Er::Log::SimpleFormatter::Option::Time, Er::Log::SimpleFormatter::Option::Level, Er::Log::SimpleFormatter::Option::Tid }),
+            Er::Log::SimpleFilter::make(Er::Log::Level::Debug, Er::Log::Level::Fatal)
+        );
+
+        logger->addSink("debugger", debugger);
+    }
+#endif
+
+    logger->setLevel(level);
+
+    return logger;
 }
 
 } // namespace {}
@@ -65,13 +87,13 @@ int main(int argc, char *argv[])
     auto logLevel = static_cast<Er::Log::Level>(Erc::Option<int>::get(&settings, Erp::Client::AppSettings::Log::level, int(Erp::Client::AppSettings::Log::defaultLevel)));
     auto singleInstance = Erc::Option<bool>::get(&settings, Erp::Client::AppSettings::Application::singleInstance, Erp::Client::AppSettings::Application::singleInstanceDefault);
 
-    Er::Log::LogBase log(Er::Log::LogBase::AsyncLog, logLevel, 65536);
-    g_log = &log;
+    auto logger = openLog(logLevel);
+    g_log = logger.get();
     ::qInstallMessageHandler(qtMessageHandler);
     
     try
     {
-        Erp::Client::Application a(&log, &settings, argc, argv);
+        Erp::Client::Application a(g_log, &settings, argc, argv);
 
         if (singleInstance && a.secondary())
         {
@@ -82,13 +104,13 @@ int main(int argc, char *argv[])
             return EXIT_SUCCESS;
         }
 
-        Er::LibScope er(&log);
-        Er::Client::LibParams cltParams(&log, log.level());
+        Er::LibScope er(g_log);
+        Er::Client::LibParams cltParams(g_log, g_log->level());
         Er::Client::LibScope cs(cltParams);
 
         try
         {
-            Erp::Client::Ui::MainWindow w(&log, &log, &settings);
+            Erp::Client::Ui::MainWindow w(g_log, &settings);
 
             if (a.primary())
             {

@@ -109,7 +109,7 @@ public:
         auto it = m_tabs.find(channel.get());
         if (it != m_tabs.end())
         {
-            m_params.log->writef(Er::Log::Level::Error, "Connection %s already has a tab", endpoint.c_str());
+            Er::Log::error(m_params.log, "Connection {} already has a tab", endpoint);
             return;
         }
 
@@ -121,7 +121,7 @@ public:
         auto it = m_tabs.find(channel.get());
         if (it == m_tabs.end())
         {
-            m_params.log->writef(Er::Log::Level::Error, "No tab found for connection %p", channel.get());
+            Er::Log::error(m_params.log, "No tab found for connection {}", Er::Format::ptr(channel.get()));
             return;
         }
 

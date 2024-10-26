@@ -100,7 +100,7 @@ void ProcessTab::setRefreshInterval(unsigned interval)
     Q_ASSERT(interval >= 500);
     m_refreshRate = interval;
 
-    ErLogDebug(m_params.log, "Set refresh interval to %d msec", m_refreshRate);
+    Er::Log::debug(m_params.log, "Set refresh interval to {} msec", m_refreshRate);
 }
 
 void ProcessTab::requireAdditionalProps(Er::ProcessMgr::ProcessProps::PropMask& required) noexcept
@@ -140,7 +140,7 @@ void ProcessTab::startWorker()
 
 void ProcessTab::refresh(bool manual)
 {
-    ErLogDebug(m_params.log, "Refreshing...");
+    Er::Log::debug(m_params.log, "Refreshing...");
 
     m_processListWorker.refresh(manual, m_required, m_trackDuration);
 }
@@ -226,7 +226,7 @@ void ProcessTab::captureColumnWidths()
 
 void ProcessTab::kill(quint64 pid, QLatin1String signal)
 {
-    ErLogDebug(m_params.log, "Kill(%zu, %s)", pid, signal.data());
+    Er::Log::debug(m_params.log, "Kill({}, {})", pid, signal.data());
 
     m_processListWorker.kill(pid, signal);
 }
@@ -237,11 +237,11 @@ void ProcessTab::posixResult(Erp::ProcessMgr::PosixResult result)
     {
         if (!result.message.empty())
         {
-            ErLogError(m_params.log, "%d %s", result.code, result.message.c_str());
+            Er::Log::error(m_params.log, "{} {}", result.code, result.message);
         }
         else
         {
-            ErLogError(m_params.log, "Unspecified error %d", result.code);
+            Er::Log::error(m_params.log, "Unspecified error {}", result.code);
         }
     }
 }
