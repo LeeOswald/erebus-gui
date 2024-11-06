@@ -57,7 +57,7 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
     {
         beginResetModel();
 
-        assert(changeset->firstRun);
+        Q_ASSERT(changeset->firstRun);
         m_tree.reset(new ItemTree(changeset->modified));
 
         endResetModel();
@@ -104,8 +104,6 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
             m_tree->remove(removed.get(), beginRemove, endRemove, beginMove, endMove);
         }
 
-        assert(!changeset->firstRun);
-
         // handle modified processes
         for (auto& modified : changeset->modified)
         {
@@ -116,7 +114,7 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
             {
                 // new item
                 m_tree->insert(modified, beginInsert, endInsert, beginMove, endMove);
-                assert(locked->context());
+                Q_ASSERT(locked->context());
             }
             else
             {
@@ -148,7 +146,7 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
             Er::ObjectLock<Item> locked(tracked.get());
 
             auto node = static_cast<ItemTree::Node*>(locked->context());
-            assert(node);
+            Q_ASSERT(node);
             if (!node)
                 continue;
 
@@ -168,7 +166,7 @@ std::vector<QModelIndex> ProcessTreeModel::update(std::shared_ptr<Changeset> cha
             Er::ObjectLock<Item> locked(untracked.get());
 
             auto node = static_cast<ItemTree::Node*>(locked->context());
-            assert(node);
+            Q_ASSERT(node);
             if (!node)
                 continue;
 
@@ -246,7 +244,7 @@ QModelIndex ProcessTreeModel::index(const ItemTree::Node* node) const
     }
 
     auto parent = node->parent();
-    assert(parent);
+    Q_ASSERT(parent);
     auto index = parent->indexOfChild(node);
 
     return createIndex(index, 0, node);

@@ -132,8 +132,8 @@ void ProcessTab::startWorker()
     m_processListWorker.make(m_channel, m_params.log);
 
     // know when worker has data
-    connect(m_processListWorker.worker, SIGNAL(dataReady(ProcessChangesetPtr,bool)), this, SLOT(dataReady(ProcessChangesetPtr,bool)));
-    connect(m_processListWorker.worker, SIGNAL(posixResult(Erp::ProcessMgr::IProcessList::PosixResult)), this, SLOT(posixResult(Erp::ProcessMgr::IProcessList::PosixResult)));
+    connect(m_processListWorker.worker.get(), SIGNAL(dataReady(ProcessChangesetPtr,bool)), this, SLOT(dataReady(ProcessChangesetPtr,bool)));
+    connect(m_processListWorker.worker.get(), SIGNAL(posixResult(Erp::ProcessMgr::PosixResult)), this, SLOT(posixResult(Erp::ProcessMgr::PosixResult)));
 
     m_processListWorker.start();
 }

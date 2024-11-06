@@ -70,7 +70,7 @@ public:
         {
             auto it = m_endpoints.begin();
             std::advance(it, m_endpoints.size() - 1);
-            assert(it != m_endpoints.end());
+            Q_ASSERT(it != m_endpoints.end());
             m_endpoints.erase(it);
         }
     }

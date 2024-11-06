@@ -43,7 +43,7 @@ ItemMenu::ItemMenu(QTreeView* view)
     m_actionKill->setMenu(m_menuKill);
 
     connect(m_actionGroupKill, SIGNAL(triggered(QAction*)), this, SLOT(onKill(QAction*)));
-    connect(m_actionProcessProps, SIGNAL(triggered(QAction*)), this, SLOT(onProcessProps(QAction*)));
+    connect(m_actionProcessProps, SIGNAL(triggered(bool)), this, SLOT(onProcessProps(bool)));
 
     view->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(view, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onCustomContextMenu(const QPoint&)));
@@ -90,7 +90,7 @@ void ItemMenu::onKill(QAction* action)
     m_selectedPid = uint64_t(-1);
 }
 
-void ItemMenu::onProcessProps(QAction* action)
+void ItemMenu::onProcessProps(bool checked)
 {
     emit processProps(m_selectedPid);
 }

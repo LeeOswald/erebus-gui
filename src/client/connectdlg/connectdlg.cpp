@@ -97,9 +97,9 @@ void ConnectDlg::onCancel()
     reject();
 }
 
-void ConnectDlg::onSsl()
+void ConnectDlg::onSslChecked(Qt::CheckState state)
 {
-    enableSsl(m_ui->checkSsl->checkState() == Qt::CheckState::Checked);
+    enableSsl(state == Qt::CheckState::Checked);
 }
 
 void ConnectDlg::onBrowseRootCA()

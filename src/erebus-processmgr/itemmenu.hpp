@@ -32,7 +32,7 @@ signals:
 private slots:
     void onCustomContextMenu(const QPoint& point);
     void onKill(QAction* action);
-    void onProcessProps(QAction* action);
+    void onProcessProps(bool checked);
 
 private:
     QTreeView* m_view;

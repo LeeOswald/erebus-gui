@@ -242,7 +242,7 @@ void ColumnsDlg::onDown()
 size_t ColumnsDlg::getItemIndex(const std::vector<Item*>& v, QListWidgetItem* item)
 {
     auto it = std::find(v.begin(), v.end(), item);
-    assert(it != v.end());
+    Q_ASSERT(it != v.end());
     auto index = std::distance(v.begin(), it);
     return index;
 }

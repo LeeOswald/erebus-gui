@@ -271,9 +271,9 @@
   </connection>
   <connection>
    <sender>checkSsl</sender>
-   <signal>stateChanged(int)</signal>
+   <signal>checkStateChanged(Qt::CheckState)</signal>
    <receiver>ConnectDlg</receiver>
-   <slot>onSsl()</slot>
+   <slot>onSslChecked(Qt::CheckState)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>30</x>
@@ -289,7 +289,7 @@
  <slots>
   <slot>onOk()</slot>
   <slot>onCancel()</slot>
-  <slot>onSsl()</slot>
+  <slot>onSslChecked(Qt::CheckState)</slot>
   <slot>onBrowseRootCA()</slot>
   <slot>onBrowseCertificate()</slot>
   <slot>onBrowseKey()</slot>

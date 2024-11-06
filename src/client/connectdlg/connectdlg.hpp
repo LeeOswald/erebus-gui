@@ -62,7 +62,7 @@ public:
 public slots:
     void onOk();
     void onCancel();
-    void onSsl();
+    void onSslChecked(Qt::CheckState state);
     void onBrowseRootCA();
     void onBrowseCertificate();
     void onBrowseKey();
