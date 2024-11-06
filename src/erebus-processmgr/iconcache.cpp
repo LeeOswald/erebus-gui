@@ -32,8 +32,6 @@ void IconCache::worker(std::stop_token stop) noexcept
 
     try
     {
-        auto sessionId = m_client->beginSession(Er::Desktop::Requests::QueryIcon);
-
         while (!stop.stop_requested())
         {
             std::unique_lock l(m_mutex);
@@ -43,7 +41,7 @@ void IconCache::worker(std::stop_token stop) noexcept
                 auto process = m_pending.front();
                 m_pending.pop();
 
-                auto icon = requestIcon(process->pid, sessionId);
+                auto icon = requestIcon(process->pid);
 
                 {
                     Er::ObjectLock<ProcessInfo> locked(*process);
@@ -53,8 +51,6 @@ void IconCache::worker(std::stop_token stop) noexcept
                 }
             }
         }
-
-        m_client->endSession(Er::Desktop::Requests::QueryIcon, sessionId);
     }
     catch (Er::Exception& e)
     {
@@ -68,7 +64,7 @@ void IconCache::worker(std::stop_token stop) noexcept
     Er::Log::debug(m_log, "IconCache worker exited");
 }
 
-ProcessInformation::IconData IconCache::requestIcon(uint64_t pid, Er::Client::IClient::SessionId sessionId) noexcept
+ProcessInformation::IconData IconCache::requestIcon(uint64_t pid) noexcept
 {
     ProcessInformation::IconData result;
 
@@ -78,7 +74,7 @@ ProcessInformation::IconData IconCache::requestIcon(uint64_t pid, Er::Client::IC
         Er::addProperty<Er::Desktop::Props::IconSize>(req, uint32_t(Er::Desktop::IconSize::Small));
         Er::addProperty<Er::Desktop::Props::Pid>(req, pid);
 
-        auto reply = m_client->request(Er::Desktop::Requests::QueryIcon, req, sessionId);
+        auto reply = m_client->request(Er::Desktop::Requests::QueryIcon, req);
 
         auto status = Er::getPropertyValue<Er::Desktop::Props::IconState>(reply);
         if (!status)

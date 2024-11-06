@@ -1,14 +1,7 @@
 
 set(SOURCE_FILES
-    application/application.cpp
-    application/application.hpp
-    application/applicationbase.cpp
-    application/applicationbase.hpp
-    application/messageclient.cpp
-    application/messageclient.hpp
-    application/messageserver.cpp
-    application/messageserver.hpp
-    application/sharedsection.hpp
+    application.cpp
+    application.hpp
     connectdlg/connectdlg.cpp
     connectdlg/connectdlg.hpp
     mainwindow/logview.cpp

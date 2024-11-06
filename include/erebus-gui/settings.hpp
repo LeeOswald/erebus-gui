@@ -14,7 +14,7 @@ struct ISettingsStorage
     virtual void sync() = 0;
 
 protected:
-    virtual ~ISettingsStorage() {}
+    virtual ~ISettingsStorage() = default;
 };    
     
 

@@ -14,6 +14,8 @@ class Settings final
     : public Erc::ISettingsStorage
 {
 public:
+    ~Settings() = default;
+
     QStringList keys() override
     {
         return storage().allKeys();

@@ -32,7 +32,7 @@ public:
 
 private:
     void worker(std::stop_token stop) noexcept;
-    ProcessInformation::IconData requestIcon(uint64_t pid, Er::Client::IClient::SessionId sessionId) noexcept;
+    ProcessInformation::IconData requestIcon(uint64_t pid) noexcept;
 
     std::shared_ptr<Er::Client::IClient> m_client;
     Er::Log::ILog* const m_log;

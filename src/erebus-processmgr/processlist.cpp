@@ -16,22 +16,12 @@ class ProcessListImpl
     , public Er::NonCopyable
 {
 public:
-    ~ProcessListImpl()
-    {
-        Er::protectedCall<void>(
-            m_log,
-            [this]()
-            {
-                m_client->endSession(Er::ProcessMgr::Requests::ListProcessesDiff, m_sessionId);
-            }
-        );
-    }
+    ~ProcessListImpl() = default;
 
     explicit ProcessListImpl(Er::Client::ChannelPtr channel, Er::Log::ILog* log)
         : m_client(Er::Client::createClient(channel, log))
         , m_log(log)
         , m_mutexPool(MutexPoolSize)
-        , m_sessionId(m_client->beginSession(Er::ProcessMgr::Requests::ListProcessesDiff))
         , m_iconCache(channel, log)
     {
     }
@@ -105,69 +95,73 @@ private:
         Er::PropertyBag req;
         Er::addProperty<Er::ProcessMgr::ProcessProps::RequiredFields>(req, required.pack<uint64_t>());
 
-        auto list = m_client->requestStream(Er::ProcessMgr::Requests::ListProcessesDiff, req, m_sessionId);
-        for (auto& item : list)
-        {
-            if (Er::propertyPresent<Er::ProcessMgr::GlobalProps::Global>(item))
+        m_client->requestStream(
+            Er::ProcessMgr::Requests::ListProcessesDiff, 
+            req, 
+            [this, firstRun, now, diff](Er::PropertyBag&& item) -> bool
             {
-                // this is a global state record
-                parseGlobals(item, diff);
-                continue;
-            }
-
-            auto parsedProcess = makeProcessItem(std::move(item), now, firstRun);
-            if (!parsedProcess)
-                continue;
-
-            // is this an existing process?
-            auto existing = m_collection.find(parsedProcess->pid);
-            if (parsedProcess->deleted)
-            {
-                if (existing != m_collection.end())
+                if (Er::propertyPresent<Er::ProcessMgr::GlobalProps::Global>(item))
                 {
-                    // the process has exited; place it into the 'deleted' list unless it's already there
-                    Er::ObjectLock<Item> item(existing->second.get());
-                    Q_ASSERT(!item->deleted);
-                    item->markDeleted(now);
-                    m_tracked.insert({ item->pid, existing->second });
-                    diff->tracked.insert(existing->second);
-                }
-                else
-                {
-                    Er::Log::warning(m_log, "Unknown exited process {}", parsedProcess->pid);
+                    // this is a global state record
+                    parseGlobals(item, diff);
+                    return true;
                 }
 
-                continue;
-            }
+                auto parsedProcess = makeProcessItem(std::move(item), now, firstRun);
+                if (!parsedProcess)
+                    return true;
 
-            if (existing == m_collection.end())
-            {
-                // this is a new process
-                m_collection.insert({ parsedProcess->pid, parsedProcess });
-                diff->modified.insert(parsedProcess);
-
-                if (!firstRun)
+                // is this an existing process?
+                auto existing = m_collection.find(parsedProcess->pid);
+                if (parsedProcess->deleted)
                 {
-                    // also track this process as 'new'
-                    Q_ASSERT(parsedProcess->state() == Item::State::New);
-                    m_tracked.insert({ parsedProcess->pid, parsedProcess });
-                    diff->tracked.insert(parsedProcess);
-                }
-                else
-                {
-                    // this is the first run; all processes are just added w/out marking as 'new'
+                    if (existing != m_collection.end())
+                    {
+                        // the process has exited; place it into the 'deleted' list unless it's already there
+                        Er::ObjectLock<Item> item(existing->second.get());
+                        Q_ASSERT(!item->deleted);
+                        item->markDeleted(now);
+                        m_tracked.insert({ item->pid, existing->second });
+                        diff->tracked.insert(existing->second);
+                    }
+                    else
+                    {
+                        Er::Log::warning(m_log, "Unknown exited process {}", parsedProcess->pid);
+                    }
+
+                    return true;
                 }
 
-                continue;
-            }
+                if (existing == m_collection.end())
+                {
+                    // this is a new process
+                    m_collection.insert({ parsedProcess->pid, parsedProcess });
+                    diff->modified.insert(parsedProcess);
+
+                    if (!firstRun)
+                    {
+                        // also track this process as 'new'
+                        Q_ASSERT(parsedProcess->state() == Item::State::New);
+                        m_tracked.insert({ parsedProcess->pid, parsedProcess });
+                        diff->tracked.insert(parsedProcess);
+                    }
+                    else
+                    {
+                        // this is the first run; all processes are just added w/out marking as 'new'
+                    }
+
+                    return true;
+                }
             
-            // this is an existing process and we've just got a few fields updated
-            Q_ASSERT(!firstRun);
-            Er::ObjectLock<Item> locked(existing->second.get());
-            locked->updateFromDiff(*parsedProcess.get());
+                // this is an existing process and we've just got a few fields updated
+                Q_ASSERT(!firstRun);
+                Er::ObjectLock<Item> locked(existing->second.get());
+                locked->updateFromDiff(*parsedProcess.get());
 
-            diff->modified.insert(existing->second);
-        }
+                diff->modified.insert(existing->second);
+
+                return true;
+            });
     }
 
     void trackNewOrDeletedProcesses(Item::TimePoint now, std::chrono::milliseconds trackThreshold, Changeset* diff)
@@ -244,7 +238,6 @@ private:
     Er::Log::ILog* m_log;
     static constexpr size_t MutexPoolSize = 5;
     Er::MutexPool<std::recursive_mutex> m_mutexPool;
-    Er::Client::IClient::SessionId m_sessionId;
     ItemContainer m_collection;
     ItemContainer m_tracked; // processes being temporarily tracked as 'recently exited' or 'recently started'
     double m_realTime = 0;

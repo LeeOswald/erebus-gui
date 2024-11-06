@@ -35,7 +35,7 @@ public:
                 Er::addProperty<Er::ProcessMgr::Props::Pid>(request, pid);
                 Er::addProperty<Er::ProcessMgr::Props::SignalName>(request, std::string(signame));
 
-                auto response = m_client->request(Er::ProcessMgr::Requests::KillProcess, request, 0);
+                auto response = m_client->request(Er::ProcessMgr::Requests::KillProcess, request);
 
                 auto code = Er::getPropertyValue<Er::ProcessMgr::Props::PosixResult>(response);
                 auto message = Er::getPropertyValue<Er::ProcessMgr::Props::ErrorText>(response);
