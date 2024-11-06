@@ -86,7 +86,12 @@ LogView::LogView(
     connect(m_actionClear, SIGNAL(triggered()), this, SLOT(clearLog()));
     m_menu->addAction(m_actionClear);
 
-    auto formatter = Er::Log::SimpleFormatter::make({ Er::Log::SimpleFormatter::Option::Time, Er::Log::SimpleFormatter::Option::Level, Er::Log::SimpleFormatter::Option::Tid });
+    auto formatter = Er::Log::SimpleFormatter::make({ 
+        Er::Log::SimpleFormatter::Option::Time, 
+        Er::Log::SimpleFormatter::Option::Level, 
+        Er::Log::SimpleFormatter::Option::Tid,
+        Er::Log::SimpleFormatter::Option::NoNewLine
+    });
     auto sink = std::make_shared<LogSink>(this, formatter);
     m_log->addSink("view", sink);
 }
