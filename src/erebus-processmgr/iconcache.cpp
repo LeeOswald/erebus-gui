@@ -7,10 +7,7 @@
 #include <QPixmap>
 
 
-namespace Erp
-{
-
-namespace ProcessMgr
+namespace Erp::ProcessMgr
 {
 
 IconCache::~IconCache()
@@ -158,6 +155,4 @@ void IconCache::requestIcon(ProcessInfoPtr process) noexcept
     }
 }
 
-} // namespace ProcessMgr {}
-
-} // namespace Erp {}
+} // namespace Erp::ProcessMgr {}
